@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VistA CPRS</title>
+<link rel="stylesheet" href="css/cprs.css">
+</head>
+<body>
+<div id="titlebar">
+  <span id="tbar-txt">VistA CPRS in use by: Tran,George N (vista.west-la.med.va.gov)</span>
+  <div style="display:flex;gap:2px"><span class="wb">_</span><span class="wb" style="font-size:8px">&#9633;</span><span class="wb">&#10005;</span></div>
+</div>
+<div id="menubar">
+  <span class="mi" id="menu-file" onclick="toggleMenu('file')"><u>F</u>ile
+    <div class="dropdown" id="dd-file">
+      <div class="dd-item" onclick="openPtDialog()">Select New Patient...</div>
+      <div class="dd-item dd-gray">Refresh Patient Information</div>
+      <div class="dd-item dd-gray">Update Provider / Location...</div>
+      <div class="dd-item dd-gray">Review/Sign Changes...</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">Next Notification</div>
+      <div class="dd-item dd-gray">Remove Current Notification</div>
+      <div class="dd-item dd-gray">View Patient's Notifications...</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">Print Setup...</div>
+      <div class="dd-item dd-gray">Print Selected Items</div>
+      <div class="dd-item dd-gray">Print...</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="closeAllMenus()">Exit</div>
+    </div>
+  </span>
+  <span class="mi" id="menu-edit" onclick="toggleMenu('edit')"><u>E</u>dit
+    <div class="dropdown" id="dd-edit">
+      <div class="dd-item dd-gray">Undo<span class="dd-accel">Ctrl+Z</span></div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">Cut<span class="dd-accel">Ctrl+X</span></div>
+      <div class="dd-item dd-gray">Copy<span class="dd-accel">Ctrl+C</span></div>
+      <div class="dd-item dd-gray">Paste<span class="dd-accel">Ctrl+V</span></div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">Preferences</div>
+    </div>
+  </span>
+  <span class="mi" id="menu-view" onclick="toggleMenu('view')"><u>V</u>iew
+    <div class="dropdown" id="dd-view">
+      <div class="dd-item" onclick="goTab('cover');closeAllMenus()">Cover Sheet</div>
+      <div class="dd-item" onclick="goTab('problems');closeAllMenus()">Problems</div>
+      <div class="dd-item" onclick="goTab('meds');closeAllMenus()">Meds</div>
+      <div class="dd-item" onclick="goTab('orders');closeAllMenus()">Orders</div>
+      <div class="dd-item" onclick="goTab('notes');closeAllMenus()">Notes</div>
+      <div class="dd-item" onclick="goTab('consults');closeAllMenus()">Consults</div>
+      <div class="dd-item" onclick="goTab('surgery');closeAllMenus()">Surgery</div>
+      <div class="dd-item" onclick="goTab('dcsum');closeAllMenus()">D/C Summ</div>
+      <div class="dd-item" onclick="goTab('labs');closeAllMenus()">Labs</div>
+      <div class="dd-item" onclick="goTab('reports');closeAllMenus()">Reports</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">Reminders</div>
+      <div class="dd-item dd-gray">Postings</div>
+    </div>
+  </span>
+  <span class="mi" id="menu-action" onclick="toggleMenu('action')"><u>A</u>ction
+    <div class="dropdown" id="dd-action">
+      <div class="dd-item dd-gray">New Note</div>
+      <div class="dd-item dd-gray">New Consult</div>
+      <div class="dd-item dd-gray">Write Delayed Orders</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="openEncounter();closeAllMenus()">Encounter...</div>
+    </div>
+  </span>
+  <span class="mi" id="menu-options" onclick="toggleMenu('options')"><u>O</u>ptions
+    <div class="dropdown" id="dd-options">
+      <div class="dd-item dd-gray">8 pt</div>
+      <div class="dd-item dd-gray">10 pt</div>
+      <div class="dd-item dd-gray">&#10003; 12 pt</div>
+      <div class="dd-item dd-gray">14 pt</div>
+    </div>
+  </span>
+  <span class="mi" id="menu-tools" onclick="toggleMenu('tools')"><u>T</u>ools
+    <div class="dropdown" id="dd-tools">
+      <div class="dd-item dd-gray">Veteran Health Library</div>
+      <div class="dd-item dd-gray">CPRS Training/Resources</div>
+      <div class="dd-item dd-gray">VistA Imaging Display</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">iMedConsent Web</div>
+      <div class="dd-item dd-gray">Secure Messaging</div>
+      <div class="dd-item dd-gray">JLV Chrome</div>
+      <div class="dd-item dd-gray">UpToDate and Library links &#9658;</div>
+      <div class="dd-item dd-gray">Vitals</div>
+      <div class="dd-item dd-gray">PACS Viewer</div>
+      <div class="dd-item dd-gray">After Visit Summary</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">CDS Apps &#9658;</div>
+      <div class="dd-item dd-gray">Clinical Applications &#9658;</div>
+      <div class="dd-item dd-gray">PACT Tools/Links &#9658;</div>
+      <div class="dd-item dd-gray">VistA WebMail</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">Graphing...<span class="dd-accel">Ctrl+G</span></div>
+      <div class="dd-item dd-gray">Lab Test Information...</div>
+      <div class="dd-item dd-gray">Options...</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-gray">PDMP &#9658;</div>
+    </div>
+  </span>
+  <span class="mi" id="menu-help" onclick="toggleMenu('help')"><u>H</u>elp
+    <div class="dropdown" id="dd-help">
+      <div class="dd-item dd-gray">Contents</div>
+      <div class="dd-item dd-gray">About...</div>
+    </div>
+  </span>
+</div>
+<div id="pthdr">
+  <div id="ph-name">
+    <div class="pn" id="h-name">No Patient Selected</div>
+    <div class="pm" id="h-meta">000-00-0000</div>
+  </div>
+  <div id="ph-visit">
+    <div class="pv1" id="h-visit1">&nbsp;</div>
+    <div class="pv2" id="h-visit2">&nbsp;</div>
+  </div>
+  <div id="ph-pact"><span id="h-pact">No PACT assigned at this VA location (Click for more)</span></div>
+  <div id="ph-btns">
+    <div class="hbtn"><span style="font-size:9px;font-weight:bold">PDMP</span><span style="font-size:8px">Query</span></div>
+    <div class="hbtn hbtn-red"><span style="font-size:9px;font-weight:bold">Flag</span></div>
+    <div class="hbtn"><span style="font-size:9px;font-weight:bold;color:#0000cc">JLV</span><span style="font-size:8px">Remote<br>Data</span></div>
+    <div class="hbtn"><span style="font-size:13px">&#128247;</span></div>
+    <div class="hbtn" onclick="openPostings()" style="cursor:pointer"><span style="font-size:9px">Postings</span><span class="hbtn-cwad" id="h-cwad">&nbsp;</span></div>
+  </div>
+</div>
+<div id="banner" style="display:none"></div>
+<div id="content">
+  <div id="no-pt-screen">
+    <div style="text-align:center;color:#555;font-size:12px">
+      <div style="font-size:14px;margin-bottom:8px;font-weight:bold">No Patient Selected</div>
+      <div>Use <b>File &rarr; Select New Patient</b> to open a patient record</div>
+    </div>
+  </div>
+  <div id="main-panes">
+    <div id="left-pane">
+      <div class="lp-title" id="lp-title">Items</div>
+      <div class="lp-list" id="lp-list"></div>
+      <div class="lp-btn-area" id="lp-btns" style="display:none"></div>
+    </div>
+    <div id="right-pane">
+      <div class="rp-hdr" id="rp-hdr" style="display:none"></div>
+      <div class="rp-body" id="rp-body"></div>
+    </div>
+  </div>
+  <div class="float-win" id="vitals-win" style="width:720px;top:40px;left:40px">
+    <div class="fw-title" id="vw-drag-handle">
+      <span>Vitals Lite: Vitals for <span id="vw-ptname">Patient</span></span>
+      <span class="wb" onclick="closeWin('vitals-win')">&#10005;</span>
+    </div>
+    <div style="display:flex;overflow:hidden;height:380px">
+      <div class="vitals-left-pane">
+        <div class="vt-period" onclick="vwSetPeriod(this)">TODAY</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-1</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-2</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-7</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-15</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-30</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">Six Months</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">One Year</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">Two Years</div>
+        <div class="vt-period sel" onclick="vwSetPeriod(this)">All Results</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">DATE RANGE</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div class="fw-tabs">
+          <div class="fw-tab active" onclick="vwTab('vitals',this)">Vitals</div>
+          <div class="fw-tab" onclick="vwTab('io',this)">Intake/Output</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;background:#fffff0;padding:4px" id="vw-pane"></div>
+      </div>
+    </div>
+    <div class="fw-footer" style="justify-content:space-between;align-items:center">
+      <div style="font-size:10px;color:#555;display:flex;gap:10px">
+        <label><input type="checkbox" checked> Values</label>
+        <label><input type="checkbox" checked> Time Scale</label>
+        <label><input type="checkbox"> 3D</label>
+        <label><input type="checkbox"> Allow Zoom</label>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn">Entered in Error</button>
+        <button class="btn">Enter Vitals</button>
+      </div>
+    </div>
+  </div>
+  <div class="float-win" id="postings-dlg" style="width:580px;top:60px;left:100px">
+    <div class="fw-title" id="post-drag-handle">
+      <span>Patient Postings</span>
+      <span class="wb" onclick="closeWin('postings-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="padding:0">
+      <div class="postings-sect-hdr">Allergies</div>
+      <table class="post-tbl" id="post-allergy-tbl">
+        <tr><th style="width:160px">Agent</th><th style="width:80px">Severity</th><th>Signs / Symptoms</th></tr>
+      </table>
+      <div class="postings-sect-hdr" style="margin-top:6px">Crisis Notes, Warning Notes, Directives</div>
+      <div id="post-directives" style="background:#fff;padding:4px 6px;font-size:11px;min-height:60px;max-height:160px;overflow-y:auto"></div>
+    </div>
+    <div class="fw-footer"><button class="btn" onclick="closeWin('postings-dlg')">Close</button></div>
+  </div>
+  <div class="float-win" id="order-details-dlg" style="width:520px;top:80px;left:200px">
+    <div class="fw-title" id="od-drag-handle">
+      <span id="od-title">Order Details</span>
+      <span class="wb" onclick="closeWin('order-details-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="padding:0">
+      <div id="od-body" style="background:#fff;padding:6px;font-family:'Courier New',monospace;font-size:11px;white-space:pre-wrap;max-height:400px;overflow-y:auto"></div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="closeWin('order-details-dlg')">Print</button>
+      <button class="btn" onclick="closeWin('order-details-dlg')">Close</button>
+    </div>
+  </div>
+  <div class="float-win" id="new-note-dlg" style="width:480px;top:60px;left:200px">
+    <div class="fw-title" id="nn-drag-handle">
+      <span>Progress Note Properties</span>
+      <span class="wb" onclick="closeWin('new-note-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body">
+      <div style="font-size:11px;margin-bottom:3px">Progress Note Title:</div>
+      <input id="nn-title-input" style="width:100%;border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff;margin-bottom:4px" value="">
+      <div style="border:2px inset #808080;background:#fff;height:200px;overflow-y:auto;font-size:11px">
+        <div class="note-type-opt">HISTORY AND PHYSICAL</div>
+        <div class="note-type-opt">INTERNAL MEDICINE PROGRESS NOTE</div>
+        <div class="note-type-opt">PHYSICIAN PROGRESS NOTE</div>
+        <div class="note-type-opt">NURSING PROGRESS NOTE</div>
+        <div class="note-type-opt">DISCHARGE SUMMARY</div>
+        <div class="note-type-opt">PALLIATIVE CARE INPATIENT CONSULT</div>
+        <div class="note-type-opt">PALLIATIVE CARE OUTPATIENT CONSULT</div>
+        <div class="note-type-opt">PALLIATIVE CARE INPATIENT FOLLOW-UP NOTE</div>
+        <div class="note-type-opt">MEDICINE ATTENDING NOTE</div>
+        <div class="note-type-opt">PROCEDURE NOTE</div>
+        <div class="note-type-opt">TELEPHONE NOTE</div>
+        <div class="note-type-opt">SOCIAL WORK NOTE</div>
+        <div class="note-type-opt">PATIENT DISCHARGE INFORMATION AND EDUCATION NOTE</div>
+        <div class="note-type-opt">NO SHOW CLINIC NOTE</div>
+        <div class="note-type-opt">DEATH PRONOUNCEMENT NOTE</div>
+      </div>
+      <div class="note-dlg-field">
+        <label>Date/Time of Note:</label>
+        <input id="nn-datetime" value="Jun 29,2026@08:15" style="flex:1;border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff">
+        <button class="btn" style="padding:1px 4px">...</button>
+      </div>
+      <div class="note-dlg-field">
+        <label>Author:</label>
+        <select style="flex:1;border:2px inset #808080;padding:1px 3px;font-size:11px;background:#fff">
+          <option>Tran,George N - Attending Physician [NPI: 1730649146]</option>
+        </select>
+      </div>
+      <div class="note-dlg-field">
+        <label>Cosigner:</label>
+        <input value="" style="flex:1;border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff">
+      </div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="closeWin('new-note-dlg')">OK</button>
+      <button class="btn" onclick="closeWin('new-note-dlg')">Cancel</button>
+    </div>
+  </div>
+  <div class="float-win" id="encounter-dlg" style="width:520px;top:60px;left:150px">
+    <div class="fw-title" id="enc-drag-handle">
+      <span>Provider &amp; Location for Current Activities</span>
+      <span class="wb" onclick="closeWin('encounter-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body">
+      <div style="font-size:11px;font-weight:bold;margin-bottom:3px">Encounter Provider</div>
+      <div id="enc-prov-list">
+        <div class="enc-prov-opt sel">Tran,George N - Attending Physician [NPI: 1730649146]</div>
+        <div class="enc-prov-opt">Tran,Gina - Non-va Provider [NPI: 1306172424]</div>
+        <div class="enc-prov-opt">Tran,Hao - Tw Non-va Provider [NPI: 1891997078]</div>
+      </div>
+      <div style="font-size:11px;font-weight:bold;margin-top:8px;margin-bottom:3px">Encounter Location</div>
+      <input style="border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff;width:100%" value="&lt; Select a location from the tabs below... &gt;" readonly>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end"><button class="btn">Date Range...</button></div>
+      <div class="enc-visit-tabs">
+        <div class="enc-vtab active">Clinic Appointments</div>
+        <div class="enc-vtab">Hospital Admissions</div>
+        <div class="enc-vtab">New Visit</div>
+      </div>
+      <div style="border:2px inset #808080;background:#fff;height:100px;overflow-y:auto">
+        <table class="enc-tbl" id="enc-visit-tbl"></table>
+      </div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="closeWin('encounter-dlg')">OK</button>
+      <button class="btn" onclick="closeWin('encounter-dlg')">Cancel</button>
+    </div>
+  </div>
+</div>
+<div id="pt-dlg">
+  <div class="dlg-title">
+    <span>Patient Selection</span>
+    <span class="wb" onclick="closePtDialog()">&#10005;</span>
+  </div>
+  <div class="pt-dlg-body">
+    <div class="pt-dlg-top">
+      <div class="pt-list-box">
+        <b>Patient List</b>
+        <label><input type="radio" name="pl" checked> User List</label>
+        <label><input type="radio" name="pl"> Providers</label>
+        <label><input type="radio" name="pl"> Team/Personal</label>
+        <label><input type="radio" name="pl"> Specialties</label>
+        <label><input type="radio" name="pl"> Clinics</label>
+        <label><input type="radio" name="pl"> Wards</label>
+        <label><input type="radio" name="pl"> PCMM</label>
+        <label><input type="radio" name="pl"> All</label>
+      </div>
+      <div id="pt-search-wrap">
+        <div id="pt-search-label">Patients</div>
+        <input id="pt-search" autocomplete="off" oninput="fillPtList(this.value)">
+        <div id="pt-lb"></div>
+      </div>
+      <div id="pt-demo"><i style="color:#888">No patient selected</i></div>
+    </div>
+    <div class="pt-dlg-notif">
+      <div class="notif-tabs">
+        <div class="notif-tab active">Pending</div>
+        <div class="notif-tab">Processed</div>
+      </div>
+      <div style="padding:2px 4px;font-size:11px;font-weight:bold;background:#e8e8e8;border-bottom:1px solid #aaa;flex-shrink:0">Notifications</div>
+      <div class="notif-tbl-wrap">
+        <table class="notif-tbl">
+          <tr><th>Info</th><th>Patient</th><th>Location</th><th>Urgency</th><th>Alert Date/Time</th><th>Message</th><th>Forwarded By/When</th></tr>
+          <tr class="notif-sel"><td></td><td></td><td></td><td>Moderate</td><td>06/29/2026@02:52</td><td>UNSIGNED TICKLER/POST IT NOTE Dated 05/26/26 ...</td><td></td></tr>
+        </table>
+      </div>
+      <div class="notif-btn-row">
+        <button class="btn">Process Info</button>
+        <button class="btn">Process All</button>
+        <button class="btn">Process</button>
+        <button class="btn">Forward</button>
+        <button class="btn" disabled>Show Comments</button>
+        <button class="btn">Remove</button>
+        <button class="btn">Defer</button>
+      </div>
+    </div>
+  </div>
+  <div class="pt-dlg-footer">
+    <button class="btn" style="font-weight:bold;min-width:60px" onclick="confirmPtSelect()">OK</button>
+    <button class="btn" style="min-width:60px" onclick="closePtDialog()">Cancel</button>
+    <button class="btn" style="margin-left:6px">Save Settings</button>
+  </div>
+  <div id="pt-resize-handle"></div>
+</div>
+<div id="tabbar">
+  <div class="ctab active" id="tab-cover"    onclick="goTab('cover')">Cover Sheet</div>
+  <div class="ctab"        id="tab-problems" onclick="goTab('problems')">Problems</div>
+  <div class="ctab"        id="tab-meds"     onclick="goTab('meds')">Meds</div>
+  <div class="ctab"        id="tab-orders"   onclick="goTab('orders')">Orders</div>
+  <div class="ctab"        id="tab-notes"    onclick="goTab('notes')">Notes</div>
+  <div class="ctab"        id="tab-consults" onclick="goTab('consults')">Consults</div>
+  <div class="ctab"        id="tab-surgery"  onclick="goTab('surgery')">Surgery</div>
+  <div class="ctab"        id="tab-dcsum"    onclick="goTab('dcsum')">D/C Summ</div>
+  <div class="ctab"        id="tab-labs"     onclick="goTab('labs')">Labs</div>
+  <div class="ctab"        id="tab-reports"  onclick="goTab('reports')">Reports</div>
+</div>
+<div id="statusbar">
+  <div class="sbp" style="flex:2" id="sb1">Ready</div>
+  <div class="sbp" style="flex:3;color:#cc0000;font-weight:bold">READ ONLY -- EDUCATIONAL SIMULATION</div>
+  <div class="sbp" style="min-width:130px;text-align:right">06/29/2026 08:15</div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/render-cover.js"></script>
+<script src="js/render-problems.js"></script>
+<script src="js/render-meds.js"></script>
+<script src="js/render-orders.js"></script>
+<script src="js/render-notes.js"></script>
+<script src="js/render-consults.js"></script>
+<script src="js/render-labs.js"></script>
+<script src="js/render-reports.js"></script>
+<script src="js/render-dcsum.js"></script>
+<script src="js/render-surgery.js"></script>
+<script src="js/popups.js"></script>
+<script>
+// Init
+document.getElementById('rp-hdr').style.display='none';
+openPtDialog();
+</script>
+</body>
+</html>
