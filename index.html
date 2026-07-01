@@ -40,7 +40,7 @@
       <div class="dd-item dd-gray">Preferences</div>
     </div>
   </span>
-  <span class="mi" id="menu-view" onclick="toggleMenu('view')"><u>V</u>iew
+  <span class="mi" id="menu-view" onclick="buildViewMenu();toggleMenu('view')"><u>V</u>iew
     <div class="dropdown" id="dd-view">
       <div class="dd-item" onclick="goTab('cover');closeAllMenus()">Cover Sheet</div>
       <div class="dd-item" onclick="goTab('problems');closeAllMenus()">Problems</div>
@@ -78,7 +78,7 @@
     <div class="dropdown" id="dd-tools">
       <div class="dd-item dd-gray">Veteran Health Library</div>
       <div class="dd-item dd-gray">CPRS Training/Resources</div>
-      <div class="dd-item dd-gray">VistA Imaging Display</div>
+      <div class="dd-item" id="dd-vista-imaging" onclick="openVistaImaging();closeAllMenus()">VistA Imaging Display</div>
       <div class="dd-sep"></div>
       <div class="dd-item dd-gray">iMedConsent Web</div>
       <div class="dd-item dd-gray">Secure Messaging</div>
@@ -95,7 +95,7 @@
       <div class="dd-sep"></div>
       <div class="dd-item dd-gray">Graphing...<span class="dd-accel">Ctrl+G</span></div>
       <div class="dd-item dd-gray">Lab Test Information...</div>
-      <div class="dd-item dd-gray">Options...</div>
+      <div class="dd-item" onclick="openOptions()">Options...</div>
       <div class="dd-sep"></div>
       <div class="dd-item dd-gray">PDMP &#9658;</div>
     </div>
@@ -108,21 +108,23 @@
   </span>
 </div>
 <div id="pthdr">
-  <div id="ph-name">
+  <div id="ph-name" onclick="openPatientInquiry()" title="Patient Inquiry">
     <div class="pn" id="h-name">No Patient Selected</div>
     <div class="pm" id="h-meta">000-00-0000</div>
   </div>
-  <div id="ph-visit">
+  <div id="ph-visit" onclick="openEncounter()" title="Provider &amp; Location for Current Activities">
     <div class="pv1" id="h-visit1">&nbsp;</div>
     <div class="pv2" id="h-visit2">&nbsp;</div>
   </div>
-  <div id="ph-pact"><span id="h-pact">No PACT assigned at this VA location (Click for more)</span></div>
+  <div id="ph-pact" onclick="openPactInfo()"><span id="h-pact">No PACT assigned at this VA location (Click for more)</span></div>
   <div id="ph-btns">
-    <div class="hbtn"><span style="font-size:9px;font-weight:bold">PDMP</span><span style="font-size:8px">Query</span></div>
-    <div class="hbtn hbtn-red"><span style="font-size:9px;font-weight:bold">Flag</span></div>
-    <div class="hbtn"><span style="font-size:9px;font-weight:bold;color:#0000cc">JLV</span><span style="font-size:8px">Remote<br>Data</span></div>
+    <div class="hbtn" id="hbtn-pdmp" onclick="openPdmpQuery()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold">PDMP</span><span style="font-size:8px">Query</span></div>
+    <div class="hbtn"><span style="font-size:9px;font-weight:bold;color:#cc0000">Flag</span></div>
+    <div class="hbtn" id="hbtn-jlv" onclick="openJlvInfo()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold;color:#0000cc">JLV</span><span style="font-size:8px">Remote<br>Data</span></div>
     <div class="hbtn"><span style="font-size:13px">&#128247;</span></div>
-    <div class="hbtn" onclick="openPostings()" style="cursor:pointer"><span style="font-size:9px">Postings</span><span class="hbtn-cwad" id="h-cwad">&nbsp;</span></div>
+    <div class="hbtn" id="hbtn-postings" onclick="openPostings()" style="cursor:pointer"><span style="font-size:9px">Postings</span><span class="hbtn-cwad" id="h-cwad">&nbsp;</span></div>
+    <button id="tour-btn" onclick="startTour()" title="Take a guided chart orientation tour">? Tour</button>
+    <button id="tour-menu-btn" onclick="openTourPicker()" title="Choose a specific tutorial">&#9662;</button>
   </div>
 </div>
 <div id="banner" style="display:none"></div>
@@ -144,16 +146,44 @@
       <div class="rp-body" id="rp-body"></div>
     </div>
   </div>
-  <div class="float-win" id="vitals-win" style="width:720px;top:40px;left:40px">
+  <div class="float-win" id="vitals-win" data-display="flex" style="width:960px;height:560px;top:40px;left:40px;flex-direction:column;min-width:540px;min-height:360px">
     <div class="fw-title" id="vw-drag-handle">
       <span>Vitals Lite: Vitals for <span id="vw-ptname">Patient</span></span>
       <span class="wb" onclick="closeWin('vitals-win')">&#10005;</span>
     </div>
-    <div style="display:flex;overflow:hidden;height:380px">
+    <!-- sub-header: patient info + action buttons -->
+    <div class="vw-subhdr">
+      <div>
+        <div style="font-weight:bold;font-size:12px" id="vw-ptname2"></div>
+        <div style="font-size:11px">Hospital Location:</div>
+        <div style="font-size:10px" id="vw-daterange">From - To:</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="vw-action-btn" title="Entered in Error">
+          <div style="font-size:16px">&#9888;</div>
+          <div style="font-size:9px">Entered in Error</div>
+        </div>
+        <div class="vw-action-btn" title="Enter Vitals">
+          <div style="font-size:16px">&#128203;</div>
+          <div style="font-size:9px">Enter Vitals</div>
+        </div>
+        <div class="vw-action-btn" title="Allergies">
+          <div style="font-size:16px">&#9432;</div>
+          <div style="font-size:9px">Allergies</div>
+        </div>
+      </div>
+    </div>
+    <!-- main area -->
+    <div style="display:flex;flex:1;overflow:hidden">
+      <!-- left pane: period list + checkboxes -->
       <div class="vitals-left-pane">
         <div class="vt-period" onclick="vwSetPeriod(this)">TODAY</div>
         <div class="vt-period" onclick="vwSetPeriod(this)">T-1</div>
         <div class="vt-period" onclick="vwSetPeriod(this)">T-2</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-3</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-4</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-5</div>
+        <div class="vt-period" onclick="vwSetPeriod(this)">T-6</div>
         <div class="vt-period" onclick="vwSetPeriod(this)">T-7</div>
         <div class="vt-period" onclick="vwSetPeriod(this)">T-15</div>
         <div class="vt-period" onclick="vwSetPeriod(this)">T-30</div>
@@ -162,27 +192,36 @@
         <div class="vt-period" onclick="vwSetPeriod(this)">Two Years</div>
         <div class="vt-period sel" onclick="vwSetPeriod(this)">All Results</div>
         <div class="vt-period" onclick="vwSetPeriod(this)">DATE RANGE</div>
-      </div>
-      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
-        <div class="fw-tabs">
-          <div class="fw-tab active" onclick="vwTab('vitals',this)">Vitals</div>
-          <div class="fw-tab" onclick="vwTab('io',this)">Intake/Output</div>
+        <div class="vt-checks">
+          <label><input type="checkbox" id="vw-chk-values" checked onchange="vwRedraw()"> Values</label>
+          <label><input type="checkbox" id="vw-chk-timescale" checked> Time Scale</label>
+          <label><input type="checkbox"> 3D</label>
+          <label><input type="checkbox"> Allow Zoom</label>
         </div>
-        <div style="flex:1;overflow-y:auto;background:#fffff0;padding:4px" id="vw-pane"></div>
+      </div>
+      <!-- right: chart stacked above table -->
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div id="vw-chart-wrap" style="flex:1;min-height:100px;background:#fffff0;border-bottom:2px solid #aaa;position:relative;overflow:hidden">
+          <canvas id="vw-chart" style="width:100%;height:100%"></canvas>
+        </div>
+        <!-- bottom data section: vital dropdown on left, scrollable table -->
+        <div style="flex:0 0 200px;display:flex;overflow:hidden;background:#fffff0;border-top:1px solid #d0d0c0">
+          <div style="width:100px;border-right:1px solid #aaa;background:#e8e8e0;display:flex;flex-direction:column;justify-content:flex-start;padding:4px 2px;flex-shrink:0">
+            <select id="vw-vital-sel" class="btn" style="font-size:10px;width:96px;margin-bottom:4px" onchange="vwVitalChanged()">
+              <option value="t">Temperature</option>
+              <option value="hr">Pulse</option>
+              <option value="rr">Resp</option>
+              <option value="pox">P Ox %</option>
+              <option value="bp">B/P</option>
+              <option value="wt">Wt (lbs)</option>
+              <option value="pn">Pain</option>
+            </select>
+          </div>
+          <div id="vw-pane" style="flex:1;overflow:auto;background:#fffff0;padding:2px 4px"></div>
+        </div>
       </div>
     </div>
-    <div class="fw-footer" style="justify-content:space-between;align-items:center">
-      <div style="font-size:10px;color:#555;display:flex;gap:10px">
-        <label><input type="checkbox" checked> Values</label>
-        <label><input type="checkbox" checked> Time Scale</label>
-        <label><input type="checkbox"> 3D</label>
-        <label><input type="checkbox"> Allow Zoom</label>
-      </div>
-      <div style="display:flex;gap:4px">
-        <button class="btn">Entered in Error</button>
-        <button class="btn">Enter Vitals</button>
-      </div>
-    </div>
+    <div id="vw-resize-handle" style="position:absolute;right:0;bottom:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 0 50%,#808080 50% 60%,transparent 60% 70%,#808080 70% 80%,transparent 80%);z-index:401"></div>
   </div>
   <div class="float-win" id="postings-dlg" style="width:580px;top:60px;left:100px">
     <div class="fw-title" id="post-drag-handle">
@@ -195,6 +234,7 @@
         <tr><th style="width:160px">Agent</th><th style="width:80px">Severity</th><th>Signs / Symptoms</th></tr>
       </table>
       <div class="postings-sect-hdr" style="margin-top:6px">Crisis Notes, Warning Notes, Directives</div>
+      <div style="padding:3px 6px;font-size:10px;color:#555;font-style:italic;background:#f5f5f0;border-bottom:1px solid #eee">This is where to check whether a patient has an <b>Advance Directive</b> on file and any <b>Life-Sustaining Treatment (LST)</b> notes — both are high-yield to check on any new patient. Opening the actual directive document uses a different route, covered in its own short tutorial.</div>
       <div id="post-directives" style="background:#fff;padding:4px 6px;font-size:11px;min-height:60px;max-height:160px;overflow-y:auto"></div>
     </div>
     <div class="fw-footer"><button class="btn" onclick="closeWin('postings-dlg')">Close</button></div>
@@ -210,6 +250,56 @@
     <div class="fw-footer">
       <button class="btn" onclick="closeWin('order-details-dlg')">Print</button>
       <button class="btn" onclick="closeWin('order-details-dlg')">Close</button>
+    </div>
+  </div>
+  <div class="float-win" id="select-labs-dlg" style="width:580px;top:80px;left:200px">
+    <div class="fw-title" id="sl-drag-handle">
+      <span>Select Lab Tests</span>
+      <span class="wb" onclick="closeWin('select-labs-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="padding:8px;display:flex;flex-direction:column;gap:6px;min-height:360px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+        <span>Persons with defined Test Groups</span>
+        <select id="sl-person-sel" class="btn" style="font-size:11px;flex:1"><option>Tran,George N</option></select>
+        <button class="btn" style="font-size:11px">Define Test Groups</button>
+      </div>
+      <div style="display:flex;gap:8px;flex:1;min-height:0">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:bold">Test Groups</div>
+          <select id="sl-group-list" size="5" class="sl-listbox" style="flex:1;min-height:80px" onchange="slGroupSelected()"></select>
+          <div style="font-size:11px;font-weight:bold;margin-top:4px">Laboratory Tests</div>
+          <input id="sl-test-search" class="btn" style="font-size:11px;text-align:left" placeholder="Search..." oninput="slFilterTests()">
+          <div style="position:relative;flex:1;min-height:80px">
+            <select id="sl-test-list" size="6" class="sl-listbox" style="width:100%;height:100%"></select>
+          </div>
+          <div style="font-size:11px">Specimen: <select class="btn" style="font-size:11px"><option>Any</option><option>Blood</option><option>Urine</option><option>Serum</option></select></div>
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:4px">
+          <button class="btn" onclick="slAddTest()">Add &gt;</button>
+          <button class="btn" onclick="slRemoveAll()">Remove All</button>
+          <button class="btn" onclick="slRemoveOne()">Remove One</button>
+          <div style="display:flex;flex-direction:column;gap:2px;margin-top:8px;font-size:10px;color:#555">Arrange<br>order of<br>tests for<br>display.</div>
+          <button class="btn" onclick="slMoveUp()">&#9650;</button>
+          <button class="btn" onclick="slMoveDown()">&#9660;</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;width:160px">
+          <div style="font-size:11px;font-weight:bold">Tests to be displayed</div>
+          <select id="sl-display-list" size="10" class="sl-listbox" style="flex:1;width:100%"></select>
+        </div>
+      </div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="slOK()">OK</button>
+      <button class="btn" onclick="closeWin('select-labs-dlg')">Cancel</button>
+    </div>
+  </div>
+  <div class="float-win" id="order-menu-dlg" style="width:1000px;top:50px;left:80px">
+    <div class="fw-title" id="om-drag-handle">
+      <span id="om-title">Order Menu</span>
+      <button class="btn" onclick="closeWin('order-menu-dlg')">Done</button>
+    </div>
+    <div class="fw-body" style="padding:0">
+      <div id="om-menu-body" class="iw-menu-cols"></div>
     </div>
   </div>
   <div class="float-win" id="new-note-dlg" style="width:480px;top:60px;left:200px">
@@ -287,6 +377,302 @@
       <button class="btn" onclick="closeWin('encounter-dlg')">Cancel</button>
     </div>
   </div>
+  <div class="float-win" id="options-dlg" style="width:700px;top:60px;left:150px">
+    <div class="fw-title" id="opt-drag-handle">
+      <span>Options</span>
+      <span class="wb" onclick="closeWin('options-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-tabs">
+      <div class="fw-tab active" data-opt-tab="general" onclick="optTab('general')">General</div>
+      <div class="fw-tab" data-opt-tab="notif" onclick="optTab('notif')">Notifications</div>
+      <div class="fw-tab" data-opt-tab="ordchk" onclick="optTab('ordchk')">Order Checks</div>
+      <div class="fw-tab" data-opt-tab="lists" onclick="optTab('lists')">Lists/Teams</div>
+      <div class="fw-tab" data-opt-tab="notes" onclick="optTab('notes')">Notes</div>
+      <div class="fw-tab" data-opt-tab="reports" onclick="optTab('reports')">Reports</div>
+      <div class="fw-tab" data-opt-tab="graphs" onclick="optTab('graphs')">Graphs</div>
+      <div class="fw-tab" data-opt-tab="surrogates" onclick="optTab('surrogates')">Surrogates</div>
+      <div class="fw-tab" data-opt-tab="copypaste" onclick="optTab('copypaste')">Copy/Paste</div>
+    </div>
+    <div class="fw-body">
+      <div class="opt-panel active" id="opt-panel-general">
+        <div class="opt-row">
+          <div class="opt-row-icon">&#128197;</div>
+          <div class="opt-row-text"><b>Date Range defaults</b>Change the default date ranges for displaying patient information on your cover sheet.</div>
+          <div class="opt-row-btns"><button class="btn">Date Range Defaults...</button></div>
+        </div>
+        <div class="opt-row">
+          <div class="opt-row-icon">&#128203;</div>
+          <div class="opt-row-text"><b>Clinical Reminders</b>Configure and arrange which clinical reminders are displayed on your cover sheet.</div>
+          <div class="opt-row-btns"><button class="btn">Clinical Reminders...</button></div>
+        </div>
+        <div class="opt-row">
+          <div class="opt-row-icon">&#128221;</div>
+          <div class="opt-row-text"><b>Other Parameters</b>Configure chart tab setting.<br>Change display date range on Meds tab.<br>Change Encounter Appointments date range.</div>
+          <div class="opt-row-btns"><button class="btn">Other Parameters...</button></div>
+        </div>
+      </div>
+      <div class="opt-panel" id="opt-panel-notif"><div class="opt-placeholder">Not available in this simulation.</div></div>
+      <div class="opt-panel" id="opt-panel-ordchk"><div class="opt-placeholder">Not available in this simulation.</div></div>
+      <div class="opt-panel" id="opt-panel-lists">
+        <div class="opt-sect-hdr">Patient Selection defaults</div>
+        <div class="opt-row">
+          <div class="opt-row-icon">&#128100;</div>
+          <div class="opt-row-text">Change the defaults for selecting patients. If your List Source is Combination, the criteria is defined using Source Combinations.</div>
+          <div class="opt-row-btns">
+            <button class="btn">Patient Selection Defaults...</button>
+            <button class="btn">Source Combinations...</button>
+          </div>
+        </div>
+        <div class="opt-sect-hdr" style="margin-top:14px">Personal Lists and Teams</div>
+        <div class="opt-row">
+          <div class="opt-row-icon">&#128101;</div>
+          <div class="opt-row-text">Edit your personal lists of patients and diagnoses. View the teams you are on and the patients associated with those teams.</div>
+          <div class="opt-row-btns">
+            <button class="btn" id="opt-personal-lists-btn" onclick="openPersonalLists()">Personal Lists...</button>
+            <button class="btn">Personal Diagnoses List...</button>
+            <button class="btn">Teams Information...</button>
+          </div>
+        </div>
+      </div>
+      <div class="opt-panel" id="opt-panel-notes"><div class="opt-placeholder">Not available in this simulation.</div></div>
+      <div class="opt-panel" id="opt-panel-reports"><div class="opt-placeholder">Not available in this simulation.</div></div>
+      <div class="opt-panel" id="opt-panel-graphs"><div class="opt-placeholder">Not available in this simulation.</div></div>
+      <div class="opt-panel" id="opt-panel-surrogates"><div class="opt-placeholder">Not available in this simulation.</div></div>
+      <div class="opt-panel" id="opt-panel-copypaste"><div class="opt-placeholder">Not available in this simulation.</div></div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="closeWin('options-dlg')">OK</button>
+      <button class="btn" onclick="closeWin('options-dlg')">Cancel</button>
+    </div>
+  </div>
+  <div class="float-win" id="personal-lists-dlg" style="width:640px;top:80px;left:180px">
+    <div class="fw-title" id="pl-drag-handle">
+      <span>Personal Lists</span>
+      <span class="wb" onclick="closeWin('personal-lists-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body">
+      <div class="pl-top">
+        <div class="pl-select-by">
+          <b>Select patients by</b>
+          <label><input type="radio" name="plsb" checked> Patient</label>
+          <label><input type="radio" name="plsb" disabled> Specialty</label>
+          <label><input type="radio" name="plsb" disabled> Ward</label>
+          <label><input type="radio" name="plsb" disabled> List</label>
+          <label><input type="radio" name="plsb" disabled> Clinic</label>
+          <label><input type="radio" name="plsb" disabled> PCMM Team</label>
+          <label><input type="radio" name="plsb" disabled> Provider</label>
+        </div>
+        <div class="pl-hint">You can change your personal lists by adding or removing patients.</div>
+      </div>
+      <div class="pl-mid">
+        <div class="pl-patient-col">
+          <div class="pl-col-label">Patient:</div>
+          <input class="pl-search" id="pl-patient-search" autocomplete="off" oninput="plFilterPatients(this.value)">
+          <div class="pl-listbox" id="pl-patient-lb"></div>
+        </div>
+        <div class="pl-newlist-btns">
+          <button class="btn" onclick="openNewListDlg()">New List...</button>
+          <button class="btn" onclick="void 0">Delete List</button>
+        </div>
+        <div class="pl-lists-col">
+          <div class="pl-col-label">Personal Lists:</div>
+          <div class="pl-listbox" id="pl-lists-lb"></div>
+        </div>
+      </div>
+      <div class="pl-bottom">
+        <div class="pl-dual-col">
+          <div class="pl-col-label">Patients to add:</div>
+          <div class="pl-dual-box" id="pl-staged-lb"></div>
+        </div>
+        <div class="pl-mid-btns">
+          <button class="btn" onclick="plAddSelected()">Add</button>
+          <button class="btn" onclick="plAddAll()">Add All</button>
+          <button class="btn" onclick="plRemoveSelected()">Remove</button>
+          <button class="btn" onclick="plRemoveAll()">Remove All</button>
+          <button class="btn" onclick="plSaveChanges()">Save Changes</button>
+        </div>
+        <div class="pl-dual-col">
+          <div class="pl-col-label">Patients on personal list:</div>
+          <div class="pl-dual-box" id="pl-onlist-lb"></div>
+        </div>
+      </div>
+      <div class="pl-share">
+        Who should be able to see and use the selected list?
+        <label><input type="radio" name="plshare" checked> Myself only</label>
+        <label><input type="radio" name="plshare"> All CPRS users</label>
+      </div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="closeWin('personal-lists-dlg')">OK</button>
+      <button class="btn" onclick="closeWin('personal-lists-dlg')">Cancel</button>
+    </div>
+  </div>
+  <div class="float-win" id="new-list-dlg" style="width:340px;top:140px;left:260px">
+    <div class="fw-title" id="nl-drag-handle">
+      <span>New Personal List</span>
+      <span class="wb" onclick="closeWin('new-list-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body">
+      <div>Enter the name of a new personal list</div>
+      <input type="text" id="nl-name-input" autocomplete="off">
+      <div>Who should be able to see and use this list?</div>
+      <div style="margin-top:4px">
+        <label><input type="radio" name="nlshare" checked> Myself only</label>
+        <label style="margin-left:14px"><input type="radio" name="nlshare"> All CPRS users</label>
+      </div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="confirmNewList()">OK</button>
+      <button class="btn" onclick="closeWin('new-list-dlg')">Cancel</button>
+    </div>
+  </div>
+  <div class="float-win confirm-dlg" id="save-default-confirm-dlg" style="width:300px;top:180px;left:340px">
+    <div class="fw-title" id="sdc-drag-handle">
+      <span>Options</span>
+      <span class="wb" onclick="closeWin('save-default-confirm-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" id="sdc-body"></div>
+    <div class="fw-footer">
+      <button class="btn" onclick="confirmSaveDefaultList(true)">Yes</button>
+      <button class="btn" onclick="confirmSaveDefaultList(false)">No</button>
+    </div>
+  </div>
+  <div class="float-win" id="patient-inquiry-dlg" data-display="flex" style="width:640px;height:520px;top:50px;left:120px">
+    <div class="fw-title" id="pi-drag-handle">
+      <span>&#128100; Patient Inquiry</span>
+      <span class="wb" onclick="closeWin('patient-inquiry-dlg')">&#10005;</span>
+    </div>
+    <div class="pi-body" id="pi-body"></div>
+    <div class="fw-footer">
+      <button class="btn" onclick="void 0">Print</button>
+      <button class="btn" onclick="closeWin('patient-inquiry-dlg')">Close</button>
+    </div>
+    <div id="pi-resize-handle"></div>
+  </div>
+  <div class="float-win" id="pact-dlg" data-display="flex" style="width:560px;height:340px;top:60px;left:140px">
+    <div class="fw-title" id="pact-drag-handle">
+      <span>&#128100; Primary Care</span>
+      <span class="wb" onclick="closeWin('pact-dlg')">&#10005;</span>
+    </div>
+    <div class="pi-body" id="pact-body"></div>
+    <div class="fw-footer">
+      <button class="btn" onclick="void 0">Print</button>
+      <button class="btn" onclick="closeWin('pact-dlg')">Close</button>
+    </div>
+    <div id="pact-resize-handle"></div>
+  </div>
+  <div class="float-win confirm-dlg" id="jlv-dlg" style="width:380px;top:110px;left:220px">
+    <div class="fw-title" id="jlv-drag-handle">
+      <span>JLV - Joint Legacy Viewer</span>
+      <span class="wb" onclick="closeWin('jlv-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="font-size:11px">
+      <p>In real CPRS, this launches the <b>Joint Legacy Viewer (JLV)</b> in a separate browser window.</p>
+      <p>JLV pulls together records from <b>outside the VA</b> (community/non-VA care) and from <b>other VA facilities</b> — for example, records from Long Beach VA for a patient normally seen at Greater LA VA.</p>
+      <p style="color:#888;font-style:italic">Not available in this simulation.</p>
+    </div>
+    <div class="fw-footer"><button class="btn" onclick="closeWin('jlv-dlg')">Close</button></div>
+  </div>
+  <div class="float-win" id="vista-imaging-dlg" data-display="flex" style="width:760px;height:460px;top:40px;left:80px">
+    <div class="fw-title" id="vi-drag-handle">
+      <span>&#128247; VistA Imaging Display : <span id="vi-ptname"></span></span>
+      <span class="wb" onclick="closeWin('vista-imaging-dlg')">&#10005;</span>
+    </div>
+    <div class="vi-menubar">File&nbsp;&nbsp;&nbsp;Context&nbsp;&nbsp;&nbsp;Options&nbsp;&nbsp;&nbsp;View&nbsp;&nbsp;&nbsp;Reports&nbsp;&nbsp;&nbsp;Filters&nbsp;&nbsp;&nbsp;Layouts&nbsp;&nbsp;&nbsp;Help</div>
+    <div class="vi-toolbar">
+      <span class="vi-tbtn">&#128444;</span><span class="vi-tbtn">&#128209;</span><span class="vi-tbtn">&#128202;</span>
+      <span class="vi-tbtn">&#128463;</span><span class="vi-tbtn vi-icon-ekg" id="vi-btn-ekg" title="EKG Tracings">&#12336;</span><span class="vi-tbtn">&#128443;</span>
+    </div>
+    <div class="vi-patientbar">
+      <div class="vi-patient-name" id="vi-ptname2"></div>
+      <div class="vi-patient-meta" id="vi-ptmeta"></div>
+    </div>
+    <div class="vi-filtertabs"><span class="vi-ftab sel">Clinical All</span></div>
+    <div class="vi-tablewrap">
+      <table class="vi-tbl">
+        <thead><tr><th style="width:26px">Item</th><th>Site</th><th>Note Title</th><th>Procedure</th><th>Class</th><th>Type</th><th>Cap Dt</th></tr></thead>
+        <tbody id="vi-tbody"></tbody>
+      </table>
+    </div>
+    <div class="fw-footer"><button class="btn" onclick="closeWin('vista-imaging-dlg')">Close</button></div>
+  </div>
+  <div class="float-win" id="templates-dlg" data-display="flex" style="width:420px;height:420px;top:70px;left:160px">
+    <div class="fw-title" id="tpl-drag-handle">
+      <span>&#128193; / Templates</span>
+      <span class="wb" onclick="closeWin('templates-dlg')">&#10005;</span>
+    </div>
+    <div class="tpl-tree">
+      <div class="tpl-row lvl0"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>My Templates</div>
+      <div class="tpl-row lvl0"><span class="tpl-caret">&#9662;</span><span class="tpl-icon">&#128193;</span>SHARED TEMPLATES</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>TESTING</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>Active INPATIENT Medications</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>Active OUTPT\Pending\Expired meds</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>Active OUTPT\Pending\Expired meds w/supplies</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Administrative Medicine</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>ADMINISTRATIVE SIGNATURE</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Age-Friendly 4Ms</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Allergy/Immunology</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Ambulatory Surgery</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Anesthesia</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Attending Addenda</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>AUDIOLOGY</div>
+      <div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>BACC</div>
+    </div>
+    <div class="fw-footer"><button class="btn" onclick="closeWin('templates-dlg')">Close</button></div>
+  </div>
+  <div class="float-win" id="custom-view-dlg" style="width:520px;top:60px;left:140px">
+    <div class="fw-title" id="cv-drag-handle">
+      <span>List Selected Documents</span>
+      <span class="wb" onclick="closeWin('custom-view-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body cv-body">
+      <div class="cv-row">
+        <div class="cv-col">
+          <div class="cv-lbl">Status</div>
+          <div class="cv-listbox">
+            <div class="cv-opt sel">Signed documents (all)</div>
+            <div class="cv-opt">Unsigned documents</div>
+            <div class="cv-opt">Uncosigned documents</div>
+            <div class="cv-opt">Signed documents/author</div>
+            <div class="cv-opt">Signed documents/date range</div>
+          </div>
+        </div>
+        <div class="cv-col">
+          <div class="cv-lbl">Max Number to Return</div>
+          <input type="text" id="cv-max-return" class="cv-input" value="1000">
+        </div>
+      </div>
+      <div class="cv-row">
+        <div class="cv-col">
+          <div class="cv-lbl">Author:</div>
+          <input type="text" class="cv-input" disabled>
+          <div class="cv-listbox" style="margin-top:3px;height:60px;color:#888">(not modeled in this simulation)</div>
+        </div>
+        <div class="cv-col">
+          <div class="cv-lbl">Beginning Date</div>
+          <input type="text" class="cv-input" disabled>
+          <div class="cv-lbl" style="margin-top:6px">Ending Date</div>
+          <input type="text" class="cv-input" disabled>
+        </div>
+      </div>
+      <div class="cv-row">
+        <div class="cv-col">
+          <div class="cv-lbl">Where either of:</div>
+          <label class="cv-check"><input type="checkbox" checked disabled> Title</label>
+          <label class="cv-check"><input type="checkbox" disabled> Subject</label>
+        </div>
+        <div class="cv-col">
+          <div class="cv-lbl">Contains:</div>
+          <input type="text" id="cv-contains" class="cv-input" placeholder="e.g. Medicine">
+        </div>
+      </div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="clearCustomView()">Clear Sort/Group/Search</button>
+      <button class="btn" onclick="applyCustomView()">OK</button>
+      <button class="btn" onclick="closeWin('custom-view-dlg')">Cancel</button>
+    </div>
+  </div>
 </div>
 <div id="pt-dlg">
   <div class="dlg-title">
@@ -297,21 +683,32 @@
     <div class="pt-dlg-top">
       <div class="pt-list-box">
         <b>Patient List</b>
-        <label><input type="radio" name="pl" checked> User List</label>
-        <label><input type="radio" name="pl"> Providers</label>
-        <label><input type="radio" name="pl"> Team/Personal</label>
-        <label><input type="radio" name="pl"> Specialties</label>
-        <label><input type="radio" name="pl"> Clinics</label>
-        <label><input type="radio" name="pl"> Wards</label>
-        <label><input type="radio" name="pl"> PCMM</label>
-        <label><input type="radio" name="pl"> All</label>
+        <label><input type="radio" name="pl" id="pl-user" checked onchange="ptListModeChange('user')"> User List</label>
+        <label><input type="radio" name="pl" onchange="ptListModeChange('providers')"> Providers</label>
+        <label><input type="radio" name="pl" id="pl-team" onchange="ptListModeChange('team')"> Team/Personal</label>
+        <label><input type="radio" name="pl" onchange="ptListModeChange('specialties')"> Specialties</label>
+        <label><input type="radio" name="pl" onchange="ptListModeChange('clinics')"> Clinics</label>
+        <label><input type="radio" name="pl" onchange="ptListModeChange('wards')"> Wards</label>
+        <label><input type="radio" name="pl" onchange="ptListModeChange('pcmm')"> PCMM</label>
+        <label><input type="radio" name="pl" onchange="ptListModeChange('all')"> All</label>
+        <div id="pt-team-picker">
+          <div id="pt-team-picker-label">Team/Personal Lists</div>
+          <input id="pt-team-search" autocomplete="off" oninput="ptFilterTeams(this.value)">
+          <div id="pt-team-lb"></div>
+        </div>
       </div>
       <div id="pt-search-wrap">
-        <div id="pt-search-label">Patients</div>
-        <input id="pt-search" autocomplete="off" oninput="fillPtList(this.value)">
-        <div id="pt-lb"></div>
+        <div id="pt-patient-picker">
+          <div id="pt-patient-picker-label">Patients</div>
+          <input id="pt-search" autocomplete="off" oninput="fillPtList(this.value)">
+          <div id="pt-lb"></div>
+        </div>
+        <div id="pt-mode-unavailable" style="display:none;color:#888;font-style:italic;padding:8px 2px;font-size:11px">This filter type isn't modeled in this simulation.</div>
       </div>
-      <div id="pt-demo"><i style="color:#888">No patient selected</i></div>
+      <div class="pt-demo-col">
+        <div id="pt-demo"><i style="color:#888">No patient selected</i></div>
+        <button class="btn" id="pt-save-settings-btn" onclick="saveDefaultPtList()">Save Settings</button>
+      </div>
     </div>
     <div class="pt-dlg-notif">
       <div class="notif-tabs">
@@ -339,11 +736,10 @@
   <div class="pt-dlg-footer">
     <button class="btn" style="font-weight:bold;min-width:60px" onclick="confirmPtSelect()">OK</button>
     <button class="btn" style="min-width:60px" onclick="closePtDialog()">Cancel</button>
-    <button class="btn" style="margin-left:6px">Save Settings</button>
   </div>
   <div id="pt-resize-handle"></div>
 </div>
-<div id="tabbar">
+<div id="tabbar" style="display:none">
   <div class="ctab active" id="tab-cover"    onclick="goTab('cover')">Cover Sheet</div>
   <div class="ctab"        id="tab-problems" onclick="goTab('problems')">Problems</div>
   <div class="ctab"        id="tab-meds"     onclick="goTab('meds')">Meds</div>
@@ -357,7 +753,7 @@
 </div>
 <div id="statusbar">
   <div class="sbp" style="flex:2" id="sb1">Ready</div>
-  <div class="sbp" style="flex:3;color:#cc0000;font-weight:bold">READ ONLY -- EDUCATIONAL SIMULATION</div>
+  <div class="sbp" style="flex:3;color:#cc0000;font-weight:bold">READ ONLY -- EDUCATIONAL SIMULATION -- NO PHI</div>
   <div class="sbp" style="min-width:130px;text-align:right">06/29/2026 08:15</div>
 </div>
 <script src="js/data.js"></script>
@@ -373,10 +769,28 @@
 <script src="js/render-dcsum.js"></script>
 <script src="js/render-surgery.js"></script>
 <script src="js/popups.js"></script>
+<script src="js/personal-lists.js"></script>
+<script src="js/tutorial.js"></script>
 <script>
 // Init
 document.getElementById('rp-hdr').style.display='none';
 openPtDialog();
+if(typeof tourOnPageLoad==='function') tourOnPageLoad();
 </script>
+
+<div id="tour-clickblock"></div>
+<div id="tour-spotlight"></div>
+<div id="tour-spotlight-2"></div>
+<div id="tour-card" class="tour-card"></div>
+
+<div class="float-win" id="tour-picker-dlg" style="width:300px;top:90px;left:140px">
+  <div class="fw-title" id="tpk-drag-handle">
+    <span>Select a Tutorial</span>
+    <button class="tpk-close" onclick="closeWin('tour-picker-dlg')" title="Close">&times;</button>
+  </div>
+  <div class="fw-body" style="padding:6px 4px">
+    <div id="tpk-list"></div>
+  </div>
+</div>
 </body>
 </html>

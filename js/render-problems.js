@@ -16,11 +16,18 @@ function renderProblems(pt){
   rpHdr.textContent='Active Problems ('+pt.problems.length+' of '+pt.problems.length+')';
   var rpBody=document.getElementById('rp-body');
   rpBody.className='rp-body grid'; rpBody.style.padding='0'; rpBody.style.overflow='auto';
-  var html='<table class="prob" style="table-layout:fixed"><thead><tr><th style="width:22px">Stat...</th><th>Description</th><th style="width:80px">Onset Date</th><th style="width:80px">Last Upda...</th><th style="width:110px">Location</th></tr></thead><tbody>';
+  var html='<table class="prob" id="prob-tbl" style="table-layout:fixed"><thead><tr>'
+    +'<th style="width:22px">Stat...<span class="col-resize-handle"></span></th>'
+    +'<th>Description<span class="col-resize-handle"></span></th>'
+    +'<th style="width:80px">Onset Date<span class="col-resize-handle"></span></th>'
+    +'<th style="width:80px">Last Upda...<span class="col-resize-handle"></span></th>'
+    +'<th style="width:110px">Location</th>'
+    +'</tr></thead><tbody>';
   pt.problems.forEach(function(p){
     html+='<tr><td>'+p.s+'</td><td>'+p.d+(p.n?'<br><span style="padding-left:12px;color:#666;font-size:10px">'+p.n+'</span>':'')+'</td><td>'+(p.onset||'')+'</td><td>'+(p.upd||'')+'</td><td>'+(p.loc||'')+'</td></tr>';
   });
   html+='</tbody></table>';
   rpBody.innerHTML=html;
+  makeColumnsResizable(document.getElementById('prob-tbl'));
 }
 
