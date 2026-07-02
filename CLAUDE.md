@@ -11,6 +11,8 @@ Primary goal: trainees build a "search pattern" — muscle memory for where
 things live in the chart — not clinical decision-making practice. Secondary
 goal: rough pre-rounding workflow rehearsal.
 
+
+
 ## Hosting
 
 GitHub Pages serves this repo at a stable URL. WordPress embeds that URL via
