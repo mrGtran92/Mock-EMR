@@ -22,6 +22,9 @@ kowalski:{
     socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 268-4825",
     surrogateCM:"", surrogateCMPhone:""
   },
+  remoteSites:[
+    {name:"Raymond G. Murphy Vamc", station:"501", lastSeen:"Jun 18,26"},
+  ],
   allergies:[
     {agent:"Penicillin",sev:"Severe",signs:"Anaphylaxis; Hives; Throat Swelling"},
     {agent:"Sulfonamides",sev:"Moderate",signs:"Rash; Urticaria"},
@@ -208,6 +211,9 @@ chen:{
     socialWorker:"", socialWorkerPhone:"",
     surrogateCM:"", surrogateCMPhone:""
   },
+  remoteSites:[
+    {name:"VA Long Beach Healthcare System", station:"600", lastSeen:"May 22,26"},
+  ],
   allergies:[
     {agent:"Penicillin",sev:"Severe",signs:"Anaphylaxis; Throat Swelling; Urticaria"},
     {agent:"Codeine",sev:"Moderate",signs:"Nausea; Vomiting"},
@@ -352,6 +358,9 @@ okafor:{
     socialWorker:"Martinez,Elena LCSW", socialWorkerPhone:"(310) 268-4845",
     surrogateCM:"", surrogateCMPhone:""
   },
+  remoteSites:[
+    {name:"VA San Diego Healthcare System", station:"664", lastSeen:"Apr 09,26"},
+  ],
   allergies:[],
   postings:["NO KNOWN DRUG ALLERGIES (NKDA)"],
   problems:[
@@ -475,6 +484,9 @@ brennan:{
     socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 268-4855",
     surrogateCM:"", surrogateCMPhone:""
   },
+  remoteSites:[
+    {name:"VA Palo Alto Health Care System", station:"640", lastSeen:"Mar 30,26"},
+  ],
   allergies:[
     {agent:"Penicillin",sev:"Moderate",signs:"Rash; Urticaria"},
   ],
@@ -637,6 +649,9 @@ hayes:{
     socialWorker:"Thompson,Karen LCSW", socialWorkerPhone:"(310) 268-4826",
     surrogateCM:"", surrogateCMPhone:""
   },
+  remoteSites:[
+    {name:"VA Loma Linda Healthcare System", station:"605", lastSeen:"Jun 02,26"},
+  ],
   allergies:[],
   postings:["NO KNOWN DRUG ALLERGIES (NKDA)"],
   problems:[

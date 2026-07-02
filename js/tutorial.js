@@ -42,6 +42,8 @@ var TOUR_MODULES = [
   {id:'notes-tools', label:'Notes Tab Tools (Templates, Encounter, New Note)', run:function(){ startNotesToolsModule(); }},
   {id:'labs-views', label:'Labs Views (Most Recent, Overview, Worksheet)', run:function(){ startLabsViewsModule(); }},
   {id:'reports-views', label:'Reports Views (Imaging, Procedures, Pharmacy)', run:function(){ startReportsViewsModule(); }},
+  {id:'pdmp', label:'PDMP Query & Results', run:function(){ startPdmpModule(); }},
+  {id:'remote-data', label:'Remote Data (Other VA Facilities)', run:function(){ startRemoteDataModule(); }},
 ];
 
 // Finds a left-tree item (.ti) in a labs/reports panel by its visible label
@@ -264,13 +266,20 @@ var HEADER_TOUR_STEPS = [
     target: function(){ return document.getElementById('hbtn-pdmp'); },
     title: 'PDMP Query',
     html: '<p><b>PDMP Query</b> runs a check against the state Prescription Drug Monitoring Program — important before prescribing controlled substances like opioids.</p>'
-        + '<p>In real CPRS this takes a couple of clicks — after the query runs, the button relabels (something like <b>Query Results</b>) and clicking it again opens a small dialog with a few prompts; confirming that files a pended <b>State Prescription Drug Monitoring Program</b> note in the Notes tab. This simulation simplifies that to a single click that files the note directly.</p>'
+        + '<p>It\'s a two-click flow: the button relabels to <b>PDMP Results</b> once the query finishes, and clicking it again opens the full results and a pended note prompt. See the <b>PDMP Query & Results</b> module in this picker for the full walkthrough.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); },
     target: function(){ return document.getElementById('hbtn-jlv'); },
-    title: 'JLV / Remote Data',
+    title: 'JLV',
     html: '<p><b>JLV</b> (Joint Legacy Viewer) opens a browser window pulling in outside records — non-VA community care, or records from a different VA facility than the one currently shown.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); },
+    target: function(){ return document.getElementById('hbtn-remote-data'); },
+    title: 'Remote Data',
+    html: '<p><b>Remote Data</b> is a separate button from JLV — clicking it drops down a list of other VA facilities the patient has records at. Checking a site there makes its data available to pull up over in the Reports tab.</p>'
+        + '<p>See the <b>Remote Data</b> module in this picker for the full walkthrough.</p>'
   },
   {
     center: true,
@@ -327,6 +336,127 @@ var IMAGING_TOUR_STEPS = [
     before: function(){ closeTeachingPopups(); },
     title: 'Habit to Build',
     html: '<p>If a patient has a directive flagged in Postings, this is where you can find the Advance Directive(s).</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   PDMP QUERY & RESULTS TOUR STEPS
+   Standalone sub-tutorial covering the two-click PDMP Query →
+   PDMP Results flow and the pended note it can file.
+   --------------------------------------------------------- */
+var PDMP_TOUR_STEPS = [
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); goTab('notes'); if(currentPt) PTS[currentPt]._pdmpState='none'; if(typeof updatePdmpButton==='function') updatePdmpButton(); },
+    title: 'The State Prescription Drug Monitoring Program',
+    html: '<p>Before prescribing a controlled substance, check whether the patient has been filling controlled-substance prescriptions <b>outside the VA</b> — the state PDMP is the tool for that.</p>'
+        + '<p>In real CPRS this is a two-click flow. Let\'s walk through it.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('notes'); if(currentPt) PTS[currentPt]._pdmpState='none'; if(typeof updatePdmpButton==='function') updatePdmpButton(); },
+    target: function(){ return document.getElementById('hbtn-pdmp'); },
+    title: 'Click PDMP Query',
+    html: '<p>Clicking <b>PDMP Query</b> submits the request to the state PDMP gateway. The button briefly shows <b>Querying...</b> while it runs.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('notes'); if(currentPt) PTS[currentPt]._pdmpState='results'; if(typeof updatePdmpButton==='function') updatePdmpButton(); },
+    target: function(){ return document.getElementById('hbtn-pdmp'); },
+    title: 'Click PDMP Results',
+    html: '<p>Once the query finishes, the same button relabels to <b>PDMP Results</b>. Click it again to open the full results.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('notes'); if(currentPt){ PTS[currentPt]._pdmpState='results'; } if(typeof openPdmpResultsPopup==='function') openPdmpResultsPopup(); },
+    target: function(){ return document.getElementById('pdmp-results-dlg'); },
+    title: 'Reading the Results',
+    html: '<p>The results screen shows demographics, a <b>Summary</b> of prescription/prescriber counts (including narcotics and buprenorphine specifically), and a <b>Prescriptions</b> table of individual fills — all zero in this simulation, since no PDMP hits are modeled for any of the five patients.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('notes'); if(currentPt){ PTS[currentPt]._pdmpState='results'; } if(typeof openPdmpResultsPopup==='function') openPdmpResultsPopup(); },
+    target: function(){ return document.getElementById('pdmp-pend-panel'); },
+    title: 'Filing the Pended Note',
+    html: '<p>The panel at the bottom prompts you to pick a summary statement (or write your own) describing what the query found and whether it changes the plan.</p>'
+        + '<p><b>Done and Create Note</b> files a pended <b>STATE PRESCRIPTION DRUG MONITORING PROGRAM</b> note in the Notes tab using that statement. <b>Cancel Without Update</b> closes without filing anything.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); goTab('notes'); },
+    title: 'Habit to Build',
+    html: '<p>Query the PDMP before prescribing new or refilled opioids, benzodiazepines, or other controlled substances — and note what it did or didn\'t show, even if there\'s nothing concerning to report.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   REMOTE DATA TOUR STEPS
+   Standalone sub-tutorial covering the Remote Data dropdown
+   in the header and the matching Health Summary "Remote..."
+   report items in the Reports tab.
+   --------------------------------------------------------- */
+var REMOTE_DATA_TOUR_STEPS = [
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Remote Data vs. JLV',
+    html: '<p><b>Remote Data</b> is a distinct feature from JLV. JLV opens a separate viewer for outside records; <b>Remote Data</b> pulls records from a patient\'s <b>other VA facilities</b> directly into CPRS\'s own Reports tab.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); if(typeof toggleRemoteDataPanel==='function') toggleRemoteDataPanel(); },
+    target: function(){ return document.getElementById('remote-data-panel'); },
+    secondaryTarget: function(){ return document.getElementById('hbtn-remote-data'); },
+    title: 'Click Remote Data',
+    html: '<p>Clicking the <b>Remote Data</b> button (outlined in orange) drops down a small panel listing any other VA facility the patient has records at, each with a <b>Last Seen</b> date.</p>'
+  },
+  {
+    before: function(){
+      closeTeachingPopups();
+      if(currentPt){
+        var pt=PTS[currentPt];
+        if(pt.remoteSites && pt.remoteSites.length){ setRemoteSiteChecked(pt.remoteSites[0].name, true); }
+      }
+      if(typeof toggleRemoteDataPanel==='function') toggleRemoteDataPanel();
+    },
+    target: function(){ return document.getElementById('rdp-sites'); },
+    title: 'Check a Site',
+    html: '<p>Checking a site\'s box (like this one, now checked) makes that facility\'s data available to pull up in the Reports tab. Check as many sites as apply — <b>All Available Sites</b> selects them all at once.</p>'
+        + '<p>The <b>Non-VA Data may be Available</b> line is informational only — that\'s the JLV workflow, not Remote Data.</p>'
+  },
+  {
+    before: function(){
+      closeTeachingPopups();
+      if(currentPt){
+        var pt=PTS[currentPt];
+        if(pt.remoteSites && pt.remoteSites.length){ setRemoteSiteChecked(pt.remoteSites[0].name, true); }
+      }
+      goTab('reports');
+      var hs=_findTreeItem('#reports-left','Health Summary');
+      if(hs) hs.click();
+    },
+    target: function(){ return document.getElementById('reports-left'); },
+    title: 'Reports → Health Summary',
+    html: '<p>Over in the Reports tab, expand <b>Health Summary</b> in the left tree. Most of its items are Health Summary types this simulation doesn\'t model — but the ones prefixed <b>Remote</b> are what we just enabled.</p>'
+  },
+  {
+    before: function(){
+      closeTeachingPopups();
+      if(currentPt){
+        var pt=PTS[currentPt];
+        if(pt.remoteSites && pt.remoteSites.length){ setRemoteSiteChecked(pt.remoteSites[0].name, true); }
+      }
+      goTab('reports');
+      var el=_findTreeItem('#reports-left','Remote Clinical Data (1y)');
+      if(el) el.click();
+    },
+    target: function(){ return document.getElementById('remote-tabbar'); },
+    title: 'Reading the Remote Report',
+    html: '<p>The right pane opens with a <b>Local</b> tab plus one tab per site you checked. Click a site\'s tab to see a formatted summary pulled from that facility — demographics, allergies, active problems, and outpatient pharmacy in this report type.</p>'
+        + '<p><b>Remote Labs Long View</b> and <b>Remote Meds/Labs/Orders</b> are built out with their own real content too; the rest of the Remote-prefixed items show an honest "not modeled" placeholder.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Habit to Build',
+    html: '<p>If a patient mentions care at another VA — or you notice orders/meds that don\'t match what\'s in this chart — check Remote Data before assuming the record is incomplete.</p>'
         + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
   }
 ];
@@ -673,6 +803,16 @@ function startReportsViewsModule(){
   activateTourSteps(REPORTS_VIEWS_TOUR_STEPS, 'reports-views');
 }
 
+function startPdmpModule(){
+  ensureChartOpenForTour();
+  activateTourSteps(PDMP_TOUR_STEPS, 'pdmp');
+}
+
+function startRemoteDataModule(){
+  ensureChartOpenForTour();
+  activateTourSteps(REMOTE_DATA_TOUR_STEPS, 'remote-data');
+}
+
 function endTour(){
   _tourActive = false;
   document.getElementById('tour-clickblock').style.display = 'none';
@@ -697,7 +837,7 @@ function closeTeachingPopups(){
     closeWin('patient-inquiry-dlg');
     closeWin('pact-dlg');
     closeWin('jlv-dlg');
-    closeWin('remote-data-dlg');
+    if(typeof closeRemoteDataPanel==='function') closeRemoteDataPanel();
     closeWin('vista-imaging-dlg');
     closeWin('encounter-dlg');
     closeWin('postings-dlg');
@@ -706,6 +846,7 @@ function closeTeachingPopups(){
     closeWin('custom-view-dlg');
     closeWin('new-note-dlg');
     closeWin('select-labs-dlg');
+    closeWin('pdmp-results-dlg');
     closeWin('tour-picker-dlg');
   }
   if(typeof closePtDialog==='function' && currentPt) closePtDialog();

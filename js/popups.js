@@ -294,17 +294,89 @@ function _pactOutsideClick(e){
   }
 }
 
-function openPdmpQuery(){
+var PDMP_NOTE_TITLE='STATE PRESCRIPTION DRUG MONITORING PROGRAM';
+
+function updatePdmpButton(){
   if(!currentPt) return;
   var pt=PTS[currentPt];
-  var pdmpTitle='STATE PRESCRIPTION DRUG MONITORING PROGRAM';
-  var already=pt.notes.some(function(n){ return n.title===pdmpTitle; });
+  var l1=document.getElementById('hbtn-pdmp-l1'), l2=document.getElementById('hbtn-pdmp-l2');
+  if(!l1||!l2) return;
+  if(pt._pdmpState==='querying'){ l1.textContent='Querying'; l2.textContent='...'; }
+  else if(pt._pdmpState==='results'){ l1.textContent='PDMP'; l2.textContent='Results'; }
+  else { l1.textContent='PDMP'; l2.textContent='Query'; }
+}
+
+function handlePdmpClick(){
+  if(!currentPt) return;
+  var pt=PTS[currentPt];
+  if(pt._pdmpState==='results'){ openPdmpResultsPopup(); return; }
+  if(pt._pdmpState==='querying') return;
+  pt._pdmpState='querying';
+  updatePdmpButton();
+  setTimeout(function(){
+    if(currentPt && PTS[currentPt]===pt){
+      pt._pdmpState='results';
+      updatePdmpButton();
+    }
+  }, 1200);
+}
+
+function openPdmpResultsPopup(){
+  if(!currentPt) return;
+  var pt=PTS[currentPt];
+  var body=document.getElementById('pdmp-body');
+  body.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:baseline">'+
+      '<div><div style="font-size:15px;font-weight:bold">'+pt.name.toUpperCase()+'</div>'+
+      '<div>Age: '+pt.age+'</div></div>'+
+      '<div>Data as of: 06/20/2026</div>'+
+    '</div>'+
+    '<div class="pdmp-sect-hdr">Status of States Queried <a href="#" style="float:right;font-weight:normal;color:#0000cc" onclick="return false">View Details</a></div>'+
+    '<div class="pdmp-warn-banner"><span>&#9888;</span><div>The search did not find PMP data for '+pt.name.toUpperCase()+' ('+pt.dob+') in the state where your query was initiated (CA). If you believe a patient record should exist in the CA PMP, please search the CA PMP website where you may be allowed to enter different search criteria.</div></div>'+
+    '<div class="pdmp-sect-hdr">Demographics</div>'+
+    '<div class="pdmp-cols"><div><b>Report Criteria</b><br>First Name: '+pt.name.split(',')[1]+'<br>Last Name: '+pt.name.split(',')[0]+'<br>DOB: '+pt.dob+'</div></div>'+
+    '<div class="pdmp-sect-hdr">Summary</div>'+
+    '<div class="pdmp-cols">'+
+      '<div><b>Summary</b><br>Total Prescriptions: 0<br>Total Prescribers: 0<br>Total Pharmacies: 0</div>'+
+      '<div><b>Narcotics</b><br>Current Qty: 0<br>Current MME/day: 0.00<br>30 Day Avg MME/day: 0.00</div>'+
+      '<div><b>Buprenorphine</b><br>Current Qty: 0<br>Current mg/day: 0.00<br>30 Day Avg mg/day: 0.00</div>'+
+    '</div>'+
+    '<div class="pdmp-sect-hdr">Prescriptions</div>'+
+    '<div>Total Prescriptions: 0</div>'+
+    '<table class="pdmp-tbl"><tr><th>Fill Date</th><th>Drug</th><th>Qty</th><th>Days</th><th>Prescriber</th><th>Pharmacy</th></tr></table>';
+
+  document.getElementById('pdmp-last-query').textContent='Last prior PDMP query was completed on 1/9/2026.';
+  var already=pt.notes.some(function(n){ return n.title===PDMP_NOTE_TITLE; });
+  document.getElementById('pdmp-pend-options').innerHTML=
+    '<label><input type="radio" name="pdmp-opt" value="none" checked> No prescription(s) for controlled substances outside the VA were found in the last 90 days.</label>'+
+    '<label><input type="radio" name="pdmp-opt" value="noconcern"> Prescription(s) filled outside the VA in the last 90 days are noted. However, they do not raise significant safety concerns and do not influence the treatment plan at this time.</label>'+
+    '<label><input type="radio" name="pdmp-opt" value="discuss"> Prescription(s) filled outside the VA in the last 90 days are noted. Safety concerns will be discussed with the patient and documented as part of ongoing treatment planning.</label>'+
+    '<label><input type="radio" name="pdmp-opt" value="addressed"> Prescription(s) filled outside the VA are noted and will be addressed as follows:</label>';
+  document.getElementById('pdmp-pend-text').value='';
+  document.getElementById('pdmp-pend-panel').style.display = already ? 'none' : 'block';
+
+  showFloatWin('pdmp-results-dlg');
+  makeResizable('pdmp-results-dlg','pdmp-resize-handle');
+}
+
+function cancelPdmpWithoutUpdate(){
+  closeWin('pdmp-results-dlg');
+}
+
+function doneCreatePdmpNote(){
+  if(!currentPt) return;
+  var pt=PTS[currentPt];
+  var already=pt.notes.some(function(n){ return n.title===PDMP_NOTE_TITLE; });
   if(!already){
+    var opt=document.querySelector('input[name="pdmp-opt"]:checked');
+    var optText=opt ? opt.parentElement.textContent.trim() : 'No prescription(s) for controlled substances outside the VA were found in the last 90 days.';
+    var freeText=document.getElementById('pdmp-pend-text').value.trim();
     pt.notes.unshift({
-      date:'Jun 20,26', title:pdmpTitle, loc:'Automated Query', auth:'SYSTEM (PDMP Interface)',
-      body:'LOCAL TITLE: '+pdmpTitle+'\nDATE OF NOTE: JUN 20, 2026@09:15       STATUS: COMPLETED\nAUTHOR: SYSTEM (PDMP Interface)\n\nCalifornia CURES PDMP database queried prior to prescribing a\ncontrolled substance for '+pt.name+'.\n\nNo actionable controlled-substance dispensing history requiring\nprovider follow-up was identified in this simulation.\n\n[This is an automated placeholder note generated by the PDMP\nquery workflow -- in real CPRS, clicking PDMP Query doesn\'t show a\nconfirmation popup; it silently files a note like this documenting\nthat the check was performed.]'
+      date:'Jun 20,26', title:PDMP_NOTE_TITLE, loc:'1NO WORKLOAD', auth:'TRAN,GEORGE N',
+      body:'LOCAL TITLE: '+PDMP_NOTE_TITLE+'\nSTANDARD TITLE: ACCOUNTING OF DISCLOSURES NOTE\nDATE OF NOTE: JUN 20, 2026@09:23:31       ENTRY DATE: JUN 20, 2026@09:23:31\n     AUTHOR: TRAN,GEORGE N          EXP COSIGNER:\n     URGENCY:                       STATUS: UNSIGNED\n\nThis PDMP query was submitted by Tran,George N MD.\n\nThe clinical justification for this PDMP query is to review controlled\nsubstances prescribed outside of the VA, and any additional information\nthat may become available, as an important component of standard clinical\ncare, and in accordance with VHA policy.\n\nPatient information was shared with the PDMP Appriss Gateway.\n\n'+optText+(freeText?('\n\n'+freeText):'')
     });
   }
+  closeWin('pdmp-results-dlg');
   if(typeof currentTab!=='undefined' && currentTab==='notes' && typeof renderTab==='function') renderTab('notes');
 }
 function openJlvInfo(){
@@ -312,9 +384,53 @@ function openJlvInfo(){
   showFloatWin('jlv-dlg');
 }
 
-function openRemoteDataInfo(){
+function toggleRemoteDataPanel(){
   if(!currentPt) return;
-  showFloatWin('remote-data-dlg');
+  var panel=document.getElementById('remote-data-panel');
+  var isOpen=panel.style.display==='block';
+  if(isOpen){ closeRemoteDataPanel(); return; }
+  renderRemoteDataPanel();
+  panel.style.display='block';
+  document.removeEventListener('click', _remoteDataOutsideClick);
+  setTimeout(function(){ document.addEventListener('click', _remoteDataOutsideClick); }, 0);
+}
+function closeRemoteDataPanel(){
+  var panel=document.getElementById('remote-data-panel');
+  panel.style.display='none';
+  document.removeEventListener('click', _remoteDataOutsideClick);
+}
+function _remoteDataOutsideClick(e){
+  var panel=document.getElementById('remote-data-panel');
+  if(panel && panel.style.display!=='none' && !panel.contains(e.target) && !e.target.closest('#hbtn-remote-data')){
+    closeRemoteDataPanel();
+  }
+}
+function renderRemoteDataPanel(){
+  var pt=PTS[currentPt];
+  pt._remoteChecked = pt._remoteChecked || {};
+  var sites = pt.remoteSites||[];
+  var box=document.getElementById('rdp-sites');
+  box.innerHTML='';
+  sites.forEach(function(s){
+    var row=document.createElement('label'); row.className='rdp-site-row';
+    var checked = !!pt._remoteChecked[s.name];
+    row.innerHTML='<span><input type="checkbox" '+(checked?'checked':'')+' onchange="setRemoteSiteChecked(\''+s.name.replace(/'/g,"\\'")+'\', this.checked)"> '+s.name+'</span><span class="rdp-site-date">'+s.lastSeen+'</span>';
+    box.appendChild(row);
+  });
+  var allBox=document.getElementById('rdp-all');
+  allBox.checked = sites.length>0 && sites.every(function(s){ return pt._remoteChecked[s.name]; });
+}
+function setRemoteSiteChecked(name, checked){
+  var pt=PTS[currentPt];
+  pt._remoteChecked = pt._remoteChecked || {};
+  pt._remoteChecked[name] = checked;
+  renderRemoteDataPanel();
+}
+function toggleAllRemoteSites(box){
+  var pt=PTS[currentPt];
+  pt._remoteChecked = pt._remoteChecked || {};
+  (pt.remoteSites||[]).forEach(function(s){ pt._remoteChecked[s.name]=box.checked; });
+  renderRemoteDataPanel();
 }
 
 function showFloatWin(id){ var el=document.getElementById(id); el.style.display=el.dataset.display||'block'; makeDraggable(id); }

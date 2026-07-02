@@ -108,6 +108,7 @@ function loadPatient(id){
   document.getElementById('h-visit1').textContent=pt.workload;
   document.getElementById('h-visit2').textContent='Provider: '+pt.prov;
   document.getElementById('h-pact').textContent='No PACT assigned at this VA location (Click for more)';
+  if(typeof updatePdmpButton==='function') updatePdmpButton();
   document.getElementById('h-cwad').textContent=pt.cwad||'';
   var banner=document.getElementById('banner');
   if(pt.banner){ banner.style.display='block'; banner.textContent=pt.banner; }

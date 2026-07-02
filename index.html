@@ -118,11 +118,16 @@
   </div>
   <div id="ph-pact" onclick="openPactInfo()"><span id="h-pact">No PACT assigned at this VA location (Click for more)</span></div>
   <div id="ph-btns">
-    <div class="hbtn" id="hbtn-pdmp" onclick="openPdmpQuery()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold">PDMP</span><span style="font-size:8px">Query</span></div>
+    <div class="hbtn" id="hbtn-pdmp" onclick="handlePdmpClick()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold" id="hbtn-pdmp-l1">PDMP</span><span style="font-size:8px" id="hbtn-pdmp-l2">Query</span></div>
     <div class="hbtn"><span style="font-size:9px;font-weight:bold;color:#cc0000">Flag</span></div>
     <div class="hbtn-stack">
       <div class="hbtn-half" id="hbtn-jlv" onclick="openJlvInfo()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold;color:#0000cc">JLV</span></div>
-      <div class="hbtn-half" id="hbtn-remote-data" onclick="openRemoteDataInfo()" style="cursor:pointer"><span style="font-size:8px">Remote Data</span></div>
+      <div class="hbtn-half" id="hbtn-remote-data" onclick="toggleRemoteDataPanel()" style="cursor:pointer"><span style="font-size:8px">Remote Data</span></div>
+      <div id="remote-data-panel">
+        <label><input type="checkbox" id="rdp-all" onchange="toggleAllRemoteSites(this)"> All Available Sites</label>
+        <label class="rdp-nonva"><input type="checkbox" disabled> Non-VA Data may be Available - Use JLV to Access</label>
+        <div id="rdp-sites"></div>
+      </div>
     </div>
     <div class="hbtn"><span style="font-size:13px">&#128247;</span></div>
     <div class="hbtn" id="hbtn-postings" onclick="openPostings()" style="cursor:pointer"><span style="font-size:9px">Postings</span><span class="hbtn-cwad" id="h-cwad">&nbsp;</span></div>
@@ -576,16 +581,22 @@
     </div>
     <div class="fw-footer"><button class="btn" onclick="closeWin('jlv-dlg')">Close</button></div>
   </div>
-  <div class="float-win confirm-dlg" id="remote-data-dlg" style="width:380px;top:110px;left:220px">
-    <div class="fw-title" id="remote-data-drag-handle">
-      <span>Remote Data</span>
-      <span class="wb" onclick="closeWin('remote-data-dlg')">&#10005;</span>
+  <div class="float-win" id="pdmp-results-dlg" data-display="flex" style="width:900px;height:640px;top:20px;left:60px;flex-direction:column">
+    <div class="fw-title" id="pdmp-drag-handle">
+      <span>&#128203; Prescription Drug Monitoring Program Results</span>
+      <span class="wb" onclick="cancelPdmpWithoutUpdate()">&#10005;</span>
     </div>
-    <div class="fw-body" style="font-size:11px">
-      <p><b>Remote Data</b> is a separate button from <b>JLV</b> — it does something slightly different, though both live in the same corner of the header.</p>
-      <p style="color:#888;font-style:italic">Not yet detailed in this simulation.</p>
+    <div class="fw-body" style="flex:1;overflow-y:auto;font-size:11px" id="pdmp-body"></div>
+    <div class="pdmp-pend-panel" id="pdmp-pend-panel">
+      <div style="font-size:11px;font-weight:bold;margin-bottom:6px" id="pdmp-last-query"></div>
+      <div id="pdmp-pend-options"></div>
+      <textarea id="pdmp-pend-text" rows="2" style="width:100%;font-size:11px;margin-top:4px"></textarea>
     </div>
-    <div class="fw-footer"><button class="btn" onclick="closeWin('remote-data-dlg')">Close</button></div>
+    <div class="fw-footer">
+      <button class="btn" onclick="cancelPdmpWithoutUpdate()">Cancel Without Update</button>
+      <button class="btn" onclick="doneCreatePdmpNote()">Done and Create Note</button>
+    </div>
+    <div id="pdmp-resize-handle" style="position:absolute;right:0;bottom:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 0 50%,#808080 50% 60%,transparent 60% 70%,#808080 70% 80%,transparent 80%)"></div>
   </div>
   <div class="float-win" id="vista-imaging-dlg" data-display="flex" style="width:760px;height:460px;top:40px;left:80px">
     <div class="fw-title" id="vi-drag-handle">
