@@ -313,9 +313,8 @@ table.vi-tbl td{padding:2px 4px;border-bottom:1px solid #eee;white-space:nowrap}
 table.vi-tbl tr:hover td{background:#e8f0fb}
 .vi-icon-ekg{color:#cc0000;font-weight:bold}
 
-/* ===== NOTES TEMPLATES (decorative mockup) ===== */
-#templates-dlg{flex-direction:column;min-width:300px;min-height:220px}
-.tpl-tree{flex:1;overflow:auto;background:#fff;padding:4px 2px;font-size:11px}
+/* ===== NOTES TEMPLATES (decorative mockup, inline accordion) ===== */
+#tpl-accordion{overflow:auto;max-height:200px;background:#fff;border:1px solid #999;padding:4px 2px;font-size:11px}
 .tpl-row{padding:1px 4px;white-space:nowrap;cursor:default;display:flex;align-items:center;gap:2px}
 .tpl-row:hover{background:#e8f0fb}
 .tpl-row.lvl1{padding-left:20px}

@@ -351,10 +351,10 @@ var NOTES_TOOLS_TOUR_STEPS = [
     html: '<p>All three buttons sit at the bottom of the note list column, always visible regardless of which note you\'re currently viewing.</p>'
   },
   {
-    before: function(){ closeTeachingPopups(); goTab('notes'); showFloatWin('templates-dlg'); },
-    target: function(){ return document.getElementById('templates-dlg'); },
+    before: function(){ closeTeachingPopups(); goTab('notes'); var acc=document.getElementById('tpl-accordion'); if(acc && acc.style.display==='none') toggleTemplatesAccordion(); },
+    target: function(){ return document.getElementById('tpl-accordion'); },
     title: '/ Templates',
-    html: '<p><b>Templates</b> pre-populates a blank note with boilerplate text — either something you built yourself (<b>My Templates</b>) or one of CPRS\'s built-in <b>Shared Templates</b>, organized by specialty/service folder.</p>'
+    html: '<p><b>Templates</b> expands into a tree of boilerplate text you can insert into a note — either something you built yourself (<b>My Templates</b>) or one of CPRS\'s built-in <b>Shared Templates</b>, organized by specialty/service folder.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); goTab('notes'); showFloatWin('new-note-dlg'); },
@@ -701,7 +701,8 @@ function closeTeachingPopups(){
     closeWin('vista-imaging-dlg');
     closeWin('encounter-dlg');
     closeWin('postings-dlg');
-    closeWin('templates-dlg');
+    var tplAcc=document.getElementById('tpl-accordion'); if(tplAcc) tplAcc.style.display='none';
+    var tplBtn=document.getElementById('tpl-toggle-btn'); if(tplBtn) tplBtn.innerHTML='&#9656; Templates';
     closeWin('custom-view-dlg');
     closeWin('new-note-dlg');
     closeWin('select-labs-dlg');

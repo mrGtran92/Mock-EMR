@@ -28,7 +28,25 @@ function renderNotes(pt){
   });
   left.appendChild(tree);
   var ba=document.createElement('div'); ba.className='btn-area';
-  ba.innerHTML='<button class="btn" style="width:100%;text-align:center" onclick="showFloatWin(\'templates-dlg\')">/ Templates</button><button class="btn" style="width:100%;text-align:center" onclick="openEncounter()">Encounter</button><button class="btn" style="width:100%;text-align:center" onclick="showFloatWin(\'new-note-dlg\')">New Note</button>';
+  ba.innerHTML='<button class="btn" id="tpl-toggle-btn" style="width:100%;text-align:center" onclick="toggleTemplatesAccordion()">&#9656; / Templates</button>'+
+    '<div id="tpl-accordion" style="display:none">'+
+      '<div class="tpl-row lvl0"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>My Templates</div>'+
+      '<div class="tpl-row lvl0"><span class="tpl-caret">&#9662;</span><span class="tpl-icon">&#128193;</span>SHARED TEMPLATES</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>TESTING</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>Active INPATIENT Medications</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>Active OUTPT\\Pending\\Expired meds</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>Active OUTPT\\Pending\\Expired meds w/supplies</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Administrative Medicine</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret"></span><span class="tpl-icon">&#128209;</span>ADMINISTRATIVE SIGNATURE</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Age-Friendly 4Ms</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Allergy/Immunology</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Ambulatory Surgery</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Anesthesia</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>Attending Addenda</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>AUDIOLOGY</div>'+
+      '<div class="tpl-row lvl1"><span class="tpl-caret">&#9656;</span><span class="tpl-icon">&#128193;</span>BACC</div>'+
+    '</div>'+
+    '<button class="btn" style="width:100%;text-align:center" onclick="openEncounter()">Encounter</button><button class="btn" style="width:100%;text-align:center" onclick="showFloatWin(\'new-note-dlg\')">New Note</button>';
   left.appendChild(ba); outer.appendChild(left);
   var resizer=document.createElement('div'); resizer.id='notes-left-resizer';
   outer.appendChild(resizer);
@@ -102,6 +120,15 @@ function makeColumnsResizable(tbl){
       document.onmouseup=function(){ document.onmousemove=null; document.onmouseup=null; };
     };
   });
+}
+
+function toggleTemplatesAccordion(){
+  var acc=document.getElementById('tpl-accordion');
+  var btn=document.getElementById('tpl-toggle-btn');
+  if(!acc||!btn) return;
+  var open = acc.style.display!=='none';
+  acc.style.display = open ? 'none' : 'block';
+  btn.innerHTML = (open?'&#9656;':'&#9662;')+' / Templates';
 }
 
 function openCustomView(){
