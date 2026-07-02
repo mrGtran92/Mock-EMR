@@ -312,6 +312,11 @@ function openJlvInfo(){
   showFloatWin('jlv-dlg');
 }
 
+function openRemoteDataInfo(){
+  if(!currentPt) return;
+  showFloatWin('remote-data-dlg');
+}
+
 function showFloatWin(id){ var el=document.getElementById(id); el.style.display=el.dataset.display||'block'; makeDraggable(id); }
 function closeWin(id){ document.getElementById(id).style.display='none'; }
 function centerFloatWin(id){

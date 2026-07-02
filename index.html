@@ -120,7 +120,10 @@
   <div id="ph-btns">
     <div class="hbtn" id="hbtn-pdmp" onclick="openPdmpQuery()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold">PDMP</span><span style="font-size:8px">Query</span></div>
     <div class="hbtn"><span style="font-size:9px;font-weight:bold;color:#cc0000">Flag</span></div>
-    <div class="hbtn" id="hbtn-jlv" onclick="openJlvInfo()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold;color:#0000cc">JLV</span><span style="font-size:8px">Remote<br>Data</span></div>
+    <div class="hbtn-stack">
+      <div class="hbtn-half" id="hbtn-jlv" onclick="openJlvInfo()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold;color:#0000cc">JLV</span></div>
+      <div class="hbtn-half" id="hbtn-remote-data" onclick="openRemoteDataInfo()" style="cursor:pointer"><span style="font-size:8px">Remote Data</span></div>
+    </div>
     <div class="hbtn"><span style="font-size:13px">&#128247;</span></div>
     <div class="hbtn" id="hbtn-postings" onclick="openPostings()" style="cursor:pointer"><span style="font-size:9px">Postings</span><span class="hbtn-cwad" id="h-cwad">&nbsp;</span></div>
     <button id="tour-btn" onclick="startTour()" title="Take a guided chart orientation tour">? Tour</button>
@@ -573,6 +576,17 @@
     </div>
     <div class="fw-footer"><button class="btn" onclick="closeWin('jlv-dlg')">Close</button></div>
   </div>
+  <div class="float-win confirm-dlg" id="remote-data-dlg" style="width:380px;top:110px;left:220px">
+    <div class="fw-title" id="remote-data-drag-handle">
+      <span>Remote Data</span>
+      <span class="wb" onclick="closeWin('remote-data-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="font-size:11px">
+      <p><b>Remote Data</b> is a separate button from <b>JLV</b> — it does something slightly different, though both live in the same corner of the header.</p>
+      <p style="color:#888;font-style:italic">Not yet detailed in this simulation.</p>
+    </div>
+    <div class="fw-footer"><button class="btn" onclick="closeWin('remote-data-dlg')">Close</button></div>
+  </div>
   <div class="float-win" id="vista-imaging-dlg" data-display="flex" style="width:760px;height:460px;top:40px;left:80px">
     <div class="fw-title" id="vi-drag-handle">
       <span>&#128247; VistA Imaging Display : <span id="vi-ptname"></span></span>
@@ -753,7 +767,7 @@
 </div>
 <div id="statusbar">
   <div class="sbp" style="flex:2" id="sb1">Ready</div>
-  <div class="sbp" style="flex:3;color:#cc0000;font-weight:bold">READ ONLY -- EDUCATIONAL SIMULATION -- NO PHI</div>
+  <div class="sbp" style="flex:3;color:#cc0000;font-weight:bold;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3">READ ONLY -- EDUCATIONAL SIMULATION -- Created by George Tran, MD -- All patients, providers, and records shown are entirely fictional and do not represent real individuals or protected health information (PHI).</div>
   <div class="sbp" style="min-width:130px;text-align:right">06/29/2026 08:15</div>
 </div>
 <script src="js/data.js"></script>

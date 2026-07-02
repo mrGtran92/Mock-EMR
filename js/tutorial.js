@@ -172,7 +172,7 @@ var PERSONAL_LIST_TOUR_STEPS = [
     target: function(){ return document.getElementById('pt-save-settings-btn'); },
     title: 'Save Settings',
     html: '<p><b>Save Settings</b> sits just below the patient info panel on the right, above the Notifications section. Click it, then confirm <b>Yes</b> on the prompt that appears, and this dialog will open straight to that list every time you log in from now on — no more re-selecting Team/Personal each time.</p>'
-        + '<p><b>No</b> (or closing that prompt) just uses the list for this session without changing your default. That confirmation prompt is separate from the <b>OK</b>/<b>Cancel</b> buttons at the very bottom of the dialog, which are only for opening or canceling out of Patient Selection itself.</p>'
+        + '<p><b>No</b> (or closing that prompt) just uses the list for this session without changing your default.</p>'
   }
 ];
 
@@ -199,13 +199,13 @@ var MAR_TOUR_STEPS = [
     before: function(){ closeTeachingPopups(); goTab('orders'); },
     target: function(){ return document.querySelector('#orders-tbl tbody tr'); },
     title: 'Right-Click a Medication',
-    html: '<p><b>Right-click</b> any row under <b>Inpatient Medications</b> to open its context menu, then choose <b>Details...</b> — the same menu item used for any other order.</p>'
+    html: '<p><b>Right-click</b> any row under <b>Inpatient Medications</b> to open its context menu, then choose <b>Details...</b>.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); goTab('orders'); if(typeof showOrderDetails==='function') showOrderDetails(0); },
     target: function(){ return document.getElementById('order-details-dlg'); },
     title: 'Reading the MAR',
-    html: '<p>For a medication order, <b>Details...</b> opens its MAR instead of a plain order summary. Two things matter most:</p>'
+    html: '<p>For a medication order, <b>Details...</b> opens its MAR. Two things matter most:</p>'
         + '<p><b>Schedule Type</b> — <b>Continuous</b> means it\'s given on a fixed schedule (e.g. every 12 hours); <b>PRN</b> means it was only given as-needed, so gaps between doses are expected and not a missed dose.</p>'
         + '<p>Each entry also shows the exact <b>Administration Date</b>, plus <b>Units Ordered</b> vs. <b>Units GIVEN</b> — worth double-checking on high-risk meds like insulin or anticoagulants, and <b>Administered By</b> for who gave it.</p>'
   },
@@ -213,7 +213,7 @@ var MAR_TOUR_STEPS = [
     center: true,
     before: function(){ closeTeachingPopups(); },
     title: 'Habit to Build',
-    html: '<p>Before assuming a scheduled med was given on time — or that a PRN med wasn\'t needed overnight — pull up its MAR. This is especially worth checking for anticoagulants, insulin, and antibiotics with narrow dosing windows.</p>'
+    html: '<p>Before assuming a scheduled med was given on time — or that a PRN med wasn\'t needed overnight — pull up its MAR. This is especially worth checking for anticoagulants, insulin, opioids, and antibiotics with narrow dosing windows.</p>'
         + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
   }
 ];
@@ -264,7 +264,7 @@ var HEADER_TOUR_STEPS = [
     target: function(){ return document.getElementById('hbtn-pdmp'); },
     title: 'PDMP Query',
     html: '<p><b>PDMP Query</b> runs a check against the state Prescription Drug Monitoring Program — important before prescribing controlled substances like opioids.</p>'
-        + '<p>Clicking it doesn\'t show a confirmation popup in real CPRS — it silently files a <b>State Prescription Drug Monitoring Program</b> note in the Notes tab documenting that the check was performed. This simulation does the same.</p>'
+        + '<p>In real CPRS this takes a couple of clicks — after the query runs, the button relabels (something like <b>Query Results</b>) and clicking it again opens a small dialog with a few prompts; confirming that files a pended <b>State Prescription Drug Monitoring Program</b> note in the Notes tab. This simulation simplifies that to a single click that files the note directly.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); },
@@ -464,14 +464,14 @@ var REPORTS_VIEWS_TOUR_STEPS = [
     before: function(){ closeTeachingPopups(); goTab('reports'); var el=_findTreeItem('#reports-left','Imaging (local only)'); if(el) el.click(); },
     target: function(){ return _findTreeItem('#reports-left', 'Imaging (local only)'); },
     title: 'Imaging (local only)',
-    html: '<p><b>Imaging (local only)</b> lists radiology studies performed at this facility — CT, X-ray, echo, etc. — with the full read/impression loading in the pane below when you click a row.</p>'
+    html: '<p><b>Imaging (local only)</b> lists radiology studies performed at this facility — CT, X-ray, and similar studies — with the full read/impression loading in the pane below when you click a row.</p>'
         + '<p>This is the go-to spot for reading a radiologist\'s official interpretation of a study, as opposed to a clinician\'s note that just mentions the result in passing.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); goTab('reports'); var el=_findTreeItem('#reports-left','Procedures (local only)'); if(el) el.click(); },
     target: function(){ return _findTreeItem('#reports-left', 'Procedures (local only)'); },
     title: 'Procedures (local only)',
-    html: '<p><b>Procedures (local only)</b> holds GI and similar procedure reports — EGD, colonoscopy, and completed/pending echocardiograms. Click a row to load the full procedure note, including findings and any biopsies taken.</p>'
+    html: '<p><b>Procedures (local only)</b> holds GI and similar procedure reports — EGD, colonoscopy, and completed echocardiograms. Click a row to load the full procedure note, including findings and any biopsies taken.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); goTab('reports'); var cr=_findTreeItem('#reports-left','Clinical Reports'); if(cr) cr.click(); },
@@ -501,22 +501,30 @@ var CHART_TOUR_STEPS = [
         + '<p>Use <b>Next</b> to step through each section, or <b>Skip tour</b> to close it.</p>'
   },
   {
+    before: function(){ closeTeachingPopups(); },
     target: function(){ return document.getElementById('tour-btn'); },
     title: 'Replaying This Tour',
-    html: '<p>The <b>? Tour</b> button always replays the orientation tour for whatever screen you\'re on — the Patient Selection dialog or an open chart.</p>'
-        + '<p>The <b>&#9662;</b> dropdown next to it opens a picker with focused sub-tutorials — deeper dives into specific tabs and tools, including this same personal-list walkthrough on its own.</p>'
+    html: '<p>The <b>? Tour</b> button always replays this orientation tour for whatever screen you\'re on — the Patient Selection dialog or an open chart.</p>'
   },
   {
+    before: function(){ closeAllMenus(); openTourPicker(); },
+    target: function(){ return document.getElementById('tour-btn'); },
+    highlightTarget: function(){ return document.getElementById('tour-menu-btn'); },
+    secondaryTarget: function(){ return document.getElementById('tour-picker-dlg'); },
+    title: 'Focused Sub-Tutorials',
+    html: '<p>The <b>&#9662;</b> dropdown next to it opens a picker with focused sub-tutorials you can jump to directly — deeper dives into specific tabs and tools, instead of sitting through the whole orientation again.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); },
     target: function(){ return document.getElementById('pthdr'); },
     title: 'Patient Header',
     html: '<p>This bar is always visible and shows the current patient\'s name, MRN, date of birth, age, ward, attending provider, and visit info.</p>'
-        + '<p>The <b>Postings</b> button on the right opens a summary of allergies and active directives — always check this before reviewing medications.</p>'
+        + '<p>The <b>Postings</b> button on the right opens a summary of allergies, advance directives, and LST (Life-Sustaining Treatment) notes.</p>'
   },
   {
     target: function(){ return document.getElementById('tabbar'); },
     title: 'Chart Tabs',
     html: '<p>All CPRS navigation happens through these tabs. Each tab is a different section of the patient chart.</p>'
-        + '<p>The tab order matches real CPRS: Cover Sheet → Problems → Meds → Orders → Notes → Consults → Surgery → D/C Summ → Labs → Reports.</p>'
   }
 ].concat(PERSONAL_LIST_TOUR_STEPS, [
   {
@@ -533,13 +541,13 @@ var CHART_TOUR_STEPS = [
     title: 'Notes Tab',
     html: '<p>The Notes tab contains all clinical documentation — admission H&Ps, daily progress notes, procedure notes, and nursing notes.</p>'
         + '<p>The left column lists all notes by date, title, author, and location. Click any note to open the full text in the right pane.</p>'
-        + '<p><b>Habit to build:</b> read the most recent progress note first to understand yesterday\'s plan, then go back to the admission H&amp;P for the full story.</p>'
   },
   {
     tab: 'labs',
     target: function(){ return document.getElementById('tab-labs'); },
     title: 'Labs Tab',
     html: '<p>Lab results are organized into several views using the left panel. <b>Most Recent</b> (the default) shows the latest collection for each panel.</p>'
+        + '<p><b>Lab Overview</b> lists every individual specimen collected in the date range, one row per test per collection — useful for confirming exactly what was drawn and when.</p>'
         + '<p><b>Worksheet</b> lets you select specific tests and build a custom trending table with dates as rows and tests as columns.</p>'
         + '<p>Abnormal values are indicated by H or L in the Flag column — the value itself is always displayed in plain black text.</p>'
   },
@@ -554,15 +562,15 @@ var CHART_TOUR_STEPS = [
     tab: 'reports',
     target: function(){ return document.getElementById('tab-reports'); },
     title: 'Reports Tab',
-    html: '<p>The Reports tab contains structured report views not found in Notes — imaging reads, pharmacy profiles, and procedure reports such as endoscopy.</p>'
-        + '<p>Expand the accordion menus on the left to navigate. <b>Procedures (local only)</b> is where GI endoscopy and other procedure reports live.</p>'
+    html: '<p>The Reports tab contains many structured report views not found in Notes — for example, imaging reads, pharmacy profiles, and procedure reports.</p>'
+        + '<p>Expand the accordion menus on the left to navigate. <b>Procedures (local only)</b> is where procedure reports for things such as endoscopies or echocardiograms live.</p>'
   },
   {
     center: true,
     title: 'Suggested Pre-Rounding Workflow',
     html: '<p>A practical order to move through the chart before rounds:</p>'
         + '<ol class="tour-workflow-list">'
-        + '<li><b>Patient header</b> — confirm you have the right patient; check Postings for allergies and active directives.</li>'
+        + '<li><b>Patient header</b> — confirm you have the right patient; check Postings for allergies, advance directives, and life-sustaining treatment (LST) notes.</li>'
         + '<li><b>Cover Sheet</b> — get oriented: active problems, recent vitals, medication list at a glance.</li>'
         + '<li><b>Notes</b> — read the most recent progress note to know yesterday\'s plan before forming today\'s.</li>'
         + '<li><b>Labs</b> — trend the relevant panels; note any new abnormalities since the last note.</li>'
@@ -570,6 +578,13 @@ var CHART_TOUR_STEPS = [
         + '<li><b>Reports</b> — check for any new imaging reads or procedure results.</li>'
         + '</ol>'
         + '<p>Click <b>Finish</b> to close the tour. The <b>? Tour</b> button replays it any time.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Go Explore',
+    html: '<p>That\'s the guided part — from here, feel free to just click around the chart on your own. Try opening notes, right-clicking orders, poking at the header buttons, whatever looks interesting.</p>'
+        + '<p>If you want a deeper dive into any one area later, the <b>&#9662;</b> picker next to <b>? Tour</b> has focused sub-tutorials you can jump back into any time.</p>'
   }
 ]);
 
@@ -682,6 +697,7 @@ function closeTeachingPopups(){
     closeWin('patient-inquiry-dlg');
     closeWin('pact-dlg');
     closeWin('jlv-dlg');
+    closeWin('remote-data-dlg');
     closeWin('vista-imaging-dlg');
     closeWin('encounter-dlg');
     closeWin('postings-dlg');
@@ -689,6 +705,7 @@ function closeTeachingPopups(){
     closeWin('custom-view-dlg');
     closeWin('new-note-dlg');
     closeWin('select-labs-dlg');
+    closeWin('tour-picker-dlg');
   }
   if(typeof closePtDialog==='function' && currentPt) closePtDialog();
 }
