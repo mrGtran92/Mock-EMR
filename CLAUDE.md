@@ -11,14 +11,19 @@ Primary goal: trainees build a "search pattern" — muscle memory for where
 things live in the chart — not clinical decision-making practice. Secondary
 goal: rough pre-rounding workflow rehearsal.
 
-
-
 ## Hosting
 
 GitHub Pages serves this repo at a stable URL. WordPress embeds that URL via
 an iframe in a Custom HTML block. The site is static (no backend) — any file
 in this repo that's reachable from `index.html` is "live" once pushed to
 `main`.
+
+### Analytics
+
+- **Cloudflare Web Analytics is wired in** via a single `<script defer>` snippet in `index.html`'s `<head>` (right before `</head>`), added because the user wanted a rough sense of real-world usage without a heavier third-party tool or any cookies/consent-banner obligation. Token is tied to the `mrgtran92.github.io` hostname, set up via the JS-snippet (not DNS-proxy) method since GitHub Pages' shared `github.io` domain can't be added as a Cloudflare-managed domain.
+- **What it can and can't tell you**: this is pageview-only tracking (no event API on Cloudflare's free tier). Since the whole app is a single-page, JS-driven UI (tabs/dialogs never trigger a real navigation), the dashboard will show "the tool was opened N times" — it cannot show which tab, feature, or tutorial module got used. If per-feature usage data is ever wanted, that requires swapping to something with a real event model (e.g. GA4), accepting its cookie/consent tradeoffs.
+- **"Unique visitors" are really "unique visiting sessions,"** not a precise headcount of distinct humans — Cloudflare dedupes via a rotating anonymous fingerprint (IP+UA+daily salt, no persistent cookie), which correctly collapses same-session reload spam (e.g. the repo owner reloading the page 10x while testing shows as 1 visit) but will generally count the same real person as a "new" visit again the next day.
+- **Check usage** at `dash.cloudflare.com` → Analytics → Web analytics → the `mrgtran92.github.io` site entry, any time.
 
 ## File structure
 
@@ -384,3 +389,5 @@ In order of prior agreement:
 - Before pushing to `main`, open `index.html` locally to visually confirm — this is a UI-heavy project where visual regressions are easy to introduce silently.
 - Tour step content lives in `js/tutorial.js` in the `DIALOG_TOUR_STEPS` and `CHART_TOUR_STEPS` arrays. Edit those arrays to change tour content; the engine below them does not need to be touched.
 - **Don't use the in-app Preview tool (`preview_start`/browser preview) for this project.** It fails to launch reliably in this environment (a sandbox permission error unrelated to this codebase — its Python launcher can't call `os.getcwd()`). Skip straight to static/logical review of the diff instead of trying to spin up a live preview; the user will open `index.html` locally themselves to visually confirm changes.
+- **Deployment is manual, not via `git push` from this local clone.** The user uploads files directly through GitHub's web UI (drag-and-drop), which is why this local repo's git history has diverged from `origin/main` (GitHub shows "Add files via upload" commits this local clone never made/fetched). **Never assume all locally-modified files need re-uploading** — run `git fetch origin -q && git diff --stat origin/main` first to see exactly which files actually differ from what's live; often most files already match because an earlier upload covered them, and only the newest edit needs re-uploading.
+- **GitHub Pages deploys can fail for reasons outside this codebase** — a stuck-in-`queued` deploy that times out is a known symptom of a GitHub-side incident (check `githubstatus.com`); a Cloudflare dashboard action silently failing (e.g. a `401` on an internal API call, "Done" button reverting with no error) can similarly be a Cloudflare-side incident (check `cloudflarestatus.com`) rather than anything wrong with the setup. When something in this deploy/analytics pipeline breaks with no obvious local cause, check the relevant platform's status page before troubleshooting further.
