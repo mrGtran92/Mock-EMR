@@ -223,10 +223,14 @@ function splitValueUnit(raw){
 }
 function labColToDateTime(col){
   if(!col) return '';
-  if(!/^\d{2}\/\d{2}/.test(col)) return null; // not a date column
-  var pm=col.endsWith('PM');
-  var base=col.replace(/AM$|PM$/,'').trim();
-  return base+'/2026 '+(pm?'18:00':'06:00');
+  var m=col.match(/^(\d{2}\/\d{2})(?:\s+(.*))?$/);
+  if(!m) return null; // not a date column
+  var datePart=m[1], label=(m[2]||'').trim();
+  var isAmPm=/^(AM|PM)$/i.test(label);
+  var pm=/^PM$/i.test(label);
+  var time=pm?'18:00':'06:00';
+  var suffix=isAmPm?'':(label?' ('+label+')':'');
+  return datePart+'/2026 '+time+suffix;
 }
 function getPanelDate(panel){
   if(!panel||!panel.cols||!panel.cols.length) return '';

@@ -355,6 +355,9 @@ function openPdmpResultsPopup(){
   document.getElementById('pdmp-pend-text').value='';
   document.getElementById('pdmp-pend-panel').style.display = already ? 'none' : 'block';
 
+  var dlg=document.getElementById('pdmp-results-dlg');
+  dlg.style.top='20px';
+  dlg.style.left='60px';
   showFloatWin('pdmp-results-dlg');
   makeResizable('pdmp-results-dlg','pdmp-resize-handle');
 }
