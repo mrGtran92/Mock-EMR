@@ -65,17 +65,21 @@ function renderLabs(pt){
       return;
     } else if(sec==='most-recent'){
       hdr.textContent='Most Recent'; right.appendChild(hdr);
-      var mrIdx=pt.labs.length-1;
+      // Sort a copy chronologically (oldest->newest) rather than trusting pt.labs'
+      // authoring order in data.js, so Oldest/Previous/Next/Newest always behave
+      // correctly regardless of how a given patient's panels happen to be listed.
+      var mrPanels=pt.labs.slice().sort(function(a,b){ return (getPanelDate(a)||'')<(getPanelDate(b)||'')?-1:1; });
+      var mrIdx=mrPanels.length-1;
       var nav=document.createElement('div'); nav.className='labs-most-recent-nav';
       function renderMR(idx){
         nav.innerHTML='';
         var oldest=document.createElement('button'); oldest.className='btn'; oldest.textContent='<< Oldest'; oldest.onclick=function(){renderMR(0);};
         var prev=document.createElement('button'); prev.className='btn'; prev.textContent='< Previous'; if(idx===0) prev.disabled=true; prev.onclick=function(){if(idx>0)renderMR(idx-1);};
-        var next=document.createElement('button'); next.className='btn'; next.textContent='Next >'; if(idx>=pt.labs.length-1) next.disabled=true; next.onclick=function(){if(idx<pt.labs.length-1)renderMR(idx+1);};
-        var newest=document.createElement('button'); newest.className='btn'; newest.textContent='Newest >>'; newest.onclick=function(){renderMR(pt.labs.length-1);};
+        var next=document.createElement('button'); next.className='btn'; next.textContent='Next >'; if(idx>=mrPanels.length-1) next.disabled=true; next.onclick=function(){if(idx<mrPanels.length-1)renderMR(idx+1);};
+        var newest=document.createElement('button'); newest.className='btn'; newest.textContent='Newest >>'; newest.onclick=function(){renderMR(mrPanels.length-1);};
         [oldest,prev,next,newest].forEach(function(b){nav.appendChild(b);});
         var specimenLbl=document.createElement('span'); specimenLbl.style.cssText='margin-left:8px;font-size:11px;font-weight:bold';
-        var panel=pt.labs[idx];
+        var panel=mrPanels[idx];
         specimenLbl.textContent='Specimen: '+(panel.specimen||'SERUM'); nav.appendChild(specimenLbl);
         var t='<div style="font-size:11px;font-weight:bold;padding:2px 4px;background:#e8e8e8">Specimen: '+(panel.specimen||'SERUM')+'</div>';
         t+='<table class="labs-tbl" id="mr-tbl"><thead><tr>'
