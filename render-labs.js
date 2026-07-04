@@ -226,10 +226,16 @@ function labColToDateTime(col){
   var m=col.match(/^(\d{2}\/\d{2})(?:\s+(.*))?$/);
   if(!m) return null; // not a date column
   var datePart=m[1], label=(m[2]||'').trim();
+  var offsetH=0;
+  var offM=label.match(/^\+(\d+)h$/i);
+  if(offM) offsetH=parseInt(offM[1],10);
+  else if(/^Adm$/i.test(label)) offsetH=0;
   var isAmPm=/^(AM|PM)$/i.test(label);
   var pm=/^PM$/i.test(label);
-  var time=pm?'18:00':'06:00';
-  var suffix=isAmPm?'':(label?' ('+label+')':'');
+  var baseHour=pm?18:6;
+  var hour=(baseHour+offsetH)%24;
+  var time=(hour<10?'0':'')+hour+':00';
+  var suffix=(isAmPm||offM||/^Adm$/i.test(label))?'':(label?' ('+label+')':'');
   return datePart+'/2026 '+time+suffix;
 }
 function getPanelDate(panel){
