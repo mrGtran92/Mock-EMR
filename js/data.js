@@ -399,7 +399,7 @@ okafor:{
       {t:"ANION GAP",v:["24","18","14","11","8-12"],f:["H","H","H",""]},
       {t:"Creatinine",v:["1.4","1.1","1.0","0.9","0.7-1.2"],f:["H","","",""]},
     ]},
-    {name:"DIABETES WORKUP",cols:["Value","Reference"],rows:[
+    {name:"DIABETES WORKUP (06/19)",cols:["Value","Reference"],rows:[
       {t:"HbA1c",v:["11.4%","<5.7% normal"],f:["H"]},
       {t:"GAD-65 Antibody",v:["POSITIVE 148 IU/mL ***","Negative <5 IU/mL"],f:["H"]},
       {t:"C-Peptide (fast)",v:["0.2 ng/mL ***","0.8-3.9 ng/mL"],f:["L"]},

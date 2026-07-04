@@ -223,9 +223,9 @@ function splitValueUnit(raw){
 }
 function labColToDateTime(col){
   if(!col) return '';
-  var m=col.match(/^(\d{2}\/\d{2})(?:\s+(.*))?$/);
+  var m=col.match(/^(\d{2}\/\d{2})(?:\s*(.*))?$/);
   if(!m) return null; // not a date column
-  var datePart=m[1], label=(m[2]||'').trim();
+  var datePart=m[1], label=(m[2]||'').trim().replace(/^\((.*)\)$/,'$1');
   var offsetH=0;
   var offM=label.match(/^\+(\d+)h$/i);
   if(offM) offsetH=parseInt(offM[1],10);
@@ -251,7 +251,9 @@ function getPanelDate(panel){
     return d?labColToDateTime(d)||d+'/2026 06:00':'';
   }
   // Result/Reference panel: extract date from panel name e.g. "URINALYSIS (06/18)"
-  var m=panel.name.match(/\((\d{2}\/\d{2})\)/);
+  // or "ABG (06/19 17:20)" / "ARTERIAL BLOOD GAS (06/19 RA)" — tolerate trailing
+  // text inside the parens after the date.
+  var m=panel.name.match(/\((\d{2}\/\d{2})[^)]*\)/);
   return m?m[1]+'/2026 06:00':'';
 }
 function getPanelValIdx(panel){
@@ -340,6 +342,11 @@ function slOK(){
   var dateMap={};
   var allDates=[];
   pt.labs.forEach(function(panel){
+    // Skip panels that don't contain any of the selected tests at all,
+    // so unrelated panels (e.g. an ABG panel when BMP tests are selected)
+    // don't inject empty date rows into the trend table.
+    var panelHasSelected=panel.rows.some(function(r){return selectedTests.indexOf(r.t)>-1;});
+    if(!panelHasSelected) return;
     // Only iterate over true date columns (those matching MM/DD pattern)
     panel.cols.forEach(function(rawDt,di){
       var dt=labColToDateTime(rawDt);
