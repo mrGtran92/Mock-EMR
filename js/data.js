@@ -119,6 +119,12 @@ kowalski:{
      body:"Jun 19,26   (dc)  CARDIOLOGY CONSULT  Cons #: 9705112\n\nTo Service:   CARDIOLOGY\nDiagnosis:    Decompensated HFrEF (I50.20)\n\nASSESSMENT:\nDecompensated HFrEF from diuretic non-adherence. Troponin delta\nNEGATIVE -- not acute ischemia.\n\nRECOMMENDATIONS:\n1. Discharge on furosemide 60mg PO daily.\n2. Continue carvedilol. Do NOT hold.\n3. Add sacubitril/valsartan once AKI resolves, Cr <2.5.\n4. Cardiology clinic f/u within 2 weeks.\n\n/es/ NGUYEN,LINH MD\nSigned: 06/19/2026 17:00\nStatus: COMPLETE"},
   ],
   labs:[
+    {name:"BASIC METABOLIC PANEL",cols:["Value","Date","Ref"],rows:[
+      {t:"Sodium",v:["139","02/15","136-145"],f:[""]},
+      {t:"Potassium",v:["4.6","02/15","3.5-5.0"],f:[""]},
+      {t:"Creatinine",v:["1.6 H","02/15","0.6-1.2"],f:["H"]},
+      {t:"Glucose",v:["142 H","02/15","70-100"],f:["H"]},
+    ]},
     {name:"BASIC METABOLIC PANEL",cols:["06/18","06/19AM","06/19PM","06/20","Ref"],rows:[
       {t:"Sodium",v:["138","137","137","138","136-145"],f:["","","",""]},
       {t:"Potassium",v:["5.2","5.1","5.1","4.8","3.5-5.0"],f:["H","H","H",""]},
@@ -128,6 +134,8 @@ kowalski:{
       {t:"eGFR",v:["22","24","24","25",">60"],f:["L","L","L","L"]},
       {t:"Glucose",v:["218","196","188","174","70-100"],f:["H","H","H","H"]},
       {t:"Calcium",v:["8.1","8.0","8.1","8.2","8.5-10.2"],f:["L","L","L","L"]},
+      {t:"Magnesium",v:["1.9","--","--","--","1.6-2.6"],f:["","","",""]},
+      {t:"Phosphorus",v:["3.8","--","--","--","2.5-4.5"],f:["","","",""]},
     ]},
     {name:"COMPLETE BLOOD COUNT",cols:["06/18","06/20","Ref"],rows:[
       {t:"WBC",v:["8.2","7.9","4.5-11.0"],f:["",""]},
@@ -148,17 +156,15 @@ kowalski:{
       {t:"Blood",v:["1+","Negative"],f:["H"]},
       {t:"Casts",v:["GRANULAR CASTS PRESENT","None"],f:["H"]},
     ]},
-    {name:"HEPATIC / COMPREHENSIVE PANEL (06/18)",cols:["Value","Date","Ref"],rows:[
+    {name:"HEPATIC / COMPREHENSIVE PANEL",cols:["Value","Date","Ref"],rows:[
       {t:"AST (SGOT)",v:["44 U/L","06/18","10-40"],f:["H"]},
       {t:"ALT (SGPT)",v:["38 U/L","06/18","7-56"],f:[""]},
       {t:"Alkaline Phosphatase",v:["88 U/L","06/18","44-147"],f:[""]},
       {t:"Total Bilirubin",v:["1.2 mg/dL","06/18","0.2-1.2"],f:[""]},
       {t:"Albumin",v:["3.1 g/dL","06/18","3.5-5.0"],f:["L"]},
       {t:"Total Protein",v:["5.8 g/dL","06/18","6.3-8.2"],f:["L"]},
-      {t:"Magnesium",v:["1.9 mEq/L","06/18","1.6-2.6"],f:[""]},
-      {t:"Phosphorus",v:["3.8 mg/dL","06/18","2.5-4.5"],f:[""]},
     ]},
-    {name:"LIPID PANEL (06/18)",cols:["Value","Date","Ref"],rows:[
+    {name:"LIPID PANEL",cols:["Value","Date","Ref"],rows:[
       {t:"Total Cholesterol",v:["188 mg/dL","06/18","<200"],f:[""]},
       {t:"LDL Cholesterol",v:["104 mg/dL","06/18","<70 (HF/DM high risk)"],f:["H"]},
       {t:"HDL Cholesterol",v:["32 mg/dL","06/18",">40 (male)"],f:["L"]},
@@ -172,6 +178,11 @@ kowalski:{
     {dt:"06/18 18:00",t:"37.1 H",hr:"88",bp:"154/92 H",rr:"20",spo2:"92% 2L L",wt:"--",ht:"",pn:"0",pox:"92",qual:""},
     {dt:"06/18 22:00",t:"37.1",hr:"90 H",bp:"156/90 H",rr:"20 H",spo2:"92% 2L L",wt:"--",ht:"",pn:"1",pox:"92",qual:""},
     {dt:"06/18 11:50",t:"37.3 H",hr:"98 H",bp:"162/96 H",rr:"22 H",spo2:"91% RA L",wt:"101.2",ht:"69 in",pn:"2",pox:"91",qual:"SITTING"},
+    {dt:"05/15/26 10:00",t:"36.8",hr:"70",bp:"138/82",rr:"16",spo2:"97% RA",wt:"95.0",ht:"",pn:"0",pox:"97",qual:""},
+    {dt:"02/10/26 09:30",t:"36.7",hr:"74",bp:"142/86 H",rr:"16",spo2:"97% RA",wt:"93.5",ht:"",pn:"0",pox:"97",qual:""},
+    {dt:"10/05/25 10:15",t:"36.6",hr:"72",bp:"136/84",rr:"16",spo2:"98% RA",wt:"92.0",ht:"",pn:"0",pox:"98",qual:""},
+    {dt:"06/20/25 09:00",t:"36.8",hr:"76",bp:"140/88 H",rr:"16",spo2:"97% RA",wt:"91.5",ht:"",pn:"0",pox:"97",qual:""},
+    {dt:"01/12/25 09:45",t:"36.7",hr:"70",bp:"134/80",rr:"16",spo2:"98% RA",wt:"90.0",ht:"69 in",pn:"0",pox:"98",qual:""},
   ],
   io:[
     {dt:"06/20 (to 07:00)",po:"250",iv:"0",uo:"480",net:"-230"},
@@ -322,6 +333,11 @@ chen:{
      body:"Jun 19,26   (dc)  PULMONOLOGY CONSULT  Cons #: 9705220\n\nTo Service:   PULMONOLOGY\nDiagnosis:    COPD Exacerbation + Hypercapnic Respiratory Failure\n\nASSESSMENT:\nModerate-severe COPD exacerbation precipitated by pneumococcal\npneumonia. Acute-on-chronic hypercapnic respiratory failure.\n\nRECOMMENDATIONS:\n1. TARGET SpO2 88-92% STRICTLY. Avoid hyperoxia.\n2. BiPAP (IPAP 12/EPAP 5) if PaCO2 rises or pH <7.25.\n3. Repeat ABG in 12 hours.\n4. Smoking cessation: re-approach daily.\n\n/es/ WATTS,AISHA MD\nSigned: 06/19/2026 19:00\nStatus: COMPLETE"},
   ],
   labs:[
+    {name:"COMPLETE BLOOD COUNT",cols:["Value","Date","Ref"],rows:[
+      {t:"WBC",v:["7.8","03/01","4.5-11.0"],f:[""]},
+      {t:"HGB",v:["13.2","03/01","12.0-16.0"],f:[""]},
+      {t:"Platelets",v:["245","03/01","150-400"],f:[""]},
+    ]},
     {name:"COMPLETE BLOOD COUNT",cols:["06/19","06/20","Ref"],rows:[
       {t:"WBC",v:["14.2","13.8","4.5-11.0"],f:["H","H"]},
       {t:"Neutrophils",v:["88%","86%","50-70%"],f:["H","H"]},
@@ -335,7 +351,7 @@ chen:{
       {t:"Creatinine",v:["0.9","0.8","0.5-1.1"],f:["",""]},
       {t:"Glucose",v:["148","136","70-100"],f:["H","H"]},
     ]},
-    {name:"ARTERIAL BLOOD GAS (06/19 RA)",cols:["Value","Reference"],rows:[
+    {name:"ARTERIAL BLOOD GAS (06/19)",cols:["Value","Reference"],rows:[
       {t:"pH",v:["7.32","7.35-7.45"],f:["L"]},
       {t:"PaO2",v:["54 mmHg","75-100 mmHg"],f:["L"]},
       {t:"PaCO2",v:["54 mmHg","35-45 mmHg"],f:["H"]},
@@ -347,12 +363,12 @@ chen:{
       {t:"Urine Pneumococcal Ag",v:["POSITIVE ***","06/19","Negative"],f:["H"]},
       {t:"Blood Culture x2",v:["No growth x 48h -- FINAL","06/19","No growth"],f:[""]},
     ]},
-    {name:"MICROBIOLOGY -- SPUTUM (06/19)",cols:["Value","Date","Ref"],rows:[
+    {name:"MICROBIOLOGY -- SPUTUM",cols:["Value","Date","Ref"],rows:[
       {t:"Gram Stain",v:["GPD in pairs; >25 PMNs/LPF","06/19","Normal flora"],f:["H"]},
       {t:"Sputum Culture",v:["Streptococcus pneumoniae ***","06/19","No growth"],f:["H"]},
       {t:"Penicillin Sensitivity",v:["SUSCEPTIBLE","06/19","--"],f:[""]},
     ]},
-    {name:"ARTERIAL BLOOD GAS -- SERIAL",cols:["06/19 (RA)","06/20 (4L NC)","Ref"],rows:[
+    {name:"ARTERIAL BLOOD GAS -- SERIAL",cols:["06/19","06/20","Ref"],rows:[
       {t:"pH",v:["7.32","7.35","7.35-7.45"],f:["L",""]},
       {t:"PaO2",v:["54 mmHg","62 mmHg","75-100 mmHg"],f:["L","L"]},
       {t:"PaCO2",v:["54 mmHg","50 mmHg","35-45 mmHg"],f:["H","H"]},
@@ -364,6 +380,10 @@ chen:{
     {dt:"06/19 18:00",t:"37.8 H",hr:"100 H",bp:"134/82 H",rr:"22 H",spo2:"93% 4L",wt:"--",ht:"",pn:"0",pox:"93",qual:""},
     {dt:"06/19 10:00",t:"38.0 H",hr:"106 H",bp:"138/84 H",rr:"24 H",spo2:"92% 4L L",wt:"--",ht:"",pn:"0",pox:"92",qual:""},
     {dt:"06/19 03:50",t:"38.4 H",hr:"112 H",bp:"142/88 H",rr:"28 H",spo2:"88% RA L",wt:"64",ht:"67 in",pn:"3",pox:"88",qual:""},
+    {dt:"04/10/26 09:00",t:"36.9",hr:"84",bp:"132/80",rr:"18",spo2:"95% RA",wt:"63.5",ht:"",pn:"0",pox:"95",qual:""},
+    {dt:"12/08/25 10:30",t:"37.0",hr:"88",bp:"136/84",rr:"20",spo2:"94% RA",wt:"64.0",ht:"",pn:"0",pox:"94",qual:""},
+    {dt:"07/22/25 09:15",t:"36.8",hr:"82",bp:"128/78",rr:"18",spo2:"96% RA",wt:"63.0",ht:"",pn:"0",pox:"96",qual:""},
+    {dt:"02/14/25 09:45",t:"36.9",hr:"86",bp:"134/82",rr:"20",spo2:"95% RA",wt:"64.2",ht:"64 in",pn:"0",pox:"95",qual:""},
   ],
   io:[
     {dt:"06/20 (to 07:00)",po:"200",iv:"100",uo:"310",net:"-10"},
@@ -478,6 +498,11 @@ okafor:{
      body:"Jun 19,26   (dc)  ENDOCRINOLOGY CONSULT  Cons #: 9705330\n\nTo Service:   ENDOCRINOLOGY\nDiagnosis:    New-onset DKA, age 45, no prior DM history\n\nASSESSMENT:\nDKA as initial manifestation of autoimmune (type 1) DM.\nGAD-65 Ab 148 IU/mL (ref <5). C-peptide 0.2 ng/mL.\n\nCRITICAL: This is TYPE 1 DM, not type 2.\n  DO NOT USE: Metformin, sulfonylureas, SGLT2 inhibitors\n  (SGLT2i increase DKA risk in T1DM -- CONTRAINDICATED)\n\nRECOMMENDATIONS:\n1. Glargine 20 units SC QHS.\n2. Lispro: 1:15 CHO ratio + ISF 1:50.\n3. Dexcom G7 CGM at discharge.\n4. Endocrinology f/u within 1 WEEK.\n5. Medic alert bracelet recommended.\n\n/es/ PATEL,TARIQ MD\nSigned: 06/19/2026 21:15\nStatus: COMPLETE"},
   ],
   labs:[
+    {name:"WELLNESS LABS",cols:["Value","Date","Ref"],rows:[
+      {t:"Glucose",v:["94","01/20","70-100"],f:[""]},
+      {t:"Creatinine",v:["0.9","01/20","0.7-1.3"],f:[""]},
+      {t:"Total Cholesterol",v:["182","01/20","<200"],f:[""]},
+    ]},
     {name:"DKA PANEL -- SERIAL BMP",cols:["06/19 Adm","06/19 +6h","06/19 +12h","06/20","Ref"],rows:[
       {t:"Glucose",v:["642","380","218","142","70-100"],f:["H","H","H","H"]},
       {t:"Sodium",v:["132","136","138","138","136-145"],f:["L","","",""]},
@@ -504,13 +529,13 @@ okafor:{
       {t:"Ketones",v:["LARGE","Negative"],f:["H"]},
       {t:"Protein",v:["Trace","Negative"],f:[""]},
     ]},
-    {name:"THYROID / AUTOIMMUNE PANEL (06/19)",cols:["Value","Date","Ref"],rows:[
+    {name:"THYROID / AUTOIMMUNE PANEL",cols:["Value","Date","Ref"],rows:[
       {t:"TSH",v:["2.1 mIU/L","06/19","0.4-4.0"],f:[""]},
       {t:"Anti-TPO Antibody",v:["POSITIVE 142 IU/mL ***","06/19","<9 IU/mL"],f:["H"]},
       {t:"Anti-Thyroglobulin Ab",v:["POSITIVE 88 IU/mL ***","06/19","<4 IU/mL"],f:["H"]},
       {t:"tTG-IgA (Celiac screen)",v:["2.4 U/mL","06/19","<4.0 (Negative)"],f:[""]},
     ]},
-    {name:"LIPID PANEL (06/19)",cols:["Value","Date","Ref"],rows:[
+    {name:"LIPID PANEL",cols:["Value","Date","Ref"],rows:[
       {t:"Total Cholesterol",v:["248 mg/dL","06/19","<200"],f:["H"]},
       {t:"LDL Cholesterol",v:["138 mg/dL","06/19","<100 (DM)"],f:["H"]},
       {t:"HDL Cholesterol",v:["38 mg/dL","06/19",">40 (male)"],f:["L"]},
@@ -522,6 +547,8 @@ okafor:{
     {dt:"06/19 23:00",t:"37.1",hr:"94",bp:"120/76",rr:"18",spo2:"98% RA",wt:"--",ht:"",pn:"0",pox:"98",qual:""},
     {dt:"06/19 17:10",t:"37.4",hr:"112 H",bp:"122/78",rr:"24 H",spo2:"97% RA",wt:"82",ht:"70 in",pn:"4",pox:"97",qual:"KUSSMAUL RESP"},
     {dt:"06/19 11:00",t:"37.2",hr:"100 H",bp:"118/76",rr:"20 H",spo2:"98% RA",wt:"--",ht:"",pn:"2",pox:"98",qual:""},
+    {dt:"01/22/26 09:00",t:"36.7",hr:"74",bp:"122/78",rr:"16",spo2:"99% RA",wt:"86.0",ht:"",pn:"0",pox:"99",qual:""},
+    {dt:"11/14/24 09:30",t:"36.6",hr:"72",bp:"120/76",rr:"16",spo2:"99% RA",wt:"85.5",ht:"70 in",pn:"0",pox:"99",qual:""},
   ],
   io:[
     {dt:"06/20",po:"650",iv:"500",uo:"1400",net:"-250"},
@@ -670,6 +697,11 @@ brennan:{
      body:"Jun 16,26   (dc)  GENERAL SURGERY CONSULT  Cons #: 9705441\n\nTo Service:   GENERAL SURGERY\nRequesting:   PFEFFER,MICHAEL MD\nDiagnosis:    Acute sigmoid diverticulitis with pelvic abscess\n\nASSESSMENT:\nAcute complicated diverticulitis with abscess and peritoneal signs.\nSurgical emergency -- cannot be managed conservatively.\n\nRECOMMENDATIONS:\n1. Emergent OR for sigmoid colectomy + Hartmann's procedure.\n   Scheduled: 06/17/2026 0800.\n2. NPO from midnight. Pre-op labs and anesthesia evaluation.\n3. Continue pip-tazo pre-op and post-op.\n4. Informed consent obtained.\n\n/es/ VASQUEZ,ELENA MD\nGeneral Surgery\nSigned: 06/16/2026 21:30\nStatus: COMPLETE"},
   ],
   labs:[
+    {name:"BASIC METABOLIC PANEL",cols:["Value","Date","Ref"],rows:[
+      {t:"Glucose",v:["168 H","02/01","70-100"],f:["H"]},
+      {t:"Creatinine",v:["1.0","02/01","0.6-1.2"],f:[""]},
+      {t:"HbA1c",v:["9.4% H","02/01","<5.7%"],f:["H"]},
+    ]},
     {name:"COMPLETE BLOOD COUNT",cols:["06/18","06/19","06/20","Ref"],rows:[
       {t:"WBC",v:["16.8","11.0","8.9","4.5-11.0"],f:["H","H",""]},
       {t:"Hemoglobin",v:["15.5","14.8","14.2","13.5-17.5"],f:["","",""]},
@@ -686,7 +718,7 @@ brennan:{
       {t:"Glucose",v:["216","240","189","70-100"],f:["H","H","H"]},
       {t:"Anion Gap",v:["20","12","11","8-16"],f:["H","",""]},
     ]},
-    {name:"HEPATIC / METABOLIC PANEL (06/16)",cols:["Value","Date","Ref"],rows:[
+    {name:"HEPATIC / METABOLIC PANEL",cols:["Value","Date","Ref"],rows:[
       {t:"AST (SGOT)",v:["52 U/L","06/16","10-40"],f:["H"]},
       {t:"ALT (SGPT)",v:["68 U/L","06/16","7-56"],f:["H"]},
       {t:"Alkaline Phosphatase",v:["88 U/L","06/16","44-147"],f:[""]},
@@ -716,6 +748,9 @@ brennan:{
     {dt:"06/17 10:00",t:"37.8 H",hr:"110 H",bp:"146/86 H",rr:"16",spo2:"99% RA",wt:"--",ht:"",pn:"7",pox:"99",qual:"POST-OP"},
     {dt:"06/17 02:00",t:"39.0 H",hr:"98 H",bp:"142/88",rr:"16",spo2:"98% RA",wt:"--",ht:"",pn:"8",pox:"98",qual:"PRE-OP"},
     {dt:"06/16 18:00",t:"38.4 H",hr:"102 H",bp:"150/90 H",rr:"20 H",spo2:"98% RA",wt:"80.0",ht:"68 in",pn:"7",pox:"98",qual:""},
+    {dt:"03/15/26 09:00",t:"36.7",hr:"76",bp:"138/86",rr:"16",spo2:"98% RA",wt:"79.5",ht:"",pn:"0",pox:"98",qual:""},
+    {dt:"11/02/25 09:30",t:"36.8",hr:"78",bp:"140/88 H",rr:"16",spo2:"97% RA",wt:"80.2",ht:"",pn:"0",pox:"97",qual:""},
+    {dt:"06/12/25 10:00",t:"36.6",hr:"74",bp:"134/84",rr:"16",spo2:"98% RA",wt:"78.8",ht:"68 in",pn:"0",pox:"98",qual:""},
   ],
   io:[
     {dt:"06/20 (to 07:00)",po:"200",iv:"500",uo:"200",net:"+500"},
@@ -858,6 +893,11 @@ hayes:{
      body:"Jun 17,26   (dc)  ORTHOPEDIC SURGERY CONSULT  Cons #: 9705550\n\nTo Service:   ORTHOPEDIC SURGERY\nRequesting:   ANAND,PRIYA MD\nDiagnosis:    LLE fracture (nondisplaced fibula + 5th metatarsal base)\n\nASSESSMENT: Nondisplaced fractures. Conservative management.\n\nRECOMMENDATIONS:\n- NWB LLE strictly\n- Webril + ACE wrap; removable boot at discharge\n- Elevate LLE; ice 20 min q2h\n- Ortho clinic follow-up in 2 weeks\n\n/es/ HAMMOND,BRADLEY MD\nSigned: 06/17/2026 17:00\nStatus: COMPLETE"},
   ],
   labs:[
+    {name:"LIPID PANEL",cols:["Value","Date","Ref"],rows:[
+      {t:"Total Cholesterol",v:["244 H","01/10","<200"],f:["H"]},
+      {t:"LDL Cholesterol",v:["96","01/10","<100"],f:[""]},
+      {t:"Triglycerides",v:["232 H","01/10","<150"],f:["H"]},
+    ]},
     {name:"BASIC METABOLIC PANEL",cols:["06/17","06/18","Ref"],rows:[
       {t:"Sodium",v:["139","141","136-145"],f:["",""]},
       {t:"Potassium",v:["4.2","4.0","3.5-5.0"],f:["",""]},
@@ -869,6 +909,7 @@ hayes:{
       {t:"Glucose",v:["98","103","70-100"],f:["",""]},
       {t:"Calcium",v:["8.8","8.7","8.5-10.2"],f:["",""]},
       {t:"Magnesium",v:["1.9","1.8","1.6-2.6"],f:["",""]},
+      {t:"Phosphorus",v:["--","3.8","2.5-4.5"],f:["",""]},
     ]},
     {name:"COMPLETE BLOOD COUNT",cols:["06/17","06/18","Ref"],rows:[
       {t:"WBC",v:["7.2","6.5","4.5-11.0"],f:["",""]},
@@ -878,22 +919,21 @@ hayes:{
       {t:"Platelets",v:["285","277","150-400"],f:["",""]},
       {t:"Neutrophils %",v:["72%","75%","50-70%"],f:["H","H"]},
     ]},
-    {name:"CARDIAC / COAGULATION (06/17)",cols:["Value","Date","Ref"],rows:[
+    {name:"CARDIAC / COAGULATION",cols:["Value","Date","Ref"],rows:[
       {t:"Troponin I (hs)",v:["<0.012 ng/mL","06/17","<0.040"],f:[""]},
       {t:"BNP",v:["38 pg/mL","06/17","<100"],f:[""]},
       {t:"PT/INR",v:["1.1","06/17","0.8-1.2"],f:[""]},
       {t:"aPTT",v:["32 sec","06/17","25-35"],f:[""]},
     ]},
-    {name:"LIPID / METABOLIC PANEL (06/18)",cols:["Value","Date","Ref"],rows:[
+    {name:"LIPID / METABOLIC PANEL",cols:["Value","Date","Ref"],rows:[
       {t:"Total Cholesterol",v:["258 mg/dL","06/18","<200"],f:["H"]},
       {t:"LDL Cholesterol",v:["103 mg/dL","06/18","<100"],f:["H"]},
       {t:"HDL Cholesterol",v:["103 mg/dL","06/18",">50 (female)"],f:[""]},
       {t:"Non-HDL Cholesterol",v:["155 mg/dL","06/18","<130"],f:["H"]},
       {t:"Triglycerides",v:["258 mg/dL","06/18","<150"],f:["H"]},
       {t:"HbA1c",v:["5.6%","06/18","<5.7% (normal)"],f:[""]},
-      {t:"Phosphorus",v:["3.8 mg/dL","06/18","2.5-4.5"],f:[""]},
     ]},
-    {name:"THYROID / SPECIAL LABS (06/18)",cols:["Value","Date","Ref"],rows:[
+    {name:"THYROID / SPECIAL LABS",cols:["Value","Date","Ref"],rows:[
       {t:"TSH",v:["0.95 mIU/L","06/18","0.4-4.0"],f:[""]},
       {t:"Angiotensin Converting Enzyme",v:["80 U/L","06/18","16-85"],f:[""]},
       {t:"Vitamin D 25-OH",v:["28 ng/mL","06/18","30-100"],f:["L"]},
@@ -908,6 +948,9 @@ hayes:{
     {dt:"06/18 17:07",t:"36.3",hr:"52 L",bp:"119/50 L",rr:"12",spo2:"99% RA",wt:"--",ht:"",pn:"4",pox:"99",qual:"MOBITZ II AV BLOCK"},
     {dt:"06/18 13:38",t:"36.3",hr:"62",bp:"113/53 L",rr:"12",spo2:"98% RA",wt:"--",ht:"",pn:"4",pox:"98",qual:"NSR"},
     {dt:"06/17 12:04",t:"37.3",hr:"54 L",bp:"103/61 L",rr:"14",spo2:"99% RA",wt:"64.0",ht:"63 in",pn:"5",pox:"99",qual:"NSR"},
+    {dt:"02/14/26 10:00",t:"36.6",hr:"62",bp:"122/74",rr:"14",spo2:"99% RA",wt:"63.5",ht:"",pn:"0",pox:"99",qual:"NSR"},
+    {dt:"09/18/25 09:30",t:"36.7",hr:"60",bp:"126/76",rr:"14",spo2:"99% RA",wt:"64.2",ht:"",pn:"0",pox:"99",qual:"NSR"},
+    {dt:"04/02/25 09:15",t:"36.6",hr:"58",bp:"120/72",rr:"14",spo2:"99% RA",wt:"63.0",ht:"63 in",pn:"0",pox:"99",qual:"NSR"},
   ],
   io:[
     {dt:"06/20 (to 07:00)",po:"400",iv:"0",uo:"300",net:"+100"},
@@ -1034,8 +1077,15 @@ torres:{
   ],
   consults:[],
   labs:[
-    {name:"HEMOGLOBIN A1C (07/01)",cols:["Value","Date","Ref"],rows:[
+    {name:"HEMOGLOBIN A1C",cols:["Value","Date","Ref"],rows:[
       {t:"Hemoglobin A1c",v:["7.8%","07/01","<5.7% (normal)"],f:["H"]},
+    ]},
+    {name:"HEMOGLOBIN A1C",cols:["Value","Date","Ref"],rows:[
+      {t:"Hemoglobin A1c",v:["8.3% H","04/02","<5.7% (normal)"],f:["H"]},
+    ]},
+    {name:"BASIC METABOLIC PANEL",cols:["Value","Date","Ref"],rows:[
+      {t:"Glucose",v:["128 H","02/20","70-100"],f:["H"]},
+      {t:"Creatinine",v:["0.76","02/20","0.5-1.0 (female)"],f:[""]},
     ]},
     {name:"BASIC METABOLIC PANEL",cols:["07/01","Ref"],rows:[
       {t:"Sodium",v:["140","136-145"],f:[""]},
@@ -1047,7 +1097,7 @@ torres:{
       {t:"eGFR",v:[">60",">60"],f:[""]},
       {t:"Glucose",v:["132","70-100"],f:["H"]},
     ]},
-    {name:"LIPID PANEL (07/01)",cols:["Value","Date","Ref"],rows:[
+    {name:"LIPID PANEL",cols:["Value","Date","Ref"],rows:[
       {t:"Total Cholesterol",v:["168 mg/dL","07/01","<200"],f:[""]},
       {t:"LDL Cholesterol",v:["88 mg/dL","07/01","<100"],f:[""]},
       {t:"HDL Cholesterol",v:["52 mg/dL","07/01",">50 (female)"],f:[""]},
@@ -1056,6 +1106,10 @@ torres:{
   ],
   vitals:[
     {dt:"07/06 10:30",t:"36.7",hr:"76",bp:"138/86",rr:"14",spo2:"98% RA",wt:"78.5",ht:"163 cm",pn:"0",pox:"98",qual:""},
+    {dt:"04/02/26 10:00",t:"36.6",hr:"78",bp:"142/88 H",rr:"14",spo2:"98% RA",wt:"79.0",ht:"",pn:"0",pox:"98",qual:""},
+    {dt:"02/20/25 09:30",t:"36.7",hr:"74",bp:"136/84",rr:"14",spo2:"98% RA",wt:"79.8",ht:"",pn:"0",pox:"98",qual:""},
+    {dt:"08/19/25 11:00",t:"36.6",hr:"76",bp:"130/82",rr:"14",spo2:"99% RA",wt:"79.2",ht:"",pn:"0",pox:"99",qual:""},
+    {dt:"06/18/24 09:15",t:"36.7",hr:"72",bp:"128/80",rr:"14",spo2:"99% RA",wt:"77.6",ht:"163 cm",pn:"0",pox:"99",qual:""},
   ],
   io:[],
   imaging:[

@@ -10,6 +10,7 @@ function openVitalsWin(){
   if(dr&&vitals.length) dr.textContent='From - To: '+(vitals[vitals.length-1].dt||'')+'  –  '+(vitals[0].dt||'');
   vwRedraw();
   showFloatWin('vitals-win');
+  centerFloatWin('vitals-win');
   makeResizable('vitals-win','vw-resize-handle');
   if(!_vwResizeObs && window.ResizeObserver){
     _vwResizeObs=new ResizeObserver(function(){ vwDrawChart(); });
@@ -47,8 +48,11 @@ function vwFilteredVitals(){
   else if(label==='Six Months') days=180;
   else if(label==='One Year') days=365;
   else if(label==='Two Years') days=730;
-  if(days===null) return vitals;
-  return vitals.slice(0,Math.min(days,vitals.length));
+  // pt.vitals is stored newest-first, but the table/chart both display
+  // oldest on the left and newest on the right (real CPRS convention) --
+  // reverse to chronological order after taking the N most recent entries.
+  var recent=days===null?vitals:vitals.slice(0,Math.min(days,vitals.length));
+  return recent.slice().reverse();
 }
 function vwGetNumeric(v,key){
   if(key==='t') return parseFloat(v.t);
@@ -381,10 +385,8 @@ function openPdmpResultsPopup(){
   document.getElementById('pdmp-pend-text').value='';
   document.getElementById('pdmp-pend-panel').style.display = already ? 'none' : 'block';
 
-  var dlg=document.getElementById('pdmp-results-dlg');
-  dlg.style.top='20px';
-  dlg.style.left='60px';
   showFloatWin('pdmp-results-dlg');
+  centerFloatWin('pdmp-results-dlg');
   makeResizable('pdmp-results-dlg','pdmp-resize-handle');
 }
 

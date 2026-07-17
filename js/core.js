@@ -144,7 +144,16 @@ function confirmPtSelect(){
   if(!selectedPtId){ closePtDialog(); return; }
   closePtDialog(); loadPatient(selectedPtId);
 }
+// Every floating dialog in the app (.float-win) plus the anchored Remote
+// Data panel, closed unconditionally. Called whenever a new patient chart
+// loads so a popup left open on the previous patient (Options, VistA
+// Imaging, PDMP Results, etc.) can't linger into the newly-opened chart.
+function closeAllFloatWins(){
+  document.querySelectorAll('.float-win').forEach(function(el){ el.style.display='none'; });
+  if(typeof closeRemoteDataPanel==='function') closeRemoteDataPanel();
+}
 function loadPatient(id){
+  closeAllFloatWins();
   var pt=PTS[id]; currentPt=id;
   document.getElementById('h-name').textContent=pt.name+' ('+(pt.sex==='MALE'?'M':'F')+')';
   document.getElementById('h-meta').textContent=pt.mrn+'  '+pt.dob+' ('+pt.age+')';

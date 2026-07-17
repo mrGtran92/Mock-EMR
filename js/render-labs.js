@@ -1,7 +1,18 @@
+// Maps the Labs toolbar's Date Range radio to how many of the patient's most
+// recent panels to show -- an approximation (same convention already used by
+// the Vitals popup's period filter), since panel dates in this app's data
+// don't carry a year and can't be safely compared to a real calendar range.
+var _LABS_RANGE_COUNTS={'Today':1,'1 Week':2,'1 Month':4,'6 Months':6,'1 Year':8,'2 Years':10};
+function _labsFilterPanels(pt,rangeLabel){
+  var sorted=pt.labs.slice().sort(function(a,b){ return (getPanelDate(a)||'')<(getPanelDate(b)||'')?1:-1; }); // newest first
+  var n=_LABS_RANGE_COUNTS[rangeLabel];
+  return n?sorted.slice(0,n):sorted;
+}
 function renderLabs(pt){
   document.getElementById('left-pane').style.display='none';
   document.getElementById('right-pane').style.display='none';
   var mp=document.getElementById('main-panes');
+  var _labsRange=null;
   var outer=document.createElement('div'); outer.id='labs-outer';
   var left=document.createElement('div'); left.id='labs-left';
   var lh=document.createElement('div'); lh.className='labs-lp-hdr'; lh.textContent='Lab Results'; left.appendChild(lh);
@@ -46,10 +57,20 @@ function renderLabs(pt){
     right.innerHTML='';
     if(sec!=='worksheet') closeWin('select-labs-dlg');
     var toolbar=document.createElement('div'); toolbar.className='labs-toolbar';
+    var rangeFilterable=['overview','most-recent'].indexOf(sec)>-1;
     if(['worksheet','overview','micro','most-recent','selected','alltests'].indexOf(sec)>-1){
-      toolbar.innerHTML='<label><input type="radio" name="ldr" checked> Date Range...</label><label><input type="radio" name="ldr"> Today</label><label><input type="radio" name="ldr"> 1 Week</label><label><input type="radio" name="ldr"> 1 Month</label><label><input type="radio" name="ldr"> 6 Months</label><label><input type="radio" name="ldr"> 1 Year</label><label><input type="radio" name="ldr"> 2 Years</label><label><input type="radio" name="ldr"> All Results</label>';
+      var rangeLabels=['Date Range...','Today','1 Week','1 Month','6 Months','1 Year','2 Years','All Results'];
+      toolbar.innerHTML=rangeLabels.map(function(lbl){
+        var isChecked=(_labsRange===lbl)||(_labsRange===null&&lbl==='Date Range...');
+        return '<label><input type="radio" name="ldr" data-lbl="'+lbl+'"'+(isChecked?' checked':'')+'> '+lbl+'</label>';
+      }).join('');
     }
     if(toolbar.innerHTML) right.appendChild(toolbar);
+    if(rangeFilterable){
+      Array.prototype.forEach.call(toolbar.querySelectorAll('input[name="ldr"]'),function(r){
+        r.onchange=function(){ _labsRange=(r.dataset.lbl==='Date Range...')?null:r.dataset.lbl; labsSection(sec); };
+      });
+    }
     var hdr=document.createElement('div'); hdr.className='labs-hdr';
     var body=document.createElement('div'); body.style.cssText='flex:1;overflow-y:auto;background:#fffff0;padding:4px 6px';
 
@@ -68,7 +89,9 @@ function renderLabs(pt){
       // Sort a copy chronologically (oldest->newest) rather than trusting pt.labs'
       // authoring order in data.js, so Oldest/Previous/Next/Newest always behave
       // correctly regardless of how a given patient's panels happen to be listed.
-      var mrPanels=pt.labs.slice().sort(function(a,b){ return (getPanelDate(a)||'')<(getPanelDate(b)||'')?-1:1; });
+      // _labsFilterPanels applies the Date Range toolbar selection (newest-first),
+      // so reverse it back to oldest->newest for this view's nav order.
+      var mrPanels=_labsFilterPanels(pt,_labsRange).slice().reverse();
       var mrIdx=mrPanels.length-1;
       var nav=document.createElement('div'); nav.className='labs-most-recent-nav';
       function renderMR(idx){
@@ -106,6 +129,7 @@ function renderLabs(pt){
       right.appendChild(nav); right.appendChild(body);
       renderMR(mrIdx);
     } else if(sec==='overview'){
+      var ovPanels=_labsFilterPanels(pt,_labsRange);
       hdr.textContent='Lab Overview (Collected Specimens) [From: EARLIEST to Jun 29, 2026]'; right.appendChild(hdr);
       var ovTop=document.createElement('div'); ovTop.style.cssText='flex:1;overflow-y:auto;background:#fffff0;font-family:Arial';
       var ovBot=document.createElement('div'); ovBot.style.cssText='height:240px;overflow-y:auto;border-top:2px solid #808080;background:#fffff0;padding:4px 8px;font-family:"Courier New",monospace;font-size:11px;white-space:pre-wrap;flex-shrink:0';
@@ -120,7 +144,7 @@ function renderLabs(pt){
         +'<th style="width:75px">Status<span class="col-resize-handle"></span></th>'
         +'<th style="width:25px">[+]</th>'
         +'</tr></thead><tbody>';
-      pt.labs.forEach(function(p,pi){
+      ovPanels.forEach(function(p,pi){
         var dt=getPanelDate(p)||'06/20/2026 06:00';
         t2+='<tr class="labs-ov-row" data-idx="'+pi+'"><td>'+dt+'</td><td>'+p.name+'</td><td></td><td>'+(p.specimen||'SERUM')+'</td><td>'+(p.provider||'TORRES')+'</td><td>COMPLETED</td><td style="color:#0000cc">[+]</td></tr>';
       });
@@ -133,7 +157,7 @@ function renderLabs(pt){
         tr.onclick=function(){
           ovTop.querySelectorAll('.labs-ov-row').forEach(function(r){r.classList.remove('sel');});
           tr.classList.add('sel');
-          var panel=pt.labs[parseInt(tr.dataset.idx)];
+          var panel=ovPanels[parseInt(tr.dataset.idx)];
           var dt=getPanelDate(panel)||'06/20/2026 06:00';
           var txt='Results\n'+panel.name+'\n\nCollection time: '+dt+'\n\n';
           txt+='  Test Name                      Result      Units       Range\n';
@@ -287,6 +311,7 @@ function openSelectLabsDlg(pt,body,hdr,commentPane){
   });
   document.getElementById('sl-display-list').innerHTML='';
   showFloatWin('select-labs-dlg');
+  centerFloatWin('select-labs-dlg');
   makeDraggable('select-labs-dlg');
 }
 function slGroupSelected(){

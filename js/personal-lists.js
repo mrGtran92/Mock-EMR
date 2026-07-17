@@ -7,9 +7,10 @@ var PT_LABELS = {
   chen:    'Chen,Margaret L            0059-2241    09/02/1967',
   okafor:  'Okafor,Emmanuel C          0071-5530    02/27/1981',
   brennan: 'Brennan,Daniel T           0083-6420    03/14/1974',
-  hayes:   'Hayes,Patricia A           0096-4471    02/04/1955'
+  hayes:   'Hayes,Patricia A           0096-4471    02/04/1955',
+  torres:  'Torres,Elena M             0104-3392    08/22/1967'
 };
-var PT_KEYS = ['kowalski','chen','okafor','brennan','hayes'];
+var PT_KEYS = ['kowalski','chen','okafor','brennan','hayes','torres'];
 
 var PERSONAL_LISTS = [
   {name:'Gt 2 North', patients:[]},
@@ -130,9 +131,14 @@ function plRenderOnList(){
 function plAddSelected(){
   if(plSelectedListIdx===null) return;
   var list = PERSONAL_LISTS[plSelectedListIdx];
-  var sel = document.querySelectorAll('#pl-staged-lb .selected');
-  sel.forEach(function(el){
-    var k = el.dataset.key;
+  // Clicking a patient in the search box only stages it -- it doesn't also
+  // mark it .selected, so requiring an explicit highlight before Add works
+  // means a single staged patient (the common case) needs two clicks to add
+  // instead of one. Fall back to acting on every staged patient when none
+  // are explicitly highlighted; an explicit highlight still narrows it down.
+  var selEls = document.querySelectorAll('#pl-staged-lb .selected');
+  var keys = selEls.length ? Array.prototype.map.call(selEls, function(el){ return el.dataset.key; }) : plStaged.slice();
+  keys.forEach(function(k){
     if(list.patients.indexOf(k)===-1) list.patients.push(k);
     plStaged = plStaged.filter(function(x){ return x!==k; });
   });
@@ -152,8 +158,13 @@ function plAddAll(){
 function plRemoveSelected(){
   if(plSelectedListIdx===null) return;
   var list = PERSONAL_LISTS[plSelectedListIdx];
-  var sel = document.querySelectorAll('#pl-onlist-lb .selected');
-  var toRemove = Array.prototype.map.call(sel, function(el){ return el.dataset.key; });
+  var selEls = document.querySelectorAll('#pl-onlist-lb .selected');
+  // Same one-click convenience as plAddSelected: if nothing's explicitly
+  // highlighted and there's only one patient on the list, remove it outright
+  // rather than silently no-op'ing; an explicit highlight still narrows it
+  // down when there's more than one patient to choose from.
+  var toRemove = selEls.length ? Array.prototype.map.call(selEls, function(el){ return el.dataset.key; })
+    : (list.patients.length===1 ? list.patients.slice() : []);
   list.patients = list.patients.filter(function(k){ return toRemove.indexOf(k)===-1; });
   plRenderOnList();
 }
