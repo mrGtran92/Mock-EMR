@@ -12,19 +12,12 @@ function renderNotes(pt){
   th.textContent='Last '+maxReturn+' Signed Notes (Total: '+(pt.notes.length*7+33)+')';
   left.appendChild(th);
   var tree=document.createElement('div'); tree.className='tree-body';
-  var grouped={};
-  viewNotes.forEach(function(n){ if(!grouped[n.date]) grouped[n.date]=[]; grouped[n.date].push(n); });
-  Object.keys(grouped).forEach(function(dk){
-    var g=document.createElement('div'); g.className='nt-grp';
-    g.innerHTML='<span style="font-size:10px">&#9660;</span><span>'+dk+'</span>';
-    tree.appendChild(g);
-    grouped[dk].forEach(function(n){
-      var isMatch = containsFilter && n.title.toLowerCase().indexOf(containsFilter)>-1;
-      var d=document.createElement('div'); d.className='nt-item indent1'+(isMatch?' nt-bold':'');
-      d.innerHTML='<span style="font-size:9px;flex-shrink:0">&#128196;</span><span style="font-size:10px;overflow:hidden;text-overflow:ellipsis">'+dk+' '+n.title+', '+n.loc+', '+n.auth+'</span>';
-      d.onclick=(function(note){return function(){ tree.querySelectorAll('.nt-item').forEach(function(x){x.classList.remove('sel');}); d.classList.add('sel'); loadNote(note); };})(n);
-      tree.appendChild(d);
-    });
+  viewNotes.forEach(function(n){
+    var isMatch = containsFilter && n.title.toLowerCase().indexOf(containsFilter)>-1;
+    var d=document.createElement('div'); d.className='nt-item'+(isMatch?' nt-bold':'');
+    d.innerHTML='<span style="font-size:9px;flex-shrink:0">&#128196;</span><span style="font-size:10px;overflow:hidden;text-overflow:ellipsis">'+n.date+' '+n.title+', '+n.loc+', '+n.auth+'</span>';
+    d.onclick=(function(note){return function(){ tree.querySelectorAll('.nt-item').forEach(function(x){x.classList.remove('sel');}); d.classList.add('sel'); loadNote(note); };})(n);
+    tree.appendChild(d);
   });
   left.appendChild(tree);
   var ba=document.createElement('div'); ba.className='btn-area';

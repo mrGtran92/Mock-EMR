@@ -3,6 +3,48 @@ var currentPt = null;
 var currentTab = 'cover';
 var selectedPtId = null;
 
+// Shared Service Connection helpers -- used by the Patient Selection
+// dialog's demographics panel and the Patient Inquiry (facesheet) popup.
+function _scSummary(pt){
+  var sc = pt.serviceConnection;
+  if(!sc || !sc.pct) return 'Not Service Connected';
+  return sc.pct+'% Service Connected';
+}
+function _scBlockLines(pt){
+  var sc = pt.serviceConnection;
+  var lines = ['Service Connection/Rated Disabilities:', ''];
+  if(sc && sc.pct){
+    lines.push('        SC Percent: '+sc.pct+'%');
+    var dis = (sc.disabilities||[]).map(function(d){ return d.name+' ('+d.pct+'%-SC)'; });
+    lines.push('Rated Disabilities: '+(dis[0]||'NONE STATED'));
+    dis.slice(1).forEach(function(d){ lines.push('                    '+d); });
+  } else {
+    lines.push('  Service Connected: NO');
+    lines.push('Rated Disabilities: NONE STATED');
+  }
+  return lines;
+}
+
+// Patient header PACT line -- "WEST LA VAMC: <team> / PCP <lastname,first>",
+// plus a second "(Inpatient) Attending / (Inpatient) Provider" line only
+// when the patient is currently admitted (inferred from having active
+// inpatient meds -- the app has no separate inpatient/outpatient flag).
+// The Inpatient Provider is the resident/intern (pact.invProvider), which
+// intentionally differs from the Inpatient Attending (pt.prov).
+function _stripCredential(name){
+  return (name||'').replace(/\s*\(.*\)\s*$/,'').replace(/\s+(MD|DO|PA|NP)\.?$/i,'').toUpperCase();
+}
+function _pactHeaderText(pt){
+  var pact = pt.pact||{};
+  var isInpatient = !!(pt.meds_inpt && pt.meds_inpt.length>0);
+  var line1 = 'WEST LA VAMC: '+(pact.team||'')+' / PCP '+_stripCredential(pact.pcp);
+  var line2 = '';
+  if(isInpatient){
+    line2 = '(Inpatient) Attending: '+_stripCredential(pt.prov)+' - (Inpatient) Provider: '+_stripCredential(pact.invProvider);
+  }
+  return {line1:line1, line2:line2};
+}
+
 function toggleMenu(name){
   var wasOpen = document.getElementById('menu-'+name).classList.contains('open');
   closeAllMenus();
@@ -64,13 +106,14 @@ function openPtDialog(){
 function closePtDialog(){ document.getElementById('pt-dlg').classList.remove('show'); }
 function fillPtList(filter){
   var lb=document.getElementById('pt-lb'); lb.innerHTML='';
-  var keys=['kowalski','chen','okafor','brennan','hayes'];
+  var keys=['kowalski','chen','okafor','brennan','hayes','torres'];
   var labels={
     kowalski:'Kowalski,Harold J          0042-8817    03/14/1952',
     chen:    'Chen,Margaret L            0059-2241    09/02/1967',
     okafor:  'Okafor,Emmanuel C          0071-5530    02/27/1981',
     brennan: 'Brennan,Daniel T           0083-6420    03/14/1974',
-    hayes:   'Hayes,Patricia A           0096-4471    02/04/1955'
+    hayes:   'Hayes,Patricia A           0096-4471    02/04/1955',
+    torres:  'Torres,Elena M             0104-3392    08/22/1967'
   };
   // last-initial + last-4-SSN search, e.g. "K8817"
   var ssnMatch = filter && /^([A-Za-z])(\d{4})$/.exec(filter.trim());
@@ -91,7 +134,7 @@ function fillPtList(filter){
       document.querySelectorAll('.pt-opt').forEach(function(x){x.classList.remove('selected');});
       d.classList.add('selected'); selectedPtId=k;
       var pt=PTS[k];
-      document.getElementById('pt-demo').innerHTML='<b>'+pt.name+'</b><br>DOB: '+pt.dob+'&nbsp;&nbsp;Age: '+pt.age+'<br>MRN: '+pt.mrn+'<br>Sex: '+pt.sex;
+      document.getElementById('pt-demo').innerHTML='<b>'+pt.name+'</b><br>DOB: '+pt.dob+'&nbsp;&nbsp;Age: '+pt.age+'<br>MRN: '+pt.mrn+'<br>Sex: '+pt.sex+'<br>Service: '+_scSummary(pt);
     };
     d.ondblclick=function(){ confirmPtSelect(); };
     lb.appendChild(d);
@@ -107,7 +150,9 @@ function loadPatient(id){
   document.getElementById('h-meta').textContent=pt.mrn+'  '+pt.dob+' ('+pt.age+')';
   document.getElementById('h-visit1').textContent=pt.workload;
   document.getElementById('h-visit2').textContent='Provider: '+pt.prov;
-  document.getElementById('h-pact').textContent='No PACT assigned at this VA location (Click for more)';
+  var pactLines=_pactHeaderText(pt);
+  document.getElementById('h-pact1').textContent=pactLines.line1;
+  document.getElementById('h-pact2').textContent=pactLines.line2||' ';
   if(typeof updatePdmpButton==='function') updatePdmpButton();
   document.getElementById('h-cwad').textContent=pt.cwad||'';
   var banner=document.getElementById('banner');
@@ -117,10 +162,12 @@ function loadPatient(id){
   document.getElementById('no-pt-screen').style.display='none';
   document.getElementById('main-panes').style.display='flex';
   document.getElementById('tabbar').style.display='flex';
+  if(typeof updateRemindersBadge==='function') updateRemindersBadge();
   goTab('notes');
   if(typeof tourOnPatientLoad==='function') tourOnPatientLoad();
 }
 
+var _encSelectedDx=null, _encCommonDx=['Diabetes Mellitus Type 2, E11.9','Essential Hypertension, I10','Hyperlipidemia, E78.5','Z00.00 Routine Health Exam'];
 function openEncounter(){
   if(!currentPt) return;
   var pt=PTS[currentPt];
@@ -130,7 +177,51 @@ function openEncounter(){
     tr.innerHTML='<td>'+a.loc+'</td><td>'+a.dt+'</td><td>'+a.action+'</td>';
     tbl.appendChild(tr);
   });}
+  encTabSwitch('clinic');
+  _encSelectedDx=null;
+  var dxList=document.getElementById('enc-dx-list'); dxList.innerHTML='';
+  var dxOptions=(pt.problems||[]).map(function(p){ return p.d; }).concat(_encCommonDx);
+  dxOptions.forEach(function(dx){
+    var d=document.createElement('div');
+    d.className='enc-dx-item'; d.textContent=dx;
+    d.onclick=function(){
+      dxList.querySelectorAll('.enc-dx-item').forEach(function(x){x.classList.remove('sel');});
+      d.classList.add('sel'); _encSelectedDx=dx;
+    };
+    dxList.appendChild(d);
+  });
   showFloatWin('encounter-dlg');
+  centerFloatWin('encounter-dlg');
+  document.removeEventListener('click', _encOutsideClick);
+  setTimeout(function(){ document.addEventListener('click', _encOutsideClick); }, 0);
+}
+function _encOutsideClick(e){
+  if(typeof _tourActive!=='undefined' && _tourActive) return;
+  var dlg = document.getElementById('encounter-dlg');
+  if(dlg && dlg.style.display!=='none' && !dlg.contains(e.target) && !e.target.closest('#ph-visit')){
+    closeWin('encounter-dlg');
+    document.removeEventListener('click', _encOutsideClick);
+  }
+}
+function encProvSelect(el){
+  document.querySelectorAll('#enc-prov-list .enc-prov-opt').forEach(function(x){x.classList.remove('sel');});
+  el.classList.add('sel');
+}
+function encTabSwitch(name){
+  document.querySelectorAll('#encounter-dlg .enc-vtab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.encTab===name);
+  });
+  document.querySelectorAll('#encounter-dlg .enc-panel').forEach(function(p){
+    p.classList.toggle('active', p.id==='enc-tab-'+name);
+  });
+}
+function saveNewVisitEncounter(){
+  var visitType=document.getElementById('enc-visit-type').value;
+  var provEl=document.querySelector('#enc-prov-list .enc-prov-opt.sel');
+  var prov=provEl?provEl.textContent:'';
+  var dx=_encSelectedDx||'(no diagnosis selected)';
+  document.getElementById('ecd-body').innerHTML='Encounter coded:<br><br><b>Diagnosis:</b> '+dx+'<br><b>Visit Type:</b> '+visitType+'<br><b>Provider:</b> '+prov+'<br><br><i>(Simulation — not added to the patient\'s appointment history.)</i>';
+  showFloatWin('encounter-coded-dlg');
 }
 
 function goTab(tab){

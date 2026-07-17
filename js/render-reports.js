@@ -103,7 +103,10 @@ function buildImaging(pt){
 }
 window.showImgReport=function(i){ var el=document.getElementById('img-report-body'); if(el&&window._imgData) el.textContent=window._imgData[i].body; };
 function buildProcedures(pt){
-  var procs=pt.procedures||[];
+  // Real CPRS only lists a procedure here once it has a completed result --
+  // a pending/ordered-but-not-yet-resulted study doesn't appear in this tab
+  // at all (it shows as a pending order in the Orders tab instead).
+  var procs=(pt.procedures||[]).filter(function(p){ return p.stat==='Completed'; });
   var html='<table class="labs-tbl" style="margin-bottom:0" id="proc-list-tbl"><thead><tr>'
     +'<th style="width:140px">Procedure Date/Time<span class="col-resize-handle"></span></th>'
     +'<th>Procedure Name<span class="col-resize-handle"></span></th>'

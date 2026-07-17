@@ -9,7 +9,9 @@ function renderCover(pt){
   var medActive = pt.meds_inpt.filter(function(m){return m.stat==='active';});
   var medSrc = medActive.length?medActive:pt.meds_home;
   var medHtml = medSrc.slice(0,8).map(function(m){return '<div class="cs-row"><span class="cs-lbl" style="font-size:10px">'+m.n.split(' ').slice(0,3).join(' ')+'</span><span class="cs-val">active</span></div>';}).join('');
-  var postHtml = pt.postings.map(function(p){return '<div class="cs-row"><span class="posting-link">'+p+'</span></div>';}).join('');
+  var postRows = '<tr><td class="posting-link">ALLERGIES</td><td></td></tr>'
+    + pt.postings.map(function(p){return '<tr><td class="posting-link">'+p.type+'</td><td class="posting-link" style="white-space:nowrap">'+p.dt+'</td></tr>';}).join('');
+  var postHtml = '<table class="cs-tbl"><tr><th>Posting</th><th>Date</th></tr>'+postRows+'</table>';
   var v=pt.vitals[0];
   var vabn=function(val){return val&&(val.indexOf('H')>-1||val.indexOf('L')>-1);};
   var vclean=function(val){return val?val.replace(/ [HL]$/,''):val;};
@@ -25,12 +27,15 @@ function renderCover(pt){
     '<tr><td>POX</td>'+vcell(v.spo2, v.pox)+'<td>'+v.dt+'</td><td>'+(v.qual||'ROOM AIR')+'</td></tr></table>';
   var immHtml = pt.immunizations.map(function(im){return '<div class="cs-row"><span class="alink" style="font-size:10px;min-width:0;flex:1">'+im.name+'</span><span class="cs-date">'+im.dt+'</span></div>';}).join('');
   var apptHtml='<table class="cs-tbl"><tr><th>Date/Time</th><th>Location</th><th>Action</th></tr>'+pt.appointments.map(function(a){return '<tr><td>'+a.dt+'</td><td>'+a.loc+'</td><td>'+a.action+'</td></tr>';}).join('')+'</table>';
-  var remHtml='<table class="cs-tbl"><tr><th>Reminder</th><th>Due Date</th></tr><tr><td>Outpt. Med Reconciliation</td><td>DUE NOW</td></tr><tr><td>Influenza Immunization</td><td>DUE</td></tr></table>';
+  var dueReminders = (pt.reminders||[]).filter(function(r){return r.status==='due';});
+  var remHtml = dueReminders.length
+    ? '<table class="cs-tbl"><tr><th>Reminder</th><th>Due Date</th></tr>'+dueReminders.map(function(r){return '<tr><td>'+r.title+'</td><td>'+(r.due||'DUE NOW')+'</td></tr>';}).join('')+'</table>'
+    : '<div style="padding:3px;font-size:11px">No reminders due at this time.</div>';
   var whHtml='<div style="padding:3px;font-size:11px">'+(pt.sex==='FEMALE'?'See Women\'s Health package.':'Not Applicable')+'</div>';
   var cells=[
     {title:'Active Problems',body:probHtml},
     {title:'Allergies / Adverse Reactions',body:aHtml},
-    {title:'Postings',body:postHtml,onclick:'openPostings()'},
+    {title:'Postings',body:postHtml},
     {title:'Active Medications',body:medHtml},
     {title:'Clinical Reminders',body:remHtml},
     {title:"Women's Health",body:whHtml},

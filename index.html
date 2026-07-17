@@ -117,7 +117,10 @@
     <div class="pv1" id="h-visit1">&nbsp;</div>
     <div class="pv2" id="h-visit2">&nbsp;</div>
   </div>
-  <div id="ph-pact" onclick="openPactInfo()"><span id="h-pact">No PACT assigned at this VA location (Click for more)</span></div>
+  <div id="ph-pact" onclick="openPactInfo()">
+    <div class="pv1" id="h-pact1">&nbsp;</div>
+    <div class="pv2" id="h-pact2">&nbsp;</div>
+  </div>
   <div id="ph-btns">
     <div class="hbtn" id="hbtn-pdmp" onclick="handlePdmpClick()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold" id="hbtn-pdmp-l1">PDMP</span><span style="font-size:8px" id="hbtn-pdmp-l2">Query</span></div>
     <div class="hbtn"><span style="font-size:9px;font-weight:bold;color:#cc0000">Flag</span></div>
@@ -130,7 +133,7 @@
         <div id="rdp-sites"></div>
       </div>
     </div>
-    <div class="hbtn"><span style="font-size:13px">&#128247;</span></div>
+    <div class="hbtn" id="hbtn-reminders" onclick="openReminders()" style="cursor:pointer"><span style="font-size:13px">&#9200;</span></div>
     <div class="hbtn" id="hbtn-postings" onclick="openPostings()" style="cursor:pointer"><span style="font-size:9px">Postings</span><span class="hbtn-cwad" id="h-cwad">&nbsp;</span></div>
     <button id="tour-btn" onclick="startTour()" title="Take a guided chart orientation tour">? Tour</button>
     <button id="tour-menu-btn" onclick="openTourPicker()" title="Choose a specific tutorial">&#9662;</button>
@@ -234,7 +237,7 @@
   </div>
   <div class="float-win" id="postings-dlg" style="width:580px;top:60px;left:100px">
     <div class="fw-title" id="post-drag-handle">
-      <span>Patient Postings</span>
+      <span>&#128220; Patient Postings</span>
       <span class="wb" onclick="closeWin('postings-dlg')">&#10005;</span>
     </div>
     <div class="fw-body" style="padding:0">
@@ -311,6 +314,31 @@
       <div id="om-menu-body" class="iw-menu-cols"></div>
     </div>
   </div>
+  <div class="float-win" id="new-order-dlg" style="width:480px;top:80px;left:260px">
+    <div class="fw-title" id="no-drag-handle">
+      <span>New Order</span>
+      <span class="wb" onclick="closeWin('new-order-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="font-size:11px">
+      <div style="font-weight:bold;margin-bottom:6px">Order:</div>
+      <div id="no-label" style="background:#fff;border:1px solid #999;padding:6px;margin-bottom:8px"></div>
+      <div style="color:#555;font-style:italic">Quick Order entry — review the order summary above, then Sign to complete this simulated workflow. No new order is added to the patient's chart.</div>
+    </div>
+    <div class="fw-footer">
+      <button class="btn" onclick="signNewOrder()">Sign</button>
+      <button class="btn" onclick="closeWin('new-order-dlg')">Cancel</button>
+    </div>
+  </div>
+  <div class="float-win confirm-dlg" id="order-signed-dlg" style="width:340px;top:160px;left:340px">
+    <div class="fw-title" id="os-drag-handle">
+      <span>Order Signed</span>
+      <span class="wb" onclick="closeWin('order-signed-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" id="os-body" style="font-size:11px"></div>
+    <div class="fw-footer">
+      <button class="btn" onclick="closeWin('order-signed-dlg')">OK</button>
+    </div>
+  </div>
   <div class="float-win" id="new-note-dlg" style="width:480px;top:60px;left:200px">
     <div class="fw-title" id="nn-drag-handle">
       <span>Progress Note Properties</span>
@@ -365,25 +393,68 @@
     <div class="fw-body">
       <div style="font-size:11px;font-weight:bold;margin-bottom:3px">Encounter Provider</div>
       <div id="enc-prov-list">
-        <div class="enc-prov-opt sel">Tran,George N - Attending Physician [NPI: 1730649146]</div>
-        <div class="enc-prov-opt">Tran,Gina - Non-va Provider [NPI: 1306172424]</div>
-        <div class="enc-prov-opt">Tran,Hao - Tw Non-va Provider [NPI: 1891997078]</div>
+        <div class="enc-prov-opt sel" onclick="encProvSelect(this)">Tran,George N - Attending Physician [NPI: 1730649146]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Tran,Gina - Non-va Provider [NPI: 1306172424]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Tran,Hao - Tw Non-va Provider [NPI: 1891997078]</div>
       </div>
       <div style="font-size:11px;font-weight:bold;margin-top:8px;margin-bottom:3px">Encounter Location</div>
       <input style="border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff;width:100%" value="&lt; Select a location from the tabs below... &gt;" readonly>
       <div style="display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end"><button class="btn">Date Range...</button></div>
       <div class="enc-visit-tabs">
-        <div class="enc-vtab active">Clinic Appointments</div>
-        <div class="enc-vtab">Hospital Admissions</div>
-        <div class="enc-vtab">New Visit</div>
+        <div class="enc-vtab active" data-enc-tab="clinic" onclick="encTabSwitch('clinic')">Clinic Appointments</div>
+        <div class="enc-vtab" data-enc-tab="hosp" onclick="encTabSwitch('hosp')">Hospital Admissions</div>
+        <div class="enc-vtab" data-enc-tab="newvisit" onclick="encTabSwitch('newvisit')">New Visit</div>
       </div>
-      <div style="border:2px inset #808080;background:#fff;height:100px;overflow-y:auto">
+      <div id="enc-tab-clinic" class="enc-panel active" style="border:2px inset #808080;background:#fff;height:100px;overflow-y:auto">
         <table class="enc-tbl" id="enc-visit-tbl"></table>
+      </div>
+      <div id="enc-tab-hosp" class="enc-panel" style="border:2px inset #808080;background:#fff;height:100px;overflow-y:auto;padding:6px;font-size:11px;color:#555;font-style:italic">Not available in this simulation.</div>
+      <div id="enc-tab-newvisit" class="enc-panel" style="border:2px inset #808080;background:#fff;height:200px;overflow-y:auto;padding:6px;font-size:11px">
+        <div style="font-weight:bold;margin-bottom:3px">Diagnosis</div>
+        <div id="enc-dx-list" style="border:1px solid #999;max-height:70px;overflow-y:auto;margin-bottom:8px"></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="font-weight:bold;margin-bottom:3px">Visit Type</div>
+            <select id="enc-visit-type" class="btn" style="width:100%;font-size:11px">
+              <option value="Established Patient">Established Patient</option>
+              <option value="New Patient">New Patient</option>
+              <option value="Telephone">Telephone</option>
+              <option value="Telehealth">Telehealth</option>
+              <option value="Nurse Visit">Nurse Visit</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:bold;margin-bottom:3px">E/M Level</div>
+            <input class="btn" style="width:100%;font-size:11px;text-align:left" value="99214 - Office/Outpatient Est, Moderate MDM" readonly>
+          </div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="font-weight:bold;margin-bottom:3px">CPT Code</div>
+          <input class="btn" style="width:100%;font-size:11px;text-align:left" value="99214" readonly>
+        </div>
+        <button class="btn" onclick="saveNewVisitEncounter()">Save Encounter</button>
       </div>
     </div>
     <div class="fw-footer">
       <button class="btn" onclick="closeWin('encounter-dlg')">OK</button>
       <button class="btn" onclick="closeWin('encounter-dlg')">Cancel</button>
+    </div>
+  </div>
+  <div class="float-win" id="reminders-dlg" data-display="flex" style="width:460px;height:420px;top:70px;left:280px;flex-direction:column">
+    <div class="fw-title" id="rem-drag-handle">
+      <span>&#9200; Available Reminders</span>
+      <span class="wb" onclick="closeWin('reminders-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" id="rem-body" style="padding:0"></div>
+  </div>
+  <div class="float-win confirm-dlg" id="encounter-coded-dlg" style="width:340px;top:160px;left:340px">
+    <div class="fw-title" id="ecd-drag-handle">
+      <span>Encounter Coded</span>
+      <span class="wb" onclick="closeWin('encounter-coded-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" id="ecd-body" style="font-size:11px"></div>
+    <div class="fw-footer">
+      <button class="btn" onclick="closeWin('encounter-coded-dlg')">OK</button>
     </div>
   </div>
   <div class="float-win" id="options-dlg" style="width:700px;top:60px;left:150px">
@@ -772,6 +843,7 @@
 <script src="js/render-surgery.js"></script>
 <script src="js/popups.js"></script>
 <script src="js/personal-lists.js"></script>
+<script src="js/reminders.js"></script>
 <script src="js/tutorial.js"></script>
 <script>
 // Init

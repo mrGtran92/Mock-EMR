@@ -44,7 +44,24 @@ var TOUR_MODULES = [
   {id:'reports-views', label:'Reports Views (Imaging, Procedures, Pharmacy)', run:function(){ startReportsViewsModule(); }},
   {id:'pdmp', label:'PDMP Query & Results', run:function(){ startPdmpModule(); }},
   {id:'remote-data', label:'Remote Data (Other VA Facilities)', run:function(){ startRemoteDataModule(); }},
+  // 'order-entry', 'encounter-coding', and 'clinical-reminders' are hidden from the
+  // picker (not deleted) -- their content isn't finished yet and this app is about
+  // to go live. Their step arrays and start*Module() functions below are untouched;
+  // just re-add the entries here once each module is actually ready.
+  {id:'cover-sheet', label:'Cover Sheet: Reminders, Immunizations & Appointments', run:function(){ startCoverSheetModule(); }},
 ];
+
+// Finds a Cover Sheet grid cell (#rp-body .cs-cell) by its header title text
+// — cells have no stable id, so tour steps match on the header span's text
+// the same way _findTreeItem matches left-tree rows.
+function _findCsCell(title){
+  var hdrs = document.querySelectorAll('#rp-body .cs-hdr span:first-child');
+  for(var i=0;i<hdrs.length;i++){
+    var text = hdrs[i].textContent.replace(/^[^\w]+/, '').trim();
+    if(text === title) return hdrs[i].closest('.cs-cell');
+  }
+  return null;
+}
 
 // Finds a left-tree item (.ti) in a labs/reports panel by its visible label
 // text — neither tree renders stable per-row ids, so tour steps match on
@@ -59,6 +76,14 @@ function _findTreeItem(containerSelector, label){
     var text = items[i].textContent.replace(/^[^\w(]+/, '').trim();
     if(text === label) return items[i];
   }
+  return null;
+}
+
+// Matches a left-column order-menu item (#orders-left-list .ol-item) by
+// its visible label text, same rationale as _findTreeItem above.
+function _findOrderMenuItem(label){
+  var items = document.querySelectorAll('#orders-left-list .ol-item');
+  for(var i=0;i<items.length;i++){ if(items[i].textContent.trim()===label) return items[i]; }
   return null;
 }
 
@@ -238,6 +263,7 @@ var HEADER_TOUR_STEPS = [
     secondaryTarget: function(){ return document.getElementById('ph-name'); },
     title: 'Patient Inquiry',
     html: '<p>Click the <b>name/DOB/SSN box</b> on the left (outlined in orange) to open <b>Patient Inquiry</b> — address, phone, email, emergency contact, and service connection all in one place.</p>'
+        + '<p>Scroll down to the <b>Service Connection/Rated Disabilities</b> block — it lists the veteran\'s SC Percent and each rated disability. A <b>50% or higher</b> combined rating means all visit copayments and medication copays are covered, and above <b>70%</b> also covers the cost of any CLC (Community Living Center) or contracted CNH (Community Nursing Home) stay.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); openEncounter(); },
@@ -251,14 +277,14 @@ var HEADER_TOUR_STEPS = [
     target: function(){ return document.getElementById('pact-dlg'); },
     secondaryTarget: function(){ return document.getElementById('ph-pact'); },
     title: 'PACT / Primary Care',
-    html: '<p>Click the <b>PACT line</b> (outlined in orange — "No PACT assigned..." / focus text) to see a patient\'s <b>Primary Care Provider</b> and the rest of their care team — Care Manager, Pharmacist, Social Worker, and clinic contact info.</p>'
+    html: '<p>Click the <b>PACT line</b> (outlined in orange — shows the PCP, and for an admitted patient, the inpatient Attending and Provider) to see the rest of their care team — Care Manager, Pharmacist, Social Worker, and clinic contact info.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); openPostings(); },
     target: function(){ return document.getElementById('postings-dlg'); },
     secondaryTarget: function(){ return document.getElementById('hbtn-postings'); },
     title: 'Postings',
-    html: '<p><b>Postings</b> (button outlined in orange) is where allergies and any Advance Directive / Life-Sustaining Treatment (LST) notes on file get flagged — worth checking on every new patient.</p>'
+    html: '<p><b>Postings</b> (button outlined in orange) is where allergies and any Advance Directive / Life-Sustaining Treatment (LST) notes on file get flagged — worth checking on every new patient. In real CPRS this button is often called <b>CWAD</b> — <b>C</b>risis Notes, <b>W</b>arnings, <b>A</b>dverse Reactions/Allergies, and <b>D</b>irectives, the four categories of critical flags it surfaces.</p>'
         + '<p>Viewing the actual directive document uses a different route — that\'s its own short tutorial (see the <b>VistA Imaging Display</b> module in this picker).</p>'
   },
   {
@@ -620,6 +646,151 @@ var REPORTS_VIEWS_TOUR_STEPS = [
 ];
 
 /* ---------------------------------------------------------
+   COVER SHEET TOUR STEPS
+   Standalone sub-tutorial covering three Cover Sheet panels
+   that are easy to skim past: Clinical Reminders, Recent
+   Immunizations, and Appointments/Visits/Admissions.
+   --------------------------------------------------------- */
+var COVER_SHEET_TOUR_STEPS = [
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); goTab('cover'); },
+    title: 'Cover Sheet: Reminders, Immunizations & Appointments',
+    html: '<p>Three panels on the Cover Sheet — <b>Clinical Reminders</b>, <b>Recent Immunizations</b>, and <b>Appointments/Visits/Admissions</b> — are particularly relevant in the outpatient setting, though they\'re still technically relevant inpatient too. This tour walks through each.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('cover'); },
+    target: function(){ return _findCsCell('Clinical Reminders'); },
+    title: 'Clinical Reminders',
+    html: '<p>This panel lists a patient\'s <b>outstanding preventive-care items</b> — screenings, immunizations, and other health-maintenance actions that are due. A due date of <b>DUE NOW</b> means it\'s overdue; an actual date means it\'s an upcoming due window worth being aware of.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('cover'); },
+    target: function(){ return _findCsCell('Recent Immunizations'); },
+    title: 'Recent Immunizations',
+    html: '<p>This panel is a quick-reference <b>immunization history</b> — what the patient has already received and when, most recent first. This is a good place to quickly reference what vaccines have been administered.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('cover'); },
+    target: function(){ return _findCsCell('Appointments/Visits/Admissions'); },
+    title: 'Appointments/Visits/Admissions',
+    html: '<p>This panel is a timeline of the patient\'s <b>recent and upcoming encounters</b> — clinic visits, inpatient admissions, and specialty consults — each with a <b>Date/Time</b>, <b>Location</b>, and an <b>Action Req</b> column.</p>'
+        + '<p><b>Action Req</b> tells you the status of that encounter: <b>Checked Out</b> (completed visit), <b>Inpatient Appointment</b> (a consult or study tied to the current admission), <b>Admitted</b>, or <b>Non-Count</b> (an administrative/workload entry that doesn\'t represent real patient contact). You may also see <b>Cancelled by Patient</b> (the patient cancelled that scheduled appointment) or <b>Cancelled by Clinic</b> (the clinic cancelled it — the reason usually isn\'t listed here). This is a fast way to see everything that\'s happened around a stay without opening Notes or Consults individually.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   ORDER ENTRY TOUR STEPS
+   Standalone sub-tutorial covering placing an order via the
+   Orders tab's order menus. Runs against the outpatient case
+   (Torres) since the Primary Care order menu is the relevant
+   entry point. This whole workflow is simulated — no order
+   is actually added to the patient's chart.
+   --------------------------------------------------------- */
+var ORDER_ENTRY_TOUR_STEPS = [
+  {
+    center: true,
+    title: 'Placing Orders (Simulated)',
+    html: '<p>Real CPRS orders are placed through <b>order menus</b> — cascading lists of quick orders organized by service and clinic. This tour walks through navigating one and "signing" an order.</p>'
+        + '<p>This is a <b>simulation</b>: nothing you sign here is actually added to the patient\'s chart. The point is building comfort with the navigation, not the clinical content.</p>'
+  },
+  {
+    tab: 'orders',
+    before: function(){ closeTeachingPopups(); goTab('orders'); },
+    target: function(){ return document.getElementById('tab-orders'); },
+    title: 'Start in the Orders Tab',
+    html: '<p>The left column lists order menus grouped by setting — look for <b>WLA Primary Care Order Menu</b> under the outpatient clinics section.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); },
+    target: function(){ return _findOrderMenuItem('WLA Primary Care Order Menu'); },
+    title: 'Open a Primary Care Order Menu',
+    html: '<p>Click <b>WLA Primary Care Order Menu</b> to open its cascading list of quick orders — labs, meds, consults, and referrals, organized in columns.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); goTab('orders'); },
+    title: 'Pick an Order and Sign It',
+    html: '<p>Clicking any leaf item (not a bold group heading) opens a <b>New Order</b> dialog summarizing what you picked. Clicking <b>Sign</b> shows a confirmation — that\'s the whole simulated flow.</p>'
+        + '<p>The right-click context menu on an existing order row also has working <b>Sign...</b> and <b>Copy to New Order...</b> items that go through the same flow.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Habit to Build',
+    html: '<p>Knowing where a given order type lives in the menu tree — and that quick orders are pre-built templates, not free text — is most of what makes real order entry fast.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   ENCOUNTER CODING TOUR STEPS
+   Standalone sub-tutorial covering the Encounter dialog's
+   New Visit tab — diagnosis, visit type, and provider
+   selection. Runs against the outpatient case (Torres).
+   --------------------------------------------------------- */
+var ENCOUNTER_CODING_TOUR_STEPS = [
+  {
+    center: true,
+    title: 'Coding an Outpatient Encounter',
+    html: '<p>Every outpatient visit needs to be <b>coded</b> — tied to a diagnosis and a visit type — before it can be closed out. This tour walks through the <b>Encounter</b> dialog\'s <b>New Visit</b> tab.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); openEncounter(); },
+    target: function(){ return document.getElementById('encounter-dlg'); },
+    title: 'The Encounter Dialog',
+    html: '<p>Open this from the header\'s provider/location box or the Notes tab\'s <b>Encounter</b> button. It has three tabs: <b>Clinic Appointments</b>, <b>Hospital Admissions</b>, and <b>New Visit</b>.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); openEncounter(); encTabSwitch('newvisit'); },
+    target: function(){ return document.getElementById('enc-tab-newvisit'); },
+    title: 'New Visit: Diagnosis, Visit Type, Provider',
+    html: '<p>Pick a <b>Diagnosis</b> from the patient\'s active problem list (or the short common-diagnosis list below it), choose a <b>Visit Type</b>, and confirm the <b>Provider</b> at the top of the dialog.</p>'
+        + '<p>The <b>E/M Level</b> and <b>CPT Code</b> fields are shown for context but are fixed in this simulation — real coding software would let you adjust these based on visit complexity.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Habit to Build',
+    html: '<p>Coding the encounter before you close it out is what generates the visit\'s billing and lets the diagnosis flow into the patient\'s problem list and future reminders logic.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   CLINICAL REMINDERS TOUR STEPS
+   Standalone sub-tutorial covering the Reminders workflow —
+   a dedicated entry point (not tied to opening an encounter)
+   listing due preventive-care items to process one at a time.
+   --------------------------------------------------------- */
+var CLINICAL_REMINDERS_TOUR_STEPS = [
+  {
+    center: true,
+    title: 'Clinical Reminders',
+    html: '<p><b>Clinical Reminders</b> surface due preventive-care items — mammograms, foot exams, immunizations — independent of any specific visit. You open them from their own dedicated button, not from coding an encounter.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); if(typeof openReminders==='function') openReminders(); },
+    target: function(){ return document.getElementById('reminders-dlg'); },
+    title: 'The Reminders List',
+    html: '<p>Each row is one due reminder for this patient. Click a row to open it and see the detail.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); if(typeof openReminders==='function') openReminders(); },
+    title: 'Processing One at a Time',
+    html: '<p>Within a reminder\'s detail view, mark it <b>Done</b>, <b>Refused</b>, or <b>Not Indicated</b> — whichever fits. Unlike orders and encounters, this really does update the reminder\'s status (it just resets on page reload, like everything else in this simulation).</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Habit to Build',
+    html: '<p>Checking Reminders is core outpatient hygiene — it\'s how preventive care gets done at scale instead of relying on memory during a busy visit.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
    CHART TOUR STEPS
    Walks through the chart once a patient is open.
    --------------------------------------------------------- */
@@ -662,7 +833,7 @@ var CHART_TOUR_STEPS = [
     before: function(){ closeTeachingPopups(); },
     target: function(){ return document.getElementById('tab-cover'); },
     title: 'Cover Sheet',
-    html: '<p>The Cover Sheet is a quick-glance summary of the patient\'s current status — active problems, medications, allergies, recent vitals, and recent lab results all on one screen.</p>'
+    html: '<p>The Cover Sheet is a quick-glance summary of the patient\'s current status — active problems, medications, allergies, and recent vitals all on one screen.</p>'
         + '<p>Most experienced clinicians start here to get oriented before diving into individual tabs.</p>'
   },
   {
@@ -679,7 +850,6 @@ var CHART_TOUR_STEPS = [
     html: '<p>Lab results are organized into several views using the left panel. <b>Most Recent</b> (the default) shows the latest collection for each panel.</p>'
         + '<p><b>Lab Overview</b> lists every individual specimen collected in the date range, one row per test per collection — useful for confirming exactly what was drawn and when.</p>'
         + '<p><b>Worksheet</b> lets you select specific tests and build a custom trending table with dates as rows and tests as columns.</p>'
-        + '<p>Abnormal values are indicated by H or L in the Flag column — the value itself is always displayed in plain black text.</p>'
   },
   {
     tab: 'orders',
@@ -693,7 +863,6 @@ var CHART_TOUR_STEPS = [
     target: function(){ return document.getElementById('tab-reports'); },
     title: 'Reports Tab',
     html: '<p>The Reports tab contains many structured report views not found in Notes — for example, imaging reads, pharmacy profiles, and procedure reports.</p>'
-        + '<p>Expand the accordion menus on the left to navigate. <b>Procedures (local only)</b> is where procedure reports for things such as endoscopies or echocardiograms live.</p>'
   },
   {
     center: true,
@@ -768,6 +937,18 @@ function ensureChartOpenForTour(){
   loadPatient('kowalski');
 }
 
+// Same guard, but defaults to the outpatient case (Torres) rather than
+// Kowalski — used by modules that teach outpatient-only workflows (order
+// entry, encounter coding, clinical reminders) where an inpatient chart
+// wouldn't make sense as the backdrop.
+function ensureOutpatientChartOpenForTour(){
+  if(currentPt) return;
+  if(typeof closePtDialog==='function') closePtDialog();
+  _tourContinue   = false;
+  _chartTourShown = true;
+  loadPatient('torres');
+}
+
 function startPersonalListModule(){
   ensureChartOpenForTour();
   activateTourSteps(PERSONAL_LIST_TOUR_STEPS, 'personal-list');
@@ -813,6 +994,26 @@ function startRemoteDataModule(){
   activateTourSteps(REMOTE_DATA_TOUR_STEPS, 'remote-data');
 }
 
+function startOrderEntryModule(){
+  ensureOutpatientChartOpenForTour();
+  activateTourSteps(ORDER_ENTRY_TOUR_STEPS, 'order-entry');
+}
+
+function startEncounterCodingModule(){
+  ensureOutpatientChartOpenForTour();
+  activateTourSteps(ENCOUNTER_CODING_TOUR_STEPS, 'encounter-coding');
+}
+
+function startClinicalRemindersModule(){
+  ensureOutpatientChartOpenForTour();
+  activateTourSteps(CLINICAL_REMINDERS_TOUR_STEPS, 'clinical-reminders');
+}
+
+function startCoverSheetModule(){
+  ensureChartOpenForTour();
+  activateTourSteps(COVER_SHEET_TOUR_STEPS, 'cover-sheet');
+}
+
 function endTour(){
   _tourActive = false;
   document.getElementById('tour-clickblock').style.display = 'none';
@@ -847,6 +1048,10 @@ function closeTeachingPopups(){
     closeWin('new-note-dlg');
     closeWin('select-labs-dlg');
     closeWin('pdmp-results-dlg');
+    closeWin('new-order-dlg');
+    closeWin('order-signed-dlg');
+    closeWin('encounter-coded-dlg');
+    closeWin('reminders-dlg');
     closeWin('tour-picker-dlg');
   }
   if(typeof closePtDialog==='function' && currentPt) closePtDialog();
@@ -877,6 +1082,7 @@ function openTourPicker(){
 }
 
 function _tourPickerOutsideClick(e){
+  if(_tourActive) return;
   var dlg = document.getElementById('tour-picker-dlg');
   if(dlg && !dlg.contains(e.target) && e.target.id !== 'tour-menu-btn') closeTourPicker();
 }

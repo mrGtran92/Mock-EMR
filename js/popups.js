@@ -178,6 +178,13 @@ function renderVitalsTable(vitals){
   document.getElementById('vw-pane').innerHTML=h;
 }
 
+// Converts a full posting timestamp ("Mar 12, 2025@10:20") into the short
+// two-digit-year, no-time form the classic Postings popup shows ("Mar 12,25").
+function _postDateShort(dt){
+  var m = dt.match(/^(\w{3}) (\d{2}), (\d{4})/);
+  return m ? m[1]+' '+m[2]+','+m[3].slice(2) : dt;
+}
+
 function openPostings(){
   if(!currentPt) return;
   var pt=PTS[currentPt];
@@ -186,8 +193,21 @@ function openPostings(){
   if(pt.allergies.length){ pt.allergies.forEach(function(a){
     var tr=aTbl.insertRow(); tr.innerHTML='<td>'+a.agent+'</td><td>'+a.sev+'</td><td>'+a.signs+'</td>';
   });} else { var tr=aTbl.insertRow(); tr.innerHTML='<td colspan="3" style="font-weight:bold;padding:3px">No Known Allergies (NKA)</td>'; }
-  document.getElementById('post-directives').innerHTML=pt.postings.map(function(p){return '<div style="padding:1px 4px;border-bottom:1px solid #eee;color:#000;cursor:pointer">'+p+'</div>';}).join('');
+  document.getElementById('post-directives').innerHTML=pt.postings.map(function(p){
+    return '<div style="display:flex;justify-content:space-between;gap:10px;padding:1px 4px;border-bottom:1px solid #eee;color:#000;cursor:pointer"><span>'+p.type+'</span><span>'+_postDateShort(p.dt)+'</span></div>';
+  }).join('');
   showFloatWin('postings-dlg');
+  centerFloatWin('postings-dlg');
+  document.removeEventListener('click', _postOutsideClick);
+  setTimeout(function(){ document.addEventListener('click', _postOutsideClick); }, 0);
+}
+function _postOutsideClick(e){
+  if(typeof _tourActive!=='undefined' && _tourActive) return;
+  var dlg = document.getElementById('postings-dlg');
+  if(dlg && dlg.style.display!=='none' && !dlg.contains(e.target) && !e.target.closest('#hbtn-postings')){
+    closeWin('postings-dlg');
+    document.removeEventListener('click', _postOutsideClick);
+  }
 }
 
 function openPatientInquiry(){
@@ -218,21 +238,25 @@ function openPatientInquiry(){
     '    Race: DECLINED TO ANSWER',
     '    Ethnicity: DECLINED TO ANSWER',
     '',
-    'Primary Eligibility: NSC (VERIFIED)',
+    'Primary Eligibility: '+((pt.serviceConnection&&pt.serviceConnection.pct)?'SC':'NSC')+' (VERIFIED)',
     'Means Test Signed?: YES',
     'Patient\'s status is MT COPAY EXEMPT based on primary means test',
     'Veteran is eligible and provision of hospital care is mandatory',
     '',
+  ].concat(_scBlockLines(pt)).concat([
+    '',
     'Status      : CURRENT INPATIENT — '+(pt.ward||''),
     'Attending   : '+(pt.prov||''),
-  ];
+  ]);
   document.getElementById('pi-body').textContent=lines.join('\n');
   showFloatWin('patient-inquiry-dlg');
+  centerFloatWin('patient-inquiry-dlg');
   makeResizable('patient-inquiry-dlg','pi-resize-handle');
   document.removeEventListener('click', _piOutsideClick);
   setTimeout(function(){ document.addEventListener('click', _piOutsideClick); }, 0);
 }
 function _piOutsideClick(e){
+  if(typeof _tourActive!=='undefined' && _tourActive) return;
   var dlg = document.getElementById('patient-inquiry-dlg');
   if(dlg && dlg.style.display!=='none' && !dlg.contains(e.target) && e.target.id!=='ph-name' && !e.target.closest('#ph-name')){
     closeWin('patient-inquiry-dlg');
@@ -282,11 +306,13 @@ function openPactInfo(){
   ];
   document.getElementById('pact-body').textContent=lines.join('\n');
   showFloatWin('pact-dlg');
+  centerFloatWin('pact-dlg');
   makeResizable('pact-dlg','pact-resize-handle');
   document.removeEventListener('click', _pactOutsideClick);
   setTimeout(function(){ document.addEventListener('click', _pactOutsideClick); }, 0);
 }
 function _pactOutsideClick(e){
+  if(typeof _tourActive!=='undefined' && _tourActive) return;
   var dlg = document.getElementById('pact-dlg');
   if(dlg && dlg.style.display!=='none' && !dlg.contains(e.target) && e.target.id!=='ph-pact' && !e.target.closest('#ph-pact')){
     closeWin('pact-dlg');
@@ -385,6 +411,17 @@ function doneCreatePdmpNote(){
 function openJlvInfo(){
   if(!currentPt) return;
   showFloatWin('jlv-dlg');
+  centerFloatWin('jlv-dlg');
+  document.removeEventListener('click', _jlvOutsideClick);
+  setTimeout(function(){ document.addEventListener('click', _jlvOutsideClick); }, 0);
+}
+function _jlvOutsideClick(e){
+  if(typeof _tourActive!=='undefined' && _tourActive) return;
+  var dlg = document.getElementById('jlv-dlg');
+  if(dlg && dlg.style.display!=='none' && !dlg.contains(e.target) && !e.target.closest('#hbtn-jlv')){
+    closeWin('jlv-dlg');
+    document.removeEventListener('click', _jlvOutsideClick);
+  }
 }
 
 function toggleRemoteDataPanel(){
@@ -403,6 +440,7 @@ function closeRemoteDataPanel(){
   document.removeEventListener('click', _remoteDataOutsideClick);
 }
 function _remoteDataOutsideClick(e){
+  if(typeof _tourActive!=='undefined' && _tourActive) return;
   var panel=document.getElementById('remote-data-panel');
   if(panel && panel.style.display!=='none' && !panel.contains(e.target) && !e.target.closest('#hbtn-remote-data')){
     closeRemoteDataPanel();
@@ -440,8 +478,16 @@ function showFloatWin(id){ var el=document.getElementById(id); el.style.display=
 function closeWin(id){ document.getElementById(id).style.display='none'; }
 function centerFloatWin(id){
   var el = document.getElementById(id);
-  el.style.left = Math.max(0, Math.round((window.innerWidth - el.offsetWidth) / 2)) + 'px';
-  el.style.top  = Math.max(0, Math.round((window.innerHeight - el.offsetHeight) / 2)) + 'px';
+  // .float-win dialogs are absolutely positioned, and their nearest
+  // positioned ancestor is #content (position:relative), not the
+  // viewport -- #content sits below the title bar/menu bar/patient
+  // header stack and is shorter than window.innerHeight, so centering
+  // must be measured against it, not the window.
+  var parent = el.offsetParent;
+  var pw = parent ? parent.clientWidth : window.innerWidth;
+  var ph = parent ? parent.clientHeight : window.innerHeight;
+  el.style.left = Math.max(0, Math.round((pw - el.offsetWidth) / 2)) + 'px';
+  el.style.top  = Math.max(0, Math.round((ph - el.offsetHeight) / 2)) + 'px';
 }
 function makeDraggable(winId){
   var win=document.getElementById(winId);

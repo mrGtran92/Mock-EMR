@@ -57,6 +57,7 @@ function openPersonalLists(){
   plRenderStaged();
   plRenderOnList();
   showFloatWin('personal-lists-dlg');
+  centerFloatWin('personal-lists-dlg');
 }
 function plFilterPatients(filter){
   var lb = document.getElementById('pl-patient-lb');

@@ -1,4 +1,36 @@
 var _ordersView = [];
+// Real CPRS's order list view doesn't show the ordering indication/reason,
+// or a [COMPLETED]/[PENDING]/etc. status tag, inline in the order-name
+// column -- indication is only visible via right-click -> Details, and
+// status belongs solely in the dedicated Status column. This strips both
+// for the row display only; the full o.ord string (including both) is
+// still used untouched by showOrderDetails() for the Details popup.
+var _ORD_STATUS_TAG_RE=/\[(COMPLETED|PENDING|ACTIVE|DISCONTINUED|CANCELLED|DC)\]/;
+function _ordListText(ord){
+  return ord.split('\n').map(function(line){
+    return line.replace(/\s*Indication:.*$/,'').replace(new RegExp('\\s*'+_ORD_STATUS_TAG_RE.source+'\\s*$'),'');
+  }).filter(function(line){ return line.trim().length>0; }).join('\n');
+}
+// The order-name text is the only place today that carries the finer
+// COMPLETED/PENDING/ACTIVE/DISCONTINUED distinction (o.stat is only ever
+// "active" at the top level) -- pull it out for the Status column instead
+// of dropping it, now that it's stripped from the name column above.
+function _ordStatusText(o){
+  var m=_ORD_STATUS_TAG_RE.exec(o.ord);
+  if(m) return m[1].toLowerCase();
+  return o.stat==='active' ? 'active' : 'pending';
+}
+// Provider is stored as "LASTNAME,First Middle MD" -- the Provider column
+// should read "Lastname, First" (comma-space, credential suffix dropped),
+// not just the last name before the first comma.
+function _ordProviderText(prov){
+  if(!prov) return '';
+  var comma = prov.indexOf(',');
+  if(comma===-1) return prov;
+  var last = prov.slice(0,comma);
+  var first = prov.slice(comma+1).replace(/\s+(MD|DO|RN|PA|NP|PharmD|LCSW)\.?\s*(\(.*\))?$/i,'').trim();
+  return last+', '+first;
+}
 function buildInptMedOrders(pt){
   var start = (pt.orders[0] && pt.orders[0].start) || '';
   return pt.meds_inpt.map(function(m){
@@ -65,8 +97,9 @@ function renderOrders(pt){
   _ordersView.forEach(function(o,i){
     var svcCell=o.svc!==lastSvc?'<td class="svc-cell">'+o.svc+'</td>':'<td></td>';
     lastSvc=o.svc;
-    var isPending=o.stat==='pending';
-    html+='<tr onclick="selectOrderRow(this)" oncontextmenu="return showOrderCtxMenu(event,'+i+')">'+svcCell+'<td style="white-space:pre-wrap'+(isPending?';color:#0000cc':'')+'">'+o.ord+'</td><td style="font-size:10px">'+o.start+'</td><td style="font-size:10px">'+o.prov.split(',')[0]+'</td><td></td><td></td><td></td><td style="font-size:10px">'+(o.stat==='active'?'active':'pending')+'</td><td style="font-size:10px">'+(o.loc||'')+'</td></tr>';
+    var statusText=_ordStatusText(o);
+    var isPending=statusText==='pending';
+    html+='<tr onclick="selectOrderRow(this)" oncontextmenu="return showOrderCtxMenu(event,'+i+')">'+svcCell+'<td style="white-space:pre-wrap'+(isPending?';color:#0000cc':'')+'">'+_ordListText(o.ord)+'</td><td style="font-size:10px">'+o.start+'</td><td style="font-size:10px">'+_ordProviderText(o.prov)+'</td><td></td><td></td><td></td><td style="font-size:10px">'+statusText+'</td><td style="font-size:10px">'+(o.loc||'')+'</td></tr>';
   });
   html+='</tbody></table>';
   tableWrap.innerHTML=html; right.appendChild(tableWrap); outer.appendChild(right);
@@ -200,11 +233,22 @@ function openOrderMenu(title,cols){
     col.forEach(function(e){
       if(e.hdr) h+='<div class="iw-grp-hdr">'+e.hdr+'</div>';
       else if(e.sub) h+='<div class="iw-sub-hdr">'+e.sub+'</div>';
-      else h+='<div class="iw-item" onclick="closeWin(\'order-menu-dlg\')">'+e.item+'</div>';
+      else h+='<div class="iw-item" onclick="closeWin(\'order-menu-dlg\'); openNewOrderDialog(\''+e.item.replace(/'/g,"\\'")+'\')">'+e.item+'</div>';
     });
     return h+'</div>';
   }).join('');
   showFloatWin('order-menu-dlg');
+}
+var _newOrderLabel='';
+function openNewOrderDialog(label){
+  _newOrderLabel=label;
+  document.getElementById('no-label').textContent=label;
+  showFloatWin('new-order-dlg');
+}
+function signNewOrder(){
+  closeWin('new-order-dlg');
+  document.getElementById('os-body').innerHTML='Order signed: <b>'+_newOrderLabel+'</b><br><br><i>(Simulation — this order was not added to the patient\'s chart.)</i>';
+  showFloatWin('order-signed-dlg');
 }
 function selectOrderRow(tr){
   tr.closest('table').querySelectorAll('tr.sel').forEach(function(x){x.classList.remove('sel');});
@@ -213,13 +257,15 @@ function selectOrderRow(tr){
 function showOrderCtxMenu(ev,idx){
   ev.preventDefault();
   closeCtxMenu();
+  var o=_ordersView[idx];
   var items=[
     {label:'Details...',fn:function(){ showOrderDetails(idx); }},
     {label:'Results...'},{label:'Results History...'},{sep:true},
-    {label:'Change...'},{label:'Change Release Event'},{label:'Copy to New Order...'},
+    {label:'Change...'},{label:'Change Release Event'},
+    {label:'Copy to New Order...',fn:function(){ if(o) openNewOrderDialog(o.isMed?o.med.n:o.ord.split('\n')[0]); }},
     {label:'Discontinue Order'},{label:'Renew...'},{sep:true},
     {label:'Park',disabled:true},{label:'Unpark - Generates a request to Fill/Refill',disabled:true},{sep:true},
-    {label:'Sign...'},{sep:true},
+    {label:'Sign...',fn:function(){ if(o){ _newOrderLabel=o.isMed?o.med.n:o.ord.split('\n')[0]; signNewOrder(); } }},{sep:true},
     {label:'Flag...'},{label:'Flag Comment...'},{label:'Unflag...'},{sep:true},
     {label:'Allow Multiple Assignment',disabled:true},
   ];
@@ -251,6 +297,7 @@ function showOrderDetails(idx){
     dlg.style.width='520px';
   }
   showFloatWin('order-details-dlg');
+  centerFloatWin('order-details-dlg');
 }
 
 /* ---- MAR (Medication Administration Record) ----
