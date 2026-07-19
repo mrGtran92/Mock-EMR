@@ -123,7 +123,7 @@
   </div>
   <div id="ph-btns">
     <div class="hbtn" id="hbtn-pdmp" onclick="handlePdmpClick()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold" id="hbtn-pdmp-l1">PDMP</span><span style="font-size:8px" id="hbtn-pdmp-l2">Query</span></div>
-    <div class="hbtn"><span style="font-size:9px;font-weight:bold;color:#cc0000">Flag</span></div>
+    <div class="hbtn" id="hbtn-flag" onclick="openPatientFlags()"><span style="font-size:9px;font-weight:bold;color:#cc0000">Flag</span></div>
     <div class="hbtn-stack">
       <div class="hbtn-half" id="hbtn-jlv" onclick="openJlvInfo()" style="cursor:pointer"><span style="font-size:9px;font-weight:bold;color:#0000cc">JLV</span></div>
       <div class="hbtn-half" id="hbtn-remote-data" onclick="toggleRemoteDataPanel()" style="cursor:pointer"><span style="font-size:8px">Remote Data</span></div>
@@ -372,7 +372,7 @@
       <div class="note-dlg-field">
         <label>Author:</label>
         <select style="flex:1;border:2px inset #808080;padding:1px 3px;font-size:11px;background:#fff">
-          <option>Tran,George N - Attending Physician [NPI: 1730649146]</option>
+          <option>Tran,George N - Attending Physician [NPI: 6270914385]</option>
         </select>
       </div>
       <div class="note-dlg-field">
@@ -393,9 +393,19 @@
     <div class="fw-body">
       <div style="font-size:11px;font-weight:bold;margin-bottom:3px">Encounter Provider</div>
       <div id="enc-prov-list">
-        <div class="enc-prov-opt sel" onclick="encProvSelect(this)">Tran,George N - Attending Physician [NPI: 1730649146]</div>
-        <div class="enc-prov-opt" onclick="encProvSelect(this)">Tran,Gina - Non-va Provider [NPI: 1306172424]</div>
-        <div class="enc-prov-opt" onclick="encProvSelect(this)">Tran,Hao - Tw Non-va Provider [NPI: 1891997078]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Anand,Priya MD - Attending Physician [NPI: 4482910537]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Bishop,Laura NP - Non-va Provider [NPI: 2216805493]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Chen,Robert MD - Resident Physician [NPI: 7734021968]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Diaz,Carlos RN - Non-va Provider [NPI: 3391472850]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Ferreira,Ana MD - Tw Non-va Provider [NPI: 6607193425]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Grant,Michael DO - Attending Physician [NPI: 5023987416]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Kim,Sophia PharmD - Clinical Pharmacist [NPI: 8845620179]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Nguyen,David MD - Non-va Provider [NPI: 1978340562]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Okonkwo,David MD - Resident Physician [NPI: 4406728951]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Park,Jennifer PA-C - Physician Assistant [NPI: 9152683704]</div>
+        <div class="enc-prov-opt sel" onclick="encProvSelect(this)">Tran,George N MD - Attending Physician [NPI: 6270914385]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Vasquez,Elena MD - Tw Non-va Provider [NPI: 3814597260]</div>
+        <div class="enc-prov-opt" onclick="encProvSelect(this)">Whitfield,Susan NP - Non-va Provider [NPI: 7261048539]</div>
       </div>
       <div style="font-size:11px;font-weight:bold;margin-top:8px;margin-bottom:3px">Encounter Location</div>
       <input style="border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff;width:100%" value="&lt; Select a location from the tabs below... &gt;" readonly>
@@ -669,6 +679,15 @@
       <button class="btn" onclick="doneCreatePdmpNote()">Done and Create Note</button>
     </div>
     <div id="pdmp-resize-handle" style="position:absolute;right:0;bottom:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 0 50%,#808080 50% 60%,transparent 60% 70%,#808080 70% 80%,transparent 80%)"></div>
+  </div>
+  <div class="float-win" id="patient-flags-dlg" data-display="flex" style="width:900px;height:600px;top:40px;left:80px;flex-direction:column">
+    <div class="fw-title" id="flags-drag-handle">
+      <span>&#128204; Patient Record Flags</span>
+      <span class="wb" onclick="closeWin('patient-flags-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:0" id="flags-body"></div>
+    <div class="fw-footer"><button class="btn" onclick="closeWin('patient-flags-dlg')">Close</button></div>
+    <div id="flags-resize-handle" style="position:absolute;right:0;bottom:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 0 50%,#808080 50% 60%,transparent 60% 70%,#808080 70% 80%,transparent 80%)"></div>
   </div>
   <div class="float-win" id="vista-imaging-dlg" data-display="flex" style="width:760px;height:460px;top:40px;left:80px">
     <div class="fw-title" id="vi-drag-handle">

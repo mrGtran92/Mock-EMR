@@ -163,6 +163,7 @@ function loadPatient(id){
   document.getElementById('h-pact1').textContent=pactLines.line1;
   document.getElementById('h-pact2').textContent=pactLines.line2||' ';
   if(typeof updatePdmpButton==='function') updatePdmpButton();
+  if(typeof updateFlagButton==='function') updateFlagButton();
   document.getElementById('h-cwad').textContent=pt.cwad||'';
   var banner=document.getElementById('banner');
   if(pt.banner){ banner.style.display='block'; banner.textContent=pt.banner; }

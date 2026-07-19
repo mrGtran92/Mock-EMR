@@ -295,6 +295,25 @@ var HEADER_TOUR_STEPS = [
         + '<p>It\'s a two-click flow: the button relabels to <b>PDMP Results</b> once the query finishes, and clicking it again opens the full results and a pended note prompt. See the <b>PDMP Query & Results</b> module in this picker for the full walkthrough.</p>'
   },
   {
+    before: function(){
+      closeTeachingPopups();
+      var pt=currentPt && PTS[currentPt];
+      var hasFlags = pt && pt.flags && (((pt.flags.cat1||[]).length)+((pt.flags.cat2||[]).length) > 0);
+      if(!hasFlags){ _flagTourOrigPt=currentPt; loadPatient('kowalski'); }
+      openPatientFlags();
+      // Anchor the dialog in the corner (instead of its default centered
+      // position) so the tour card, which renders beside its target,
+      // lands in open space next to it rather than on top of it.
+      var flagsDlg=document.getElementById('patient-flags-dlg');
+      flagsDlg.style.top='20px'; flagsDlg.style.left='20px';
+    },
+    target: function(){ return document.getElementById('patient-flags-dlg'); },
+    secondaryTarget: function(){ return document.getElementById('hbtn-flag'); },
+    title: 'Patient Record Flags',
+    html: '<p>The <b>Flag</b> button (outlined in orange) is greyed out when a patient has no flags on file — it only opens when there\'s something to show.</p>'
+        + '<p><b>Category I</b> flags are national, high-acuity flags (shown with a yellow banner, e.g. High Risk for Suicide). <b>Category II</b> flags are local/facility-specific (e.g. a device implant or an infection-control alert). If a patient has more than one, click a flag in either list to load its details — narrative, status, and history — into the pane below.</p>'
+  },
+  {
     before: function(){ closeTeachingPopups(); },
     target: function(){ return document.getElementById('hbtn-jlv'); },
     title: 'JLV',
@@ -1025,10 +1044,15 @@ function endTour(){
   if(_activeModuleId !== 'main') openTourPicker();
 }
 
+// Set by the Header Deep-Dive Flag step when it has to switch to a
+// patient who actually has flags on file — restored by the next step's
+// closeTeachingPopups() call (or by endTour(), which also calls it).
+var _flagTourOrigPt=null;
 // Closes any popups opened mid-tour (Options / Personal Lists / New List /
 // Save Settings confirm / Patient Selection) so leftover dialogs never
 // obscure a later step or linger after the tour ends.
 function closeTeachingPopups(){
+  if(_flagTourOrigPt){ loadPatient(_flagTourOrigPt); _flagTourOrigPt=null; }
   if(typeof closeWin==='function'){
     closeWin('options-dlg');
     closeWin('personal-lists-dlg');
@@ -1048,6 +1072,7 @@ function closeTeachingPopups(){
     closeWin('new-note-dlg');
     closeWin('select-labs-dlg');
     closeWin('pdmp-results-dlg');
+    closeWin('patient-flags-dlg');
     closeWin('new-order-dlg');
     closeWin('order-signed-dlg');
     closeWin('encounter-coded-dlg');

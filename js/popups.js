@@ -410,6 +410,88 @@ function doneCreatePdmpNote(){
   closeWin('pdmp-results-dlg');
   if(typeof currentTab!=='undefined' && currentTab==='notes' && typeof renderTab==='function') renderTab('notes');
 }
+function updateFlagButton(){
+  var btn=document.getElementById('hbtn-flag');
+  if(!btn) return;
+  var pt=currentPt && PTS[currentPt];
+  var has = pt && pt.flags && (((pt.flags.cat1||[]).length) + ((pt.flags.cat2||[]).length) > 0);
+  btn.classList.toggle('hbtn-disabled', !has);
+  var span=btn.querySelector('span');
+  if(span) span.style.color = has ? '#cc0000' : '#888';
+}
+
+var _flagsPt=null, _flagsSel=null;
+function openPatientFlags(){
+  if(!currentPt) return;
+  var pt=PTS[currentPt];
+  var cat1=(pt.flags&&pt.flags.cat1)||[], cat2=(pt.flags&&pt.flags.cat2)||[];
+  if(cat1.length+cat2.length===0) return;
+  _flagsPt=pt;
+  _flagsSel = cat1.length ? {c:'cat1',i:0} : {c:'cat2',i:0};
+  renderFlagsDialog();
+  showFloatWin('patient-flags-dlg');
+  centerFloatWin('patient-flags-dlg');
+  makeResizable('patient-flags-dlg','flags-resize-handle');
+}
+function renderFlagsDialog(){
+  var pt=_flagsPt;
+  var cat1=(pt.flags&&pt.flags.cat1)||[], cat2=(pt.flags&&pt.flags.cat2)||[];
+  var body=document.getElementById('flags-body');
+  var html='';
+  html+='<div class="flags-sect-label'+(cat1.length?' flags-cat1-active':'')+'">Category I Flags'+(cat1.length?(': '+cat1.length+' Item(s)'):'')+'</div>';
+  html+='<div class="flags-cat1-box'+(cat1.length?' flags-cat1-active':'')+'">';
+  cat1.forEach(function(f,i){
+    var sel=(_flagsSel.c==='cat1'&&_flagsSel.i===i);
+    html+='<div class="flags-cat1-row'+(sel?' sel':'')+'" onclick="selectPatientFlag(\'cat1\','+i+')">'+f.name+'</div>';
+  });
+  html+='</div>';
+  html+='<div class="flags-sect-label">Category II Flags'+(cat2.length?(': '+cat2.length+' Item(s)'):'')+'</div>';
+  html+='<div class="flags-cat2-box">';
+  cat2.forEach(function(f,i){
+    var sel=(_flagsSel.c==='cat2'&&_flagsSel.i===i);
+    html+='<div class="flags-cat2-row'+(sel?' sel':'')+'" onclick="selectPatientFlag(\'cat2\','+i+')">'+f.name+'</div>';
+  });
+  html+='</div>';
+  var f = (_flagsSel.c==='cat1'?cat1:cat2)[_flagsSel.i];
+  html+='<div class="flags-detail-pane" id="flags-detail-pane"></div>';
+  html+='<div class="flags-notes-wrap"><table class="flags-notes-tbl"><thead><tr><th>Date</th><th>Action</th><th>Author</th></tr></thead><tbody id="flags-notes-tbody"></tbody></table></div>';
+  body.innerHTML=html;
+  document.getElementById('flags-detail-pane').textContent=flagDetailText(f);
+  var ntbody=document.getElementById('flags-notes-tbody');
+  (f.notes||[]).forEach(function(n){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+n.date+'</td><td>'+n.action+'</td><td>'+n.author+'</td>';
+    ntbody.appendChild(tr);
+  });
+}
+function flagDetailText(f){
+  var lines=[];
+  lines.push('Flag Name:            '+f.name);
+  lines.push('');
+  lines.push('Assignment Narrative:');
+  lines.push(f.narrative);
+  lines.push('');
+  lines.push('Flag Type:             '+f.flagType);
+  lines.push('Flag Category:         '+f.category);
+  lines.push('Assignment Status:     '+f.status);
+  lines.push('Initial Assigned Date: '+f.assignedDate);
+  lines.push('Approved by:           '+f.approvedBy);
+  lines.push('Next Review Date:      '+f.nextReview);
+  lines.push('Owner Site:            '+f.ownerSite);
+  if(f.originatingSite) lines.push('Originating Site:      '+f.originatingSite);
+  lines.push('');
+  lines.push('History of Actions Taken:');
+  lines.push('Date               Action          Site ID   Site Name');
+  (f.actions||[]).forEach(function(a){
+    lines.push(a.date+'   '+a.action+'   '+a.site+'   '+a.siteName);
+  });
+  return lines.join('\n');
+}
+function selectPatientFlag(cat,idx){
+  _flagsSel={c:cat,i:idx};
+  renderFlagsDialog();
+}
+
 function openJlvInfo(){
   if(!currentPt) return;
   showFloatWin('jlv-dlg');

@@ -324,6 +324,23 @@ table.enc-tbl td{padding:2px 6px;border-bottom:1px solid #eee;font-size:11px}
 .pdmp-cols>div{flex:1}
 .pdmp-tbl{width:100%;border-collapse:collapse;font-size:10px;margin-top:4px}
 .pdmp-tbl th,.pdmp-tbl td{border-bottom:1px solid #ddd;padding:3px 6px;text-align:left}
+
+#patient-flags-dlg .fw-title{background:linear-gradient(to right,#000080,#1084d0)}
+#patient-flags-dlg .fw-body{background:#fff;color:#000}
+.flags-sect-label{background:#e8e8e0;border-bottom:1px solid #bbb;padding:3px 8px;font-size:11px;color:#000}
+.flags-sect-label.flags-cat1-active{background:#f0c040}
+.flags-cat1-box{background:#fff;min-height:60px;max-height:120px;overflow-y:auto;border-bottom:1px solid #999}
+.flags-cat1-box.flags-cat1-active{background:#f0c040}
+.flags-cat1-row{padding:8px 10px;font-size:14px;font-weight:bold;cursor:pointer;color:#000}
+.flags-cat1-row.sel{background:#1976d2;color:#fff}
+.flags-cat2-box{background:#fff;min-height:50px;max-height:110px;overflow-y:auto;border-bottom:1px solid #999}
+.flags-cat2-row{padding:3px 10px;font-size:11px;cursor:pointer;color:#000}
+.flags-cat2-row.sel{background:#1976d2;color:#fff}
+.flags-detail-pane{flex:1;min-height:0;overflow-y:auto;background:#fff;color:#000;font-family:Consolas,"Courier New",monospace;font-size:11px;padding:10px 12px;white-space:pre-wrap}
+.flags-notes-wrap{border-top:1px solid #999}
+.flags-notes-tbl{width:100%;border-collapse:collapse;font-size:10px}
+.flags-notes-tbl th,.flags-notes-tbl td{border-bottom:1px solid #ddd;padding:3px 8px;text-align:left}
+#hbtn-flag.hbtn-disabled{cursor:default}
 .pdmp-pend-panel{background:#e8e8e0;border-top:2px solid #aaa;padding:8px 10px;font-size:11px;max-height:140px;overflow-y:auto}
 .pdmp-pend-panel label{display:block;margin:3px 0;cursor:pointer}
 

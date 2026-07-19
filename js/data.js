@@ -25,20 +25,32 @@ kowalski:{
     era:"VIETNAM ERA", combatVet:"NOT ELIGIBLE"
   },
   pact:{
-    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 268-4700", invProviderPager:"(310) 555-3312",
-    attPhone:"(310) 268-4700", attPager:"(310) 555-3301",
+    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 555-0301", invProviderPager:"(310) 555-3312",
+    attPhone:"(310) 555-0301", attPager:"(310) 555-3301",
     clinicName:"WEST LOS ANGELES VA MEDICAL CENTER - PRIMARY CARE CLINIC 1A", clinicCode:"691GA",
     team:"WLA PACT 1A",
-    pcp:"Anand,Priya MD", pcpPhone:"(310) 268-4821",
-    careManager:"Reyes,Linda RN", careManagerPhone:"(310) 268-4822",
-    adminAssoc:"Park,Jennifer", adminAssocPhone:"(310) 268-4823",
-    pharmacist:"Nguyen,David PharmD", pharmacistPhone:"(310) 268-4824",
-    socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 268-4825",
+    pcp:"Anand,Priya MD", pcpPhone:"(310) 555-0302",
+    careManager:"Reyes,Linda RN", careManagerPhone:"(310) 555-0303",
+    adminAssoc:"Park,Jennifer", adminAssocPhone:"(310) 555-0304",
+    pharmacist:"Nguyen,David PharmD", pharmacistPhone:"(310) 555-0305",
+    socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 555-0306",
     surrogateCM:"", surrogateCMPhone:""
   },
   remoteSites:[
     {name:"Raymond G. Murphy Vamc", station:"501", lastSeen:"Jun 18,26"},
   ],
+  flags:{
+    cat1:[
+      {name:"BEHAVIORAL", narrative:"Pt has had intermittent episodes of confusion/agitation during prior admissions, most pronounced overnight. Redirect calmly; avoid physical restraint as first-line response.", flagType:"CLINICAL", category:"I (NATIONAL)", status:"Active", assignedDate:"NOV 02, 2023@14:10", approvedBy:"DELGADO,MONICA R", nextReview:"NOV 02, 2026", ownerSite:"WEST LA VAMC   (WEST LA VAMC)", originatingSite:"WEST LA VAMC   (WEST LA VAMC)",
+        actions:[{date:"NOV 02, 2023@14:10", action:"NEW ASSIGNMENT", site:"500", siteName:"WEST LA VAMC"}],
+        notes:[{date:"NOV 02, 2023@14:10", action:"NEW ASSIGNMENT", author:"DELGADO,MONICA R"}]}
+    ],
+    cat2:[
+      {name:"CANDIDA AURIS", narrative:"Colonization identified on skin swab during a prior stay at a skilled nursing facility. Contact precautions indicated for the duration of admission.", flagType:"CLINICAL", category:"II (LOCAL)", status:"Active", assignedDate:"JAN 14, 2025@09:40", approvedBy:"DELGADO,MONICA R", nextReview:"JAN 14, 2027", ownerSite:"WEST LA VAMC   (WEST LA VAMC)",
+        actions:[{date:"JAN 14, 2025@09:40", action:"NEW ASSIGNMENT", site:"500", siteName:"WEST LA VAMC"}],
+        notes:[]}
+    ]
+  },
   allergies:[
     {agent:"Penicillin",sev:"Severe",signs:"Anaphylaxis; Hives; Throat Swelling"},
     {agent:"Sulfonamides",sev:"Moderate",signs:"Rash; Urticaria"},
@@ -258,20 +270,28 @@ chen:{
     era:"PEACETIME", combatVet:"NOT ELIGIBLE"
   },
   pact:{
-    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 268-4700", invProviderPager:"(310) 555-3312",
-    attPhone:"(310) 268-4700", attPager:"(310) 555-3301",
+    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 555-0301", invProviderPager:"(310) 555-3312",
+    attPhone:"(310) 555-0301", attPager:"(310) 555-3301",
     clinicName:"WEST LOS ANGELES VA MEDICAL CENTER - PRIMARY CARE CLINIC 1B", clinicCode:"691GB",
     team:"WLA PACT 1B",
-    pcp:"Goldstein,Rachel MD", pcpPhone:"(310) 268-4831",
-    careManager:"McAllister,Patricia RN", careManagerPhone:"(310) 268-4832",
-    adminAssoc:"Truong,Lisa", adminAssocPhone:"(310) 268-4833",
-    pharmacist:"Kim,Sophia PharmD", pharmacistPhone:"(310) 268-4834",
+    pcp:"Goldstein,Rachel MD", pcpPhone:"(310) 555-0308",
+    careManager:"McAllister,Patricia RN", careManagerPhone:"(310) 555-0309",
+    adminAssoc:"Truong,Lisa", adminAssocPhone:"(310) 555-0310",
+    pharmacist:"Kim,Sophia PharmD", pharmacistPhone:"(310) 555-0311",
     socialWorker:"", socialWorkerPhone:"",
     surrogateCM:"", surrogateCMPhone:""
   },
   remoteSites:[
     {name:"VA Long Beach Healthcare System", station:"600", lastSeen:"May 22,26"},
   ],
+  flags:{
+    cat1:[],
+    cat2:[
+      {name:"HYPOGLOSSAL NERVE STIMULATOR", narrative:"Pt has an implanted hypoglossal nerve stimulator (Inspire) for severe obstructive sleep apnea. *** MRI CONDITIONAL -- see device card for parameters ***", flagType:"CLINICAL", category:"II (LOCAL)", status:"Active", assignedDate:"AUG 11, 2024@10:05", approvedBy:"DELGADO,MONICA R", nextReview:"AUG 11, 2026", ownerSite:"WEST LA VAMC   (WEST LA VAMC)",
+        actions:[{date:"AUG 11, 2024@10:05", action:"NEW ASSIGNMENT", site:"500", siteName:"WEST LA VAMC"}],
+        notes:[]}
+    ]
+  },
   allergies:[
     {agent:"Penicillin",sev:"Severe",signs:"Anaphylaxis; Throat Swelling; Urticaria"},
     {agent:"Codeine",sev:"Moderate",signs:"Nausea; Vomiting"},
@@ -444,15 +464,15 @@ okafor:{
     era:"OEF/OIF/OND ERA", combatVet:"EXPIRED (Eligibility ended 2023)"
   },
   pact:{
-    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 268-4700", invProviderPager:"(310) 555-3312",
-    attPhone:"(310) 268-4700", attPager:"(310) 555-3301",
+    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 555-0301", invProviderPager:"(310) 555-3312",
+    attPhone:"(310) 555-0301", attPager:"(310) 555-3301",
     clinicName:"WEST LOS ANGELES VA MEDICAL CENTER - PRIMARY CARE CLINIC 2A", clinicCode:"691GC",
     team:"WLA PACT 2A",
-    pcp:"Patel,Tariq MD", pcpPhone:"(310) 268-4841",
-    careManager:"Diaz,Carlos RN", careManagerPhone:"(310) 268-4842",
-    adminAssoc:"Washington,Keisha", adminAssocPhone:"(310) 268-4843",
-    pharmacist:"Chen,Andrew PharmD", pharmacistPhone:"(310) 268-4844",
-    socialWorker:"Martinez,Elena LCSW", socialWorkerPhone:"(310) 268-4845",
+    pcp:"Patel,Tariq MD", pcpPhone:"(310) 555-0312",
+    careManager:"Diaz,Carlos RN", careManagerPhone:"(310) 555-0313",
+    adminAssoc:"Washington,Keisha", adminAssocPhone:"(310) 555-0314",
+    pharmacist:"Chen,Andrew PharmD", pharmacistPhone:"(310) 555-0315",
+    socialWorker:"Martinez,Elena LCSW", socialWorkerPhone:"(310) 555-0316",
     surrogateCM:"", surrogateCMPhone:""
   },
   remoteSites:[
@@ -610,15 +630,15 @@ brennan:{
     era:"PERSIAN GULF WAR", combatVet:"NOT ELIGIBLE"
   },
   pact:{
-    invProvider:"Okonkwo,David MD (PGY-3)", invProviderPhone:"(310) 268-4700", invProviderPager:"(310) 555-3312",
-    attPhone:"(310) 268-4700", attPager:"(310) 555-3301",
+    invProvider:"Okonkwo,David MD (PGY-3)", invProviderPhone:"(310) 555-0301", invProviderPager:"(310) 555-3312",
+    attPhone:"(310) 555-0301", attPager:"(310) 555-3301",
     clinicName:"WEST LOS ANGELES VA MEDICAL CENTER - PRIMARY CARE CLINIC 3A", clinicCode:"691GD",
     team:"WLA PACT 3A",
-    pcp:"Pfeffer,Michael MD", pcpPhone:"(310) 268-4851",
-    careManager:"Johnson,Tamika RN", careManagerPhone:"(310) 268-4852",
-    adminAssoc:"Garcia,Rosa", adminAssocPhone:"(310) 268-4853",
-    pharmacist:"Lee,Brian PharmD", pharmacistPhone:"(310) 268-4854",
-    socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 268-4855",
+    pcp:"Pfeffer,Michael MD", pcpPhone:"(310) 555-0317",
+    careManager:"Johnson,Tamika RN", careManagerPhone:"(310) 555-0318",
+    adminAssoc:"Garcia,Rosa", adminAssocPhone:"(310) 555-0319",
+    pharmacist:"Lee,Brian PharmD", pharmacistPhone:"(310) 555-0320",
+    socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 555-0321",
     surrogateCM:"", surrogateCMPhone:""
   },
   remoteSites:[
@@ -815,20 +835,28 @@ hayes:{
     era:"VIETNAM ERA", combatVet:"NOT ELIGIBLE"
   },
   pact:{
-    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 268-4700", invProviderPager:"(310) 555-3312",
-    attPhone:"(310) 268-4700", attPager:"(310) 555-3301",
+    invProvider:"Torres,Samuel MD (PGY-2)", invProviderPhone:"(310) 555-0301", invProviderPager:"(310) 555-3312",
+    attPhone:"(310) 555-0301", attPager:"(310) 555-3301",
     clinicName:"WEST LOS ANGELES VA MEDICAL CENTER - PRIMARY CARE CLINIC 1A", clinicCode:"691GA",
     team:"WLA PACT 1A",
-    pcp:"Anand,Priya MD", pcpPhone:"(310) 268-4821",
-    careManager:"Reyes,Linda RN", careManagerPhone:"(310) 268-4822",
-    adminAssoc:"Park,Jennifer", adminAssocPhone:"(310) 268-4823",
-    pharmacist:"Nguyen,David PharmD", pharmacistPhone:"(310) 268-4824",
-    socialWorker:"Thompson,Karen LCSW", socialWorkerPhone:"(310) 268-4826",
+    pcp:"Anand,Priya MD", pcpPhone:"(310) 555-0302",
+    careManager:"Reyes,Linda RN", careManagerPhone:"(310) 555-0303",
+    adminAssoc:"Park,Jennifer", adminAssocPhone:"(310) 555-0304",
+    pharmacist:"Nguyen,David PharmD", pharmacistPhone:"(310) 555-0305",
+    socialWorker:"Thompson,Karen LCSW", socialWorkerPhone:"(310) 555-0307",
     surrogateCM:"", surrogateCMPhone:""
   },
   remoteSites:[
     {name:"VA Loma Linda Healthcare System", station:"605", lastSeen:"Jun 02,26"},
   ],
+  flags:{
+    cat1:[],
+    cat2:[
+      {name:"CARDIAC DEVICE IMPLANT", narrative:"Pt has an implanted cardiac device (Pacemaker) placed this admission for new Mobitz type II AV block -- see note 06/20/26 for further details.\n\n*** MRI CONDITIONAL 3.0 TESLA ***", flagType:"CLINICAL", category:"II (LOCAL)", status:"Active", assignedDate:"JUN 20, 2026@15:40", approvedBy:"DELGADO,MONICA R", nextReview:"JUN 20, 2027", ownerSite:"WEST LA VAMC   (WEST LA VAMC)",
+        actions:[{date:"JUN 20, 2026@15:40", action:"NEW ASSIGNMENT", site:"500", siteName:"WEST LA VAMC"}],
+        notes:[]}
+    ]
+  },
   allergies:[],
   postings:[
     {type:"LIFE-SUSTAINING TREATMENT", dt:"Jun 17, 2026@12:20"},
@@ -1022,15 +1050,15 @@ torres:{
     era:"NOT APPLICABLE", combatVet:"NOT ELIGIBLE"
   },
   pact:{
-    invProvider:"Anand,Priya MD", invProviderPhone:"(310) 268-4821", invProviderPager:"(310) 555-3301",
-    attPhone:"(310) 268-4821", attPager:"(310) 555-3301",
+    invProvider:"Anand,Priya MD", invProviderPhone:"(310) 555-0302", invProviderPager:"(310) 555-3301",
+    attPhone:"(310) 555-0302", attPager:"(310) 555-3301",
     clinicName:"WEST LOS ANGELES VA MEDICAL CENTER - PRIMARY CARE CLINIC 1A", clinicCode:"691GA",
     team:"WLA PACT 1A",
-    pcp:"Anand,Priya MD", pcpPhone:"(310) 268-4821",
-    careManager:"Reyes,Linda RN", careManagerPhone:"(310) 268-4822",
-    adminAssoc:"Park,Jennifer", adminAssocPhone:"(310) 268-4823",
-    pharmacist:"Nguyen,David PharmD", pharmacistPhone:"(310) 268-4824",
-    socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 268-4825",
+    pcp:"Anand,Priya MD", pcpPhone:"(310) 555-0302",
+    careManager:"Reyes,Linda RN", careManagerPhone:"(310) 555-0303",
+    adminAssoc:"Park,Jennifer", adminAssocPhone:"(310) 555-0304",
+    pharmacist:"Nguyen,David PharmD", pharmacistPhone:"(310) 555-0305",
+    socialWorker:"Robinson,Denise LCSW", socialWorkerPhone:"(310) 555-0306",
     surrogateCM:"", surrogateCMPhone:""
   },
   remoteSites:[],
