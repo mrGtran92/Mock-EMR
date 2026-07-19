@@ -49,6 +49,7 @@ var TOUR_MODULES = [
   // to go live. Their step arrays and start*Module() functions below are untouched;
   // just re-add the entries here once each module is actually ready.
   {id:'cover-sheet', label:'Cover Sheet: Reminders, Immunizations & Appointments', run:function(){ startCoverSheetModule(); }},
+  {id:'consults', label:'Consults Tab: Reading Status Codes', run:function(){ startConsultsModule(); }},
 ];
 
 // Finds a Cover Sheet grid cell (#rp-body .cs-cell) by its header title text
@@ -84,6 +85,18 @@ function _findTreeItem(containerSelector, label){
 function _findOrderMenuItem(label){
   var items = document.querySelectorAll('#orders-left-list .ol-item');
   for(var i=0;i<items.length;i++){ if(items[i].textContent.trim()===label) return items[i]; }
+  return null;
+}
+
+// Matches a Consults tab left-tree row (#consults-left .ct-item) by its
+// visible label text -- rows use their own .ct-item class rather than the
+// .ti class _findTreeItem expects, same rationale as the helpers above.
+function _findConsultItem(label){
+  var items = document.querySelectorAll('#consults-left .ct-item');
+  for(var i=0;i<items.length;i++){
+    var text = items[i].textContent.replace(/^[^\w(]+/, '').trim();
+    if(text === label) return items[i];
+  }
   return null;
 }
 
@@ -682,6 +695,7 @@ var COVER_SHEET_TOUR_STEPS = [
     target: function(){ return _findCsCell('Clinical Reminders'); },
     title: 'Clinical Reminders',
     html: '<p>This panel lists a patient\'s <b>outstanding preventive-care items</b> — screenings, immunizations, and other health-maintenance actions that are due. A due date of <b>DUE NOW</b> means it\'s overdue; an actual date means it\'s an upcoming due window worth being aware of.</p>'
+        + '<p>The same list is also reachable from the <b>alarm clock icon</b> in the patient header — clicking it opens the full Available Reminders browser.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); goTab('cover'); },
@@ -695,6 +709,71 @@ var COVER_SHEET_TOUR_STEPS = [
     title: 'Appointments/Visits/Admissions',
     html: '<p>This panel is a timeline of the patient\'s <b>recent and upcoming encounters</b> — clinic visits, inpatient admissions, and specialty consults — each with a <b>Date/Time</b>, <b>Location</b>, and an <b>Action Req</b> column.</p>'
         + '<p><b>Action Req</b> tells you the status of that encounter: <b>Checked Out</b> (completed visit), <b>Inpatient Appointment</b> (a consult or study tied to the current admission), <b>Admitted</b>, or <b>Non-Count</b> (an administrative/workload entry that doesn\'t represent real patient contact). You may also see <b>Cancelled by Patient</b> (the patient cancelled that scheduled appointment) or <b>Cancelled by Clinic</b> (the clinic cancelled it — the reason usually isn\'t listed here). This is a fast way to see everything that\'s happened around a stay without opening Notes or Consults individually.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   CONSULTS TAB TOUR STEPS
+   Standalone sub-tutorial teaching the Consults tab's status-code
+   nomenclature -- (p)/(a)/(s)/(pr)/(c)/(x)/(dc). Runs entirely on
+   Kowalski's chart, which carries one example of every status.
+   --------------------------------------------------------- */
+var CONSULTS_TOUR_STEPS = [
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); goTab('consults'); },
+    title: 'Reading the Consults Tab',
+    html: '<p>The <b>All consults</b> tree on the left lists every consult ordered for this patient, newest first. The letters in parentheses next to each date are a <b>status code</b> — that nomenclature is the whole point of this module, since it tells you at a glance whether a consult has a note to read yet.</p>'
+        + '<p>Clicking any row loads its detail into the pane on the right — either the full signed note (for a completed consult) or an Order Information summary (for everything else).</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 20,26 (p) PHYSICAL THERAPY CONSULT Cons Consult #: 9705115'); if(el) el.click(); },
+    target: function(){ return _findConsultItem('Jun 20,26 (p) PHYSICAL THERAPY CONSULT Cons Consult #: 9705115'); },
+    title: '(p) — Pending',
+    html: '<p><b>(p) Pending</b> means the consult has been ordered but hasn\'t been received or processed by the receiving service yet. No note exists yet — the detail pane shows the order information (requesting provider, reason for request, etc.) instead of a note.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 19,26 (a) SOCIAL WORK CONSULT Cons Consult #: 9705116'); if(el) el.click(); },
+    target: function(){ return _findConsultItem('Jun 19,26 (a) SOCIAL WORK CONSULT Cons Consult #: 9705116'); },
+    title: '(a) — Active',
+    html: '<p><b>(a) Active</b> means the consult has been received by the service and is being worked on — one step further along than pending, but still no note yet.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jul 03,26 (s) CARDIOLOGY OUTPT F/U CONSULT Cons Consult #: 9705117'); if(el) el.click(); },
+    target: function(){ return _findConsultItem('Jul 03,26 (s) CARDIOLOGY OUTPT F/U CONSULT Cons Consult #: 9705117'); },
+    title: '(s) — Scheduled',
+    html: '<p><b>(s) Scheduled</b> means a specific appointment date/time has been set for this consult — you\'ll see that reflected in the Facility activity log at the bottom of the detail pane. That same scheduled appointment should also show up on the <b>Cover Sheet</b>, in the Appointments/Visits/Admissions panel.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 19,26 (pr) CARDIOLOGY ECHO REVIEW CONSULT Cons Consult #: 9705118'); if(el) el.click(); },
+    target: function(){ return _findConsultItem('Jun 19,26 (pr) CARDIOLOGY ECHO REVIEW CONSULT Cons Consult #: 9705118'); },
+    title: '(pr) — Partial Results',
+    html: '<p><b>(pr) Partial Results</b> means a note exists but it\'s incomplete or still awaiting cosignature — close to done, but not yet a finished, signed consult.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 19,26 (c) NEPHROLOGY CONSULT Cons Consult #: 9705111'); if(el) el.click(); },
+    target: function(){ return _findConsultItem('Jun 19,26 (c) NEPHROLOGY CONSULT Cons Consult #: 9705111'); },
+    title: '(c) — Completed',
+    html: '<p><b>(c) Completed</b> is the one you\'ll reach for most — the consult has a finished, signed note attached. You can read it right here in the detail pane, or find the same note over in the <b>Notes</b> tab.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 19,26 (x) NUTRITION CONSULT Cons Consult #: 9705119'); if(el) el.click(); },
+    target: function(){ return _findConsultItem('Jun 19,26 (x) NUTRITION CONSULT Cons Consult #: 9705119'); },
+    secondaryTarget: function(){ return document.getElementById('cons-edit-resubmit-btn'); },
+    title: '(x) — Cancelled',
+    html: '<p><b>(x) Cancelled</b> means the consult was called off after being placed. Notice the new <b>Edit/Resubmit</b> button (outlined in orange) above New Consult/New Procedure — it only appears because <b>you</b> (the logged-in provider) were the one who cancelled this particular consult. If someone else had cancelled it, that button wouldn\'t be there at all.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 18,26 (dc) PODIATRY CONSULT Cons Consult #: 9705120'); if(el) el.click(); },
+    target: function(){ return _findConsultItem('Jun 18,26 (dc) PODIATRY CONSULT Cons Consult #: 9705120'); },
+    title: '(dc) — Discontinued',
+    html: '<p><b>(dc) Discontinued</b> is a separate outcome from cancelled, and can happen for a few different reasons — a consult can be discontinued after failed scheduling attempts, or automatically after sitting pending too long, among other reasons. Seeing <b>(dc)</b> alone doesn\'t tell you exactly which of those applies, but you can usually find the specific discontinuation reason entered as part of the activity log, like the one here — <b>Failed mandated scheduling attempts</b>.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'The Full Set',
+    html: '<p>To recap all seven: <b>(p)</b> pending, <b>(a)</b> active, <b>(s)</b> scheduled, <b>(pr)</b> partial results, <b>(c)</b> completed, <b>(x)</b> cancelled, <b>(dc)</b> discontinued. Once these are second nature, a glance at the Consults tree tells you exactly what still needs following up on.</p>'
   }
 ];
 
@@ -1033,6 +1112,23 @@ function startCoverSheetModule(){
   activateTourSteps(COVER_SHEET_TOUR_STEPS, 'cover-sheet');
 }
 
+// Every step in CONSULTS_TOUR_STEPS targets specific consults that only
+// exist on Kowalski's chart (the one patient with all 7 status codes
+// represented) -- so unlike ensureChartOpenForTour(), this always forces
+// Kowalski rather than only loading a default when no chart is open yet.
+// Restored by endTour() once the module is left (Skip/Finish/X), so a
+// trainee who launched this module from a different patient's chart ends
+// up back where they started instead of stuck on Kowalski.
+var _consultsTourOrigPt = null;
+function startConsultsModule(){
+  if(typeof closePtDialog==='function') closePtDialog();
+  _tourContinue   = false;
+  _chartTourShown = true;
+  if(currentPt && currentPt!=='kowalski') _consultsTourOrigPt = currentPt;
+  if(currentPt!=='kowalski') loadPatient('kowalski');
+  activateTourSteps(CONSULTS_TOUR_STEPS, 'consults');
+}
+
 function endTour(){
   _tourActive = false;
   document.getElementById('tour-clickblock').style.display = 'none';
@@ -1040,6 +1136,10 @@ function endTour(){
   document.getElementById('tour-spotlight-2').style.display = 'none';
   document.getElementById('tour-card').style.display = 'none';
   closeTeachingPopups();
+  if(_activeModuleId==='consults' && _consultsTourOrigPt){
+    loadPatient(_consultsTourOrigPt);
+    _consultsTourOrigPt = null;
+  }
   // Sub-tutorials return to the picker on Skip/Finish; the main tour just closes.
   if(_activeModuleId !== 'main') openTourPicker();
 }
@@ -1073,6 +1173,7 @@ function closeTeachingPopups(){
     closeWin('select-labs-dlg');
     closeWin('pdmp-results-dlg');
     closeWin('patient-flags-dlg');
+    closeWin('cons-edit-resubmit-dlg');
     closeWin('new-order-dlg');
     closeWin('order-signed-dlg');
     closeWin('encounter-coded-dlg');

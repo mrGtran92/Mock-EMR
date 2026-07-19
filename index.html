@@ -556,7 +556,7 @@
       </div>
       <div class="pl-mid">
         <div class="pl-patient-col">
-          <div class="pl-col-label">Patient:</div>
+          <div class="pl-col-label">Patient:<span id="pl-patient-ssn" style="font-weight:normal;margin-left:12px"></span></div>
           <input class="pl-search" id="pl-patient-search" autocomplete="off" oninput="plFilterPatients(this.value)">
           <div class="pl-listbox" id="pl-patient-lb"></div>
         </div>
@@ -679,6 +679,14 @@
       <button class="btn" onclick="doneCreatePdmpNote()">Done and Create Note</button>
     </div>
     <div id="pdmp-resize-handle" style="position:absolute;right:0;bottom:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 0 50%,#808080 50% 60%,transparent 60% 70%,#808080 70% 80%,transparent 80%)"></div>
+  </div>
+  <div class="float-win" id="cons-edit-resubmit-dlg" style="width:440px;top:160px;left:220px">
+    <div class="fw-title" id="cons-er-drag-handle">
+      <span>Edit/Resubmit Consult</span>
+      <span class="wb" onclick="closeWin('cons-edit-resubmit-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" id="cons-er-body" style="font-size:11px"></div>
+    <div class="fw-footer"><button class="btn" onclick="closeWin('cons-edit-resubmit-dlg')">Close</button></div>
   </div>
   <div class="float-win" id="patient-flags-dlg" data-display="flex" style="width:900px;height:600px;top:40px;left:80px;flex-direction:column">
     <div class="fw-title" id="flags-drag-handle">

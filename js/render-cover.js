@@ -13,18 +13,16 @@ function renderCover(pt){
     + pt.postings.map(function(p){return '<tr><td class="posting-link">'+p.type+'</td><td class="posting-link" style="white-space:nowrap">'+p.dt+'</td></tr>';}).join('');
   var postHtml = '<table class="cs-tbl"><tr><th>Posting</th><th>Date</th></tr>'+postRows+'</table>';
   var v=pt.vitals[0];
-  var vabn=function(val){return val&&(val.indexOf('H')>-1||val.indexOf('L')>-1);};
-  var vclean=function(val){return val?val.replace(/ [HL]$/,''):val;};
-  var vcell=function(val,display){return '<td'+(vabn(val)?' style="color:#cc0000"':'')+'>'+display+'</td>';};
+  var vcell=function(key,display){return '<td'+(vwIsAbnormal(v,key)?' style="color:#cc0000"':'')+'>'+display+'</td>';};
   var vitHtml='<table class="cs-tbl" style="font-size:10px"><tr><th>Vital</th><th>Value</th><th>Date Taken</th><th>Quals</th></tr>'+
-    '<tr><td>T</td>'+vcell(v.t, vclean(v.t)+' F ('+vclean(v.t)+'C)')+'<td>'+v.dt+'</td><td>'+(v.qual||'')+'</td></tr>'+
-    '<tr><td>P</td>'+vcell(v.hr, vclean(v.hr))+'<td>'+v.dt+'</td><td></td></tr>'+
-    '<tr><td>R</td>'+vcell(v.rr, vclean(v.rr))+'<td>'+v.dt+'</td><td></td></tr>'+
-    '<tr><td>BP</td>'+vcell(v.bp, vclean(v.bp))+'<td>'+v.dt+'</td><td>'+(v.qual||'')+'</td></tr>'+
+    '<tr><td>T</td>'+vcell('t', v.t+' F ('+v.t+'C)')+'<td>'+v.dt+'</td><td>'+(v.qual||'')+'</td></tr>'+
+    '<tr><td>P</td>'+vcell('hr', v.hr)+'<td>'+v.dt+'</td><td></td></tr>'+
+    '<tr><td>R</td>'+vcell('rr', v.rr)+'<td>'+v.dt+'</td><td></td></tr>'+
+    '<tr><td>BP</td>'+vcell('bp', v.bp)+'<td>'+v.dt+'</td><td>'+(v.qual||'')+'</td></tr>'+
     (v.ht?'<tr><td>HT</td><td>'+v.ht+'</td><td>'+v.dt+'</td><td></td></tr>':'')+
     '<tr><td>WT</td><td>'+(v.wt!='--'?v.wt+' kg ('+(parseFloat(v.wt)*2.20462).toFixed(0)+' lbs)':'--')+'</td><td>'+v.dt+'</td><td></td></tr>'+
     '<tr><td>PN</td><td>'+(v.pn||'0')+'</td><td>'+v.dt+'</td><td></td></tr>'+
-    '<tr><td>POX</td>'+vcell(v.spo2, v.pox)+'<td>'+v.dt+'</td><td>'+(v.qual||'ROOM AIR')+'</td></tr></table>';
+    '<tr><td>POX</td>'+vcell('pox', v.pox)+'<td>'+v.dt+'</td><td>'+(v.qual||'ROOM AIR')+'</td></tr></table>';
   var immHtml = pt.immunizations.map(function(im){return '<div class="cs-row"><span class="alink" style="font-size:10px;min-width:0;flex:1">'+im.name+'</span><span class="cs-date">'+im.dt+'</span></div>';}).join('');
   var apptHtml='<table class="cs-tbl"><tr><th>Date/Time</th><th>Location</th><th>Action</th></tr>'+pt.appointments.map(function(a){return '<tr><td>'+a.dt+'</td><td>'+a.loc+'</td><td>'+a.action+'</td></tr>';}).join('')+'</table>';
   var dueReminders = (pt.reminders||[]).filter(function(r){return r.status==='due';});

@@ -64,12 +64,29 @@ function vwGetNumeric(v,key){
   if(key==='pn') return parseFloat(v.pn)||0;
   return NaN;
 }
+// Single source of truth for vital-sign abnormal flagging, computed from
+// the actual numeric value against fixed reference ranges rather than a
+// manually-authored " H"/" L" suffix in the data -- the old convention let
+// the same value (e.g. Temp 37.1, SpO2 94) show flagged in one entry and
+// unflagged in another purely from inconsistent hand-authoring. Also fixes
+// a pre-existing bug where the old pox/bp check shared one expression, so
+// an abnormal BP could incorrectly flag the P Ox cell red (and vice versa).
+// P Ox is deliberately excluded from VITAL_RANGES -- per user correction,
+// real CPRS never flags pulse ox red regardless of how low it reads, so it
+// always renders in plain black text.
+var VITAL_RANGES = {t:{lo:36.0,hi:38.0}, hr:{lo:60,hi:100}, rr:{lo:12,hi:20}};
 function vwIsAbnormal(v,key){
-  if(key==='t') return v.t.indexOf('H')>-1||v.t.indexOf('L')>-1;
-  if(key==='hr') return v.hr.indexOf('H')>-1||v.hr.indexOf('L')>-1;
-  if(key==='rr') return v.rr.indexOf('H')>-1||v.rr.indexOf('L')>-1;
-  if(key==='pox'||key==='bp') return v.spo2&&v.spo2.indexOf('L')>-1||v.bp.indexOf('H')>-1;
-  return false;
+  if(key==='pox') return false;
+  if(key==='bp'){
+    var parts=(v.bp||'').split('/');
+    var sys=parseFloat(parts[0]), dia=parseFloat(parts[1]);
+    return (!isNaN(sys)&&(sys>140||sys<90)) || (!isNaN(dia)&&(dia>90||dia<60));
+  }
+  var range=VITAL_RANGES[key];
+  if(!range) return false;
+  var n=parseFloat(key==='pox'?v.pox:v[key]);
+  if(isNaN(n)) return false;
+  return (range.hi!==null && n>range.hi) || n<range.lo;
 }
 function vwDrawChart(){
   var wrap=document.getElementById('vw-chart-wrap');
@@ -144,13 +161,12 @@ function vwDrawChart(){
   ctx.fillText('● '+label,pad.l+14,13);
 }
 function renderVitalsTable(vitals){
-  var abn=function(v){return v&&(v.indexOf('H')>-1||v.indexOf('L')>-1);};
   var rows=[
-    {label:'Temp:',         val:function(v){return {t:v.t.replace(/ [HL]/,''),                              a:abn(v.t)     };}},
-    {label:'Pulse:',        val:function(v){return {t:v.hr.replace(/ [HL]/,''),                             a:abn(v.hr)    };}},
-    {label:'Resp:',         val:function(v){return {t:v.rr.replace(/ [HL]/,''),                             a:abn(v.rr)    };}},
-    {label:'P Ox %:',       val:function(v){return {t:v.pox,                                                a:abn(v.spo2)  };}},
-    {label:'B/P:',          val:function(v){return {t:v.bp.replace(/ [HL]/,''),                             a:abn(v.bp)    };}},
+    {label:'Temp:',         val:function(v){return {t:v.t,                                                  a:vwIsAbnormal(v,'t')  };}},
+    {label:'Pulse:',        val:function(v){return {t:v.hr,                                                 a:vwIsAbnormal(v,'hr') };}},
+    {label:'Resp:',         val:function(v){return {t:v.rr,                                                 a:vwIsAbnormal(v,'rr') };}},
+    {label:'P Ox %:',       val:function(v){return {t:v.pox,                                                a:vwIsAbnormal(v,'pox')};}},
+    {label:'B/P:',          val:function(v){return {t:v.bp,                                                 a:vwIsAbnormal(v,'bp') };}},
     {label:'Wt (lbs):',     val:function(v){return {t:v.wt!=='--'?(parseFloat(v.wt)*2.20462).toFixed(0):'--',a:false      };}},
     {label:'Ht (in):',      val:function(v){return {t:v.ht?v.ht.replace(' in',''):'',                      a:false        };}},
     {label:'BMI:',          val:function(v){return {t:'',a:false};}},
@@ -178,7 +194,7 @@ function renderVitalsTable(vitals){
     body+=rowHtml+'</tr>';
   });
   var h='<table style="border-collapse:collapse;font-size:11px"><thead><tr>'+th+'</tr></thead><tbody>'+body+'</tbody></table>'+
-    '<div style="margin-top:6px;font-size:10px;color:#555">KEY: "L"=Abnormal Low &nbsp; "H"=Abnormal High</div>';
+    '<div style="margin-top:6px;font-size:10px;color:#555">KEY: <span style="color:#cc0000">Red</span> = Outside Normal Range</div>';
   document.getElementById('vw-pane').innerHTML=h;
 }
 

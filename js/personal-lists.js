@@ -2,15 +2,23 @@
    Patient Selection dialog's Team/Personal picker + default-list
    Save Settings flow. */
 
+// Just the name -- real CPRS's Personal Lists patient search box doesn't
+// show DOB/SSN inline next to each row. Instead, highlighting a patient
+// shows their SSN in the label above the search box (see plSsnFor()).
 var PT_LABELS = {
-  kowalski:'Kowalski,Harold J          0042-8817    03/14/1952',
-  chen:    'Chen,Margaret L            0059-2241    09/02/1967',
-  okafor:  'Okafor,Emmanuel C          0071-5530    02/27/1981',
-  brennan: 'Brennan,Daniel T           0083-6420    03/14/1974',
-  hayes:   'Hayes,Patricia A           0096-4471    02/04/1955',
-  torres:  'Torres,Elena M             0104-3392    08/22/1967'
+  kowalski:'Kowalski,Harold J',
+  chen:    'Chen,Margaret L',
+  okafor:  'Okafor,Emmanuel C',
+  brennan: 'Brennan,Daniel T',
+  hayes:   'Hayes,Patricia A',
+  torres:  'Torres,Elena M'
 };
 var PT_KEYS = ['kowalski','chen','okafor','brennan','hayes','torres'];
+// Same "000-00-<last 4 of MRN>" convention already used for Patient Inquiry.
+function plSsnFor(key){
+  var pt = PTS[key];
+  return '000-00-'+pt.mrn.replace(/\D/g,'').slice(-4);
+}
 
 var PERSONAL_LISTS = [
   {name:'Gt 2 North', patients:[]},
@@ -53,6 +61,7 @@ function openPersonalLists(){
   plSelectedListIdx = null;
   plStaged = [];
   document.getElementById('pl-patient-search').value = '';
+  document.getElementById('pl-patient-ssn').textContent = '';
   plFilterPatients('');
   plRenderLists();
   plRenderStaged();
@@ -69,7 +78,12 @@ function plFilterPatients(filter){
     var d = document.createElement('div');
     d.className = 'pl-list-item';
     d.textContent = PT_LABELS[k];
-    d.onclick = function(){ plStagePatient(k); };
+    d.onclick = function(){
+      lb.querySelectorAll('.pl-list-item').forEach(function(x){x.classList.remove('selected');});
+      d.classList.add('selected');
+      document.getElementById('pl-patient-ssn').textContent = 'SSN: '+plSsnFor(k);
+      plStagePatient(k);
+    };
     lb.appendChild(d);
   });
 }
