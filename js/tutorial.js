@@ -33,23 +33,32 @@ var _activeModuleId   = 'main';  // which TOUR_MODULES entry is running — 'mai
    Add future sub-tutorials here — the picker UI and engine
    below don't need to change when new modules are added.
    --------------------------------------------------------- */
+// Grouped by where the content lives in the chart, in the same order as
+// the chart's own tab bar (Cover Sheet, Meds, Orders, Notes, Consults,
+// Labs, Reports -- see CLAUDE.md's locked tab order), with a "Getting
+// Started" group first and a "Header & Tools" group for content that isn't
+// scoped to one specific tab. The picker renders a header divider whenever
+// `group` changes from the previous entry, so entries within a group must
+// stay adjacent -- reorder here (not in the picker code) if that changes.
 var TOUR_MODULES = [
-  {id:'main', label:'Guided Orientation Tour (Patient Selection or Chart)', run:function(){ startTour(); }},
-  {id:'personal-list', label:'Building a Personal Patient List', run:function(){ startPersonalListModule(); }},
-  {id:'mar', label:'Reviewing the MAR (Medication Administration Record)', run:function(){ startMarModule(); }},
-  {id:'header', label:'Patient Header Deep-Dive', run:function(){ startHeaderModule(); }},
-  {id:'imaging', label:'VistA Imaging Display (EKGs & Advance Directives)', run:function(){ startImagingModule(); }},
-  {id:'notes-tools', label:'Notes Tab Tools (Templates, Encounter, New Note)', run:function(){ startNotesToolsModule(); }},
-  {id:'labs-views', label:'Labs Views (Most Recent, Overview, Worksheet)', run:function(){ startLabsViewsModule(); }},
-  {id:'reports-views', label:'Reports Views (Imaging, Procedures, Pharmacy)', run:function(){ startReportsViewsModule(); }},
-  {id:'pdmp', label:'PDMP Query & Results', run:function(){ startPdmpModule(); }},
-  {id:'remote-data', label:'Remote Data (Other VA Facilities)', run:function(){ startRemoteDataModule(); }},
+  {id:'main', group:'Getting Started', label:'Guided Orientation Tour', run:function(){ startTour(); }},
+  {id:'personal-list', group:'Header & Tools', label:'Building a Personal Patient List', run:function(){ startPersonalListModule(); }},
+  {id:'header', group:'Header & Tools', label:'Patient Header Deep-Dive', run:function(){ startHeaderModule(); }},
+  {id:'pdmp', group:'Header & Tools', label:'PDMP Query & Results', run:function(){ startPdmpModule(); }},
+  {id:'remote-data', group:'Header & Tools', label:'Remote Data (Other VA Facilities)', run:function(){ startRemoteDataModule(); }},
+  {id:'imaging', group:'Header & Tools', label:'VistA Imaging Display (EKGs & Advance Directives)', run:function(){ startImagingModule(); }},
+  {id:'cover-sheet', group:'Cover Sheet', label:'Reminders, Immunizations & Appointments', run:function(){ startCoverSheetModule(); }},
+  {id:'meds-order', group:'Meds Tab', label:'Changing an Active Medication', run:function(){ startMedsOrderModule(); }},
+  {id:'meds-renew', group:'Meds Tab', label:'Expiration & Renewing a Medication', run:function(){ startMedsRenewModule(); }},
+  {id:'mar', group:'Orders Tab', label:'Reviewing the MAR (Medication Administration Record)', run:function(){ startMarModule(); }},
+  {id:'notes-tools', group:'Notes Tab', label:'Notes Tab Tools (Templates, Encounter, New Note)', run:function(){ startNotesToolsModule(); }},
+  {id:'consults', group:'Consults Tab', label:'Understanding Consult Statuses', run:function(){ startConsultsModule(); }},
+  {id:'labs-views', group:'Labs Tab', label:'Labs Views (Most Recent, Overview, Worksheet)', run:function(){ startLabsViewsModule(); }},
+  {id:'reports-views', group:'Reports Tab', label:'Reports Views (Imaging, Procedures, Pharmacy)', run:function(){ startReportsViewsModule(); }},
   // 'order-entry', 'encounter-coding', and 'clinical-reminders' are hidden from the
   // picker (not deleted) -- their content isn't finished yet and this app is about
   // to go live. Their step arrays and start*Module() functions below are untouched;
   // just re-add the entries here once each module is actually ready.
-  {id:'cover-sheet', label:'Cover Sheet: Reminders, Immunizations & Appointments', run:function(){ startCoverSheetModule(); }},
-  {id:'consults', label:'Consults Tab: Reading Status Codes', run:function(){ startConsultsModule(); }},
 ];
 
 // Finds a Cover Sheet grid cell (#rp-body .cs-cell) by its header title text
@@ -98,6 +107,51 @@ function _findConsultItem(label){
     if(text === label) return items[i];
   }
   return null;
+}
+
+// goTab() always fully re-renders the target tab (renderMeds() rebuilds
+// the whole Meds tab DOM from scratch), which resets the Outpatient/Non-VA/
+// Inpatient sections' scroll position back to 0 -- calling it on every
+// single step's before() (even when already on the Meds tab) was causing a
+// visible "scroll back to top, then back down to the row" jump on every
+// step transition, and left the background list looking reset to the top
+// once a later step's target was a dialog rather than the row itself. Only
+// call goTab when the Meds tab isn't already active.
+function _goMedsTab(){ if(currentTab!=='meds') goTab('meds'); }
+
+// Matches a Meds tab row (#meds-home-tbl/#meds-inpt-tbl tbody tr) by a
+// substring of its .med-name text -- these tables have no stable per-row
+// ids either, same rationale as _findTreeItem above.
+function _findMedsRow(tableId, nameSubstring){
+  var rows = document.querySelectorAll('#'+tableId+' tbody tr');
+  for(var i=0;i<rows.length;i++){
+    var nameEl = rows[i].querySelector('.med-name');
+    if(nameEl && nameEl.textContent.indexOf(nameSubstring)!==-1) return rows[i];
+  }
+  return null;
+}
+
+// The header <tr>'s own getBoundingClientRect() doesn't reliably reflect
+// where its cells actually render once they're individually position:sticky
+// (table row layout + sticky descendants is a known rough edge) -- this
+// returns a plain object with just a getBoundingClientRect() method (all
+// positionSpotlight/_spotlightRect actually call), computed as the real
+// union of the header's <th> cells instead, so the spotlight lines up with
+// where the sticky header row visually is.
+function _findMedsHeaderRow(tableId){
+  var ths = document.querySelectorAll('#'+tableId+' thead th');
+  if(!ths.length) return null;
+  return {
+    getBoundingClientRect: function(){
+      var left=Infinity, top=Infinity, right=-Infinity, bottom=-Infinity;
+      ths.forEach(function(th){
+        var r = th.getBoundingClientRect();
+        left = Math.min(left, r.left); top = Math.min(top, r.top);
+        right = Math.max(right, r.right); bottom = Math.max(bottom, r.bottom);
+      });
+      return {left:left, top:top, right:right, bottom:bottom, width:right-left, height:bottom-top};
+    }
+  };
 }
 
 /* ---------------------------------------------------------
@@ -759,9 +813,14 @@ var CONSULTS_TOUR_STEPS = [
   {
     before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 19,26 (x) NUTRITION CONSULT Cons Consult #: 9705119'); if(el) el.click(); },
     target: function(){ return _findConsultItem('Jun 19,26 (x) NUTRITION CONSULT Cons Consult #: 9705119'); },
-    secondaryTarget: function(){ return document.getElementById('cons-edit-resubmit-btn'); },
     title: '(x) — Cancelled',
-    html: '<p><b>(x) Cancelled</b> means the consult was called off after being placed. Notice the new <b>Edit/Resubmit</b> button (outlined in orange) above New Consult/New Procedure — it only appears because <b>you</b> (the logged-in provider) were the one who cancelled this particular consult. If someone else had cancelled it, that button wouldn\'t be there at all.</p>'
+    html: '<p><b>(x) Cancelled</b> means the consult was called off after being placed.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 19,26 (x) NUTRITION CONSULT Cons Consult #: 9705119'); if(el) el.click(); },
+    target: function(){ return document.getElementById('cons-edit-resubmit-btn'); },
+    title: 'Edit/Resubmit',
+    html: '<p>Notice the new <b>Edit/Resubmit</b> button above New Consult/New Procedure — it only appears because <b>you</b> (the logged-in provider) were the one who cancelled this particular consult. If someone else had cancelled it, that button wouldn\'t be there at all.</p>'
   },
   {
     before: function(){ closeTeachingPopups(); goTab('consults'); var el=_findConsultItem('Jun 18,26 (dc) PODIATRY CONSULT Cons Consult #: 9705120'); if(el) el.click(); },
@@ -884,6 +943,166 @@ var CLINICAL_REMINDERS_TOUR_STEPS = [
     before: function(){ closeTeachingPopups(); },
     title: 'Habit to Build',
     html: '<p>Checking Reminders is core outpatient hygiene — it\'s how preventive care gets done at scale instead of relying on memory during a busy visit.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   MEDS TAB: ORDERING A MEDICATION (Change...)
+   Standalone sub-tutorial walking the "Change..." order-entry
+   dialog end-to-end using the Acetaminophen (Tylenol) entry
+   every patient now carries, per the user's own teaching notes.
+   --------------------------------------------------------- */
+// Shared by the Dosage/Route/Schedule, PRN, and Indication/Pick Up steps --
+// closeTeachingPopups() (called from every step's before()) closes
+// change-order-dlg along with everything else, so each of those steps has
+// to reopen it fresh rather than assuming it's still open from a prior step.
+function _medsOrderTourOpenDialog(){
+  closeTeachingPopups(); _goMedsTab();
+  if(typeof openChangeOrder!=='function') return;
+  var row=_findMedsRow('meds-home-tbl','ACETAMINOPHEN');
+  var idx=row ? Array.prototype.indexOf.call(document.querySelectorAll('#meds-home-tbl tbody tr'), row) : -1;
+  if(idx>-1) openChangeOrder('outpt', idx);
+  // change-order-dlg is wide enough to fill most of the viewport at its
+  // default centered-ish position, leaving the tour card nowhere to render
+  // without overlapping it -- pin it to the top-left corner for this
+  // module's steps only, same technique used by the Header Deep-Dive
+  // Flag step, so the card has room on the right instead.
+  var dlg=document.getElementById('change-order-dlg');
+  if(dlg){ dlg.style.top='20px'; dlg.style.left='20px'; }
+}
+var MEDS_ORDER_TOUR_STEPS = [
+  {
+    center: true,
+    tab: 'meds',
+    before: function(){ closeTeachingPopups(); },
+    title: 'Changing an Active Medication',
+    html: '<p>This walks through the <b>Change...</b> order-entry dialog. We\'ll use <b>acetaminophen</b> as the example since every patient in this simulation has this prescription.</p>'
+  },
+  {
+    tab: 'meds',
+    before: function(){ closeTeachingPopups(); _goMedsTab(); },
+    target: function(){ return document.getElementById('meds-outpt-sec'); },
+    title: 'Outpatient Medications',
+    html: '<p>Find the medication you wish to change. <b>Right-click</b> it to open its context menu.</p>'
+  },
+  {
+    before: function(){
+      closeTeachingPopups(); _goMedsTab();
+      var row=_findMedsRow('meds-home-tbl','ACETAMINOPHEN');
+      if(row && typeof showMedsCtxMenu==='function'){
+        // On patients with a long enough Outpatient Medications list (e.g.
+        // Kowalski), the Acetaminophen row can be scrolled out of view --
+        // getBoundingClientRect() on a clipped-but-still-in-the-DOM row
+        // returns coordinates way outside the visible area, which is what
+        // sent the context menu "floating in nowhere". Scroll it into view
+        // first so the rect (and therefore the menu's position) is real.
+        row.scrollIntoView({block:'center'});
+        var idx=Array.prototype.indexOf.call(document.querySelectorAll('#meds-home-tbl tbody tr'), row);
+        var rect=row.getBoundingClientRect();
+        showMedsCtxMenu({preventDefault:function(){}, currentTarget:row, target:row, pageX:rect.left+60, pageY:rect.top+8}, 'outpt', idx);
+      }
+    },
+    target: function(){ return document.getElementById('meds-ctx-menu'); },
+    highlightTarget: function(){
+      var menu=document.getElementById('meds-ctx-menu'); if(!menu) return null;
+      var items=menu.querySelectorAll('.ctx-item');
+      for(var i=0;i<items.length;i++){ if(items[i].textContent.trim()==='Change...') return items[i]; }
+      return menu;
+    },
+    title: 'Change...',
+    html: '<p>Choose <b>Change...</b> from the context menu — it\'s a similar order-entry dialog to the one you\'d use when ordering a brand-new medication via the Orders tab.</p>'
+  },
+  {
+    before: function(){ _medsOrderTourOpenDialog(); },
+    target: function(){ return document.getElementById('change-order-dlg'); },
+    title: 'Dosage, Route, and Schedule',
+    html: '<p>Three columns drive the actual order: <b>Dosage</b> (strength, with price/tier), <b>Route</b> lets you select the route of administration, such as Oral, Intravenous, IV Piggyback, IV Push, Subcutaneous, or Intramuscular, and <b>Schedule</b> — the long list on the right.</p>'
+        + '<p>Pick the strength and schedule that match what you actually want the patient taking — pay careful attention to make sure the correct dose, route, and schedule are selected.</p>'
+  },
+  {
+    before: function(){ _medsOrderTourOpenDialog(); },
+    target: function(){ return document.getElementById('co-prn-label'); },
+    cardOffset: {dx: 280, dy: 0},
+    title: 'PRN Changes How Quantity Works',
+    html: '<p>The <b>PRN</b> checkbox allows you to toggle whether a medication is as-needed or scheduled.</p>'
+        + '<p>With PRN <b>checked</b>, Quantity is <i>not</i> auto-filled — as-needed medications don\'t have a predictable daily dose count, so that number has to be entered by hand.</p>'
+  },
+  {
+    before: function(){ _medsOrderTourOpenDialog(); },
+    target: function(){ return document.getElementById('co-qty-refill-group'); },
+    title: 'Days Supply, Quantity, and Refills',
+    html: '<p>This is where you set the <b>Days Supply</b>, <b>Quantity</b>, and <b>Refills</b> for the order.</p>'
+        + '<p>With PRN unchecked, <b>Quantity</b> here auto-calculates from Days Supply and the selected schedule (e.g. BID x 90 days = 180 tablets). Try checking and unchecking PRN now and watch this Quantity box change.</p>'
+  },
+  {
+    before: function(){ _medsOrderTourOpenDialog(); },
+    target: function(){ return document.getElementById('co-ind-comments-row'); },
+    title: 'Indication and Comments',
+    html: '<p><b>Indication</b> documents why the medication is being ordered — pick the closest match. You can use Comments for more specific details.</p>'
+  },
+  {
+    before: function(){ _medsOrderTourOpenDialog(); },
+    target: function(){ return document.getElementById('co-pickup-group'); },
+    title: 'Pick Up',
+    html: '<p><b>Pick Up</b> matters operationally: <b>Mail</b> ships automatically to the patient\'s listed mailing address; <b>At Window</b> means the patient collects it in person; <b>Park</b> means nothing gets filled or mailed at all until the patient actively requests it (a phone call, an in-person visit, or a MyHealtheVet refill request).</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Wrap-Up',
+    html: '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   MEDS TAB: EXPIRATION & RENEWING A MEDICATION
+   Standalone sub-tutorial covering Expires/Status/Last Filled
+   and the Renew... workflow, using the same Acetaminophen entry
+   -- deliberately dated so it's close to expiring despite still
+   having refills left, to teach that expiration trumps refills.
+   --------------------------------------------------------- */
+var MEDS_RENEW_TOUR_STEPS = [
+  {
+    center: true,
+    tab: 'meds',
+    before: function(){ closeTeachingPopups(); },
+    title: 'Expiration & Renewing a Medication',
+    html: '<p>Outpatient prescriptions expire <b>one calendar year</b> from when they were originally ordered — not from when they were last filled, and not when refills run out. This tour uses the same <b>Acetaminophen</b> entry, deliberately set up so it\'s close to expiring even though it still has refills remaining.</p>'
+  },
+  {
+    tab: 'meds',
+    before: function(){ closeTeachingPopups(); _goMedsTab(); },
+    target: function(){ return _findMedsRow('meds-home-tbl','ACETAMINOPHEN'); },
+    secondaryTarget: function(){ return _findMedsHeaderRow('meds-home-tbl'); },
+    title: 'Expires, Status, Last Filled, Refills Remaining',
+    html: '<p>Four columns matter together, not in isolation: <b>Expires</b>, <b>Status</b>, <b>Last Filled</b>, and <b>Refills Remaining</b>.</p>'
+        + '<p>Look at <b>ACETAMINOPHEN 500MG TAB</b> — notice its <b>Last Filled</b> date looks fairly recent, and it still shows refills remaining, but its <b>Expires</b> date is coming up soon regardless. Refills don\'t reset or extend the expiration date; only a new order does.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); _goMedsTab(); },
+    target: function(){ return _findMedsRow('meds-home-tbl','ACETAMINOPHEN'); },
+    title: 'Read the Whole Order',
+    html: '<p>Before renewing anything, read the full order line, not just the drug name — the strength on the label (e.g. 500MG tablets) doesn\'t always match the instructions (e.g. "take 1-2 tablets"). The <b>Quantity</b> dispensed should stay consistent with what the sig actually asks the patient to take.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); _goMedsTab(); if(typeof openRenewOrders==='function'){ var row=_findMedsRow('meds-home-tbl','ACETAMINOPHEN'); var idx=row?Array.prototype.indexOf.call(document.querySelectorAll('#meds-home-tbl tbody tr'), row):-1; if(idx>-1) openRenewOrders('outpt', idx); } },
+    target: function(){ return document.getElementById('renew-orders-dlg'); },
+    title: 'Renew...',
+    html: '<p>Right-click the medication and choose <b>Renew...</b>. This summarizes the current order — drug, sig, quantity, and refills — and lets you carry it forward before it actually lapses.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); _goMedsTab(); if(typeof openRenewOrders==='function'){ var row=_findMedsRow('meds-home-tbl','ACETAMINOPHEN'); var idx=row?Array.prototype.indexOf.call(document.querySelectorAll('#meds-home-tbl tbody tr'), row):-1; if(idx>-1){ openRenewOrders('outpt', idx); if(typeof openChangeRefills==='function') openChangeRefills(); } } },
+    target: function(){ return document.getElementById('change-refills-dlg'); },
+    title: 'Change Days Supply/Quantity/Refills/Pick Up...',
+    html: '<p>Clicking the <b>Change Days Supply/Quantity/Refills/Pick Up...</b> button in the bottom-left of the Renew Orders popup opens this second dialog.</p>'
+        + '<p>From here you can adjust the <b>Days Supply</b>, <b>Quantity</b>, <b>Refills</b>, and <b>Pick Up</b> method before finalizing the renewal — the same three Pick Up options as ordering a new medication (Mail / At Window / Park).</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Habit to Build',
+    html: '<p>Part of reviewing any medication list is checking that nothing is about to lapse — a med with plenty of refills left can still expire, and a patient who thinks they\'re covered can show up to an empty pharmacy queue. Make Expires a routine check, not just Refills Remaining.</p>'
         + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
   }
 ];
@@ -1112,6 +1331,16 @@ function startCoverSheetModule(){
   activateTourSteps(COVER_SHEET_TOUR_STEPS, 'cover-sheet');
 }
 
+function startMedsOrderModule(){
+  ensureChartOpenForTour();
+  activateTourSteps(MEDS_ORDER_TOUR_STEPS, 'meds-order');
+}
+
+function startMedsRenewModule(){
+  ensureChartOpenForTour();
+  activateTourSteps(MEDS_RENEW_TOUR_STEPS, 'meds-renew');
+}
+
 // Every step in CONSULTS_TOUR_STEPS targets specific consults that only
 // exist on Kowalski's chart (the one patient with all 7 status codes
 // represented) -- so unlike ensureChartOpenForTour(), this always forces
@@ -1132,6 +1361,7 @@ function startConsultsModule(){
 function endTour(){
   _tourActive = false;
   document.getElementById('tour-clickblock').style.display = 'none';
+  document.getElementById('tour-dim').style.display = 'none';
   document.getElementById('tour-spotlight').style.display = 'none';
   document.getElementById('tour-spotlight-2').style.display = 'none';
   document.getElementById('tour-card').style.display = 'none';
@@ -1179,6 +1409,11 @@ function closeTeachingPopups(){
     closeWin('encounter-coded-dlg');
     closeWin('reminders-dlg');
     closeWin('tour-picker-dlg');
+    closeWin('renew-orders-dlg');
+    closeWin('change-refills-dlg');
+    closeWin('change-order-dlg');
+    closeWin('meds-sim-notice-dlg');
+    if(typeof closeMedsCtxMenu==='function') closeMedsCtxMenu();
   }
   if(typeof closePtDialog==='function' && currentPt) closePtDialog();
 }
@@ -1192,7 +1427,15 @@ function closeTourEntirely(){
 function openTourPicker(){
   var list = document.getElementById('tpk-list');
   list.innerHTML = '';
+  var lastGroup = null;
   TOUR_MODULES.forEach(function(mod){
+    if(mod.group && mod.group !== lastGroup){
+      var hdr = document.createElement('div');
+      hdr.className = 'tpk-group-hdr';
+      hdr.textContent = mod.group;
+      list.appendChild(hdr);
+      lastGroup = mod.group;
+    }
     var item = document.createElement('div');
     item.className = 'ol-item';
     item.textContent = mod.label;
@@ -1229,10 +1472,15 @@ function showTourStep(idx){
   _tourIndex = idx;
   var step = _tourSteps[idx];
 
-  if(step.tab){ goTab(step.tab); }
+  // goTab() fully re-renders the target tab even if it's already active,
+  // which (for tabs like Meds that scroll internally) resets scroll
+  // position back to 0 on every single step -- only switch tabs when
+  // actually changing tabs.
+  if(step.tab && step.tab!==currentTab){ goTab(step.tab); }
   if(step.before){ step.before(); }
 
   if(step.center){
+    document.getElementById('tour-dim').style.display = 'none';
     document.getElementById('tour-spotlight').style.display = 'none';
     document.getElementById('tour-spotlight-2').style.display = 'none';
     renderTourCard(step, null);
@@ -1245,24 +1493,50 @@ function showTourStep(idx){
       el.scrollIntoView({block:'nearest', behavior:'smooth'});
       setTimeout(function(){
         document.getElementById('tour-spotlight').style.display = 'block';
-        positionSpotlight('tour-spotlight', highlightEl || el);
+        var r1 = positionSpotlight('tour-spotlight', highlightEl || el);
         var sp2 = document.getElementById('tour-spotlight-2');
-        if(secondaryEl){ sp2.style.display = 'block'; positionSpotlight('tour-spotlight-2', secondaryEl); }
+        var rects = [r1];
+        if(secondaryEl){ sp2.style.display = 'block'; rects.push(positionSpotlight('tour-spotlight-2', secondaryEl)); }
         else { sp2.style.display = 'none'; }
+        _updateTourDim(rects);
         renderTourCard(step, el);
       }, 180);
     });
   }
 }
 
-function positionSpotlight(spotlightId, el){
-  var r   = el.getBoundingClientRect();
+// Shared rect math for both the ring outline (#tour-spotlight/-2) and the
+// dim layer's clip-path hole for the same element -- keeps the two in sync.
+function _spotlightRect(el){
+  var r = el.getBoundingClientRect();
   var pad = 5;
-  var sp  = document.getElementById(spotlightId);
-  sp.style.left   = (r.left   - pad) + 'px';
-  sp.style.top    = (r.top    - pad) + 'px';
-  sp.style.width  = (r.width  + pad * 2) + 'px';
-  sp.style.height = (r.height + pad * 2) + 'px';
+  return {x: r.left - pad, y: r.top - pad, w: r.width + pad*2, h: r.height + pad*2};
+}
+// Cuts one hole per rect out of #tour-dim using an evenodd clip-path (outer
+// full-viewport rect + one sub-path per hole) so any number of simultaneous
+// targets can be genuinely bright at once, not just outlined.
+function _updateTourDim(rects){
+  var dim = document.getElementById('tour-dim');
+  if(!rects || !rects.length){ dim.style.display = 'none'; return; }
+  dim.style.display = 'block';
+  var vw = window.innerWidth, vh = window.innerHeight;
+  var path = 'M0,0H'+vw+'V'+vh+'H0Z';
+  rects.forEach(function(r){
+    var x = Math.max(0, r.x), y = Math.max(0, r.y);
+    path += ' M'+x+','+y+'H'+(x+r.w)+'V'+(y+r.h)+'H'+x+'Z';
+  });
+  var cp = "path(evenodd, '"+path+"')";
+  dim.style.clipPath = cp;
+  dim.style.webkitClipPath = cp;
+}
+function positionSpotlight(spotlightId, el){
+  var rect = _spotlightRect(el);
+  var sp   = document.getElementById(spotlightId);
+  sp.style.left   = rect.x + 'px';
+  sp.style.top    = rect.y + 'px';
+  sp.style.width  = rect.w + 'px';
+  sp.style.height = rect.h + 'px';
+  return rect;
 }
 
 function renderTourCard(step, anchorEl){
@@ -1333,9 +1607,10 @@ window.addEventListener('resize', function(){
     var el = step.target();
     if(el){
       var highlightEl = step.highlightTarget ? step.highlightTarget() : el;
-      positionSpotlight('tour-spotlight', highlightEl || el);
       var secondaryEl = step.secondaryTarget ? step.secondaryTarget() : null;
-      if(secondaryEl) positionSpotlight('tour-spotlight-2', secondaryEl);
+      var rects = [positionSpotlight('tour-spotlight', highlightEl || el)];
+      if(secondaryEl) rects.push(positionSpotlight('tour-spotlight-2', secondaryEl));
+      _updateTourDim(rects);
       renderTourCard(step, el);
     }
   }

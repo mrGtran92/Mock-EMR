@@ -188,18 +188,6 @@ function openEncounter(){
     tbl.appendChild(tr);
   });}
   encTabSwitch('clinic');
-  _encSelectedDx=null;
-  var dxList=document.getElementById('enc-dx-list'); dxList.innerHTML='';
-  var dxOptions=(pt.problems||[]).map(function(p){ return p.d; }).concat(_encCommonDx);
-  dxOptions.forEach(function(dx){
-    var d=document.createElement('div');
-    d.className='enc-dx-item'; d.textContent=dx;
-    d.onclick=function(){
-      dxList.querySelectorAll('.enc-dx-item').forEach(function(x){x.classList.remove('sel');});
-      d.classList.add('sel'); _encSelectedDx=dx;
-    };
-    dxList.appendChild(d);
-  });
   showFloatWin('encounter-dlg');
   centerFloatWin('encounter-dlg');
   document.removeEventListener('click', _encOutsideClick);

@@ -95,7 +95,13 @@ table.prob tr:hover td{background:#d0e4f8}
 .meds-vresizer:hover,.meds-vresizer:active{background:#a8c8f0}
 .meds-range{font-weight:normal;font-size:10px;color:#555}
 table.meds-tbl{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
-table.meds-tbl th{position:relative;background:#d4d0c8;padding:2px 6px;border-bottom:1px solid #aaa;font-size:10px;text-align:left;font-weight:bold}
+/* Sticky so the column headers stay visible while scrolling a long med
+   list -- top offset accounts for .meds-sec-hdr (the "Outpatient
+   Medications" title bar) already being pinned above it in the same
+   scroll container. position:sticky (not just relative) still gives the
+   column-resize-handle's absolute-positioned child a valid containing
+   block, same as before. */
+table.meds-tbl th{position:sticky;top:21px;z-index:1;background:#d4d0c8;padding:2px 6px;border-bottom:1px solid #aaa;font-size:10px;text-align:left;font-weight:bold}
 table.meds-tbl td{padding:2px 6px;border-bottom:1px solid #eee;vertical-align:top}
 table.meds-tbl .med-name{font-weight:bold}
 table.meds-tbl .med-sig{padding-left:12px;color:#333;display:block}
@@ -384,11 +390,22 @@ table.vi-tbl tr:hover td{background:#e8f0fb}
 
 /* ===== GUIDED TOUR ===== */
 #tour-clickblock{position:fixed;inset:0;z-index:1000;background:transparent;display:none}
+/* The actual dark backdrop, as one shared full-screen layer with a
+   clip-path "hole" punched out for each currently-lit target (see
+   _updateTourDim() in tutorial.js). Doing it this way -- rather than each
+   spotlight casting its own independent 9999px box-shadow -- is what lets
+   two simultaneous targets (target + secondaryTarget) both end up fully
+   bright: with two independent box-shadow elements, each one's "whole page
+   except me" shadow still darkens the OTHER element's hole, so neither
+   region actually reads as fully lit. One shared layer with two real holes
+   doesn't have that problem, and single-target steps just get one hole. */
+#tour-dim{position:fixed;inset:0;z-index:999;pointer-events:none;background:rgba(0,0,0,0.60);
+  display:none;transition:clip-path .2s}
 #tour-spotlight{position:fixed;z-index:1001;pointer-events:none;border-radius:4px;display:none;
-  box-shadow:0 0 0 9999px rgba(0,0,0,0.60),0 0 0 2px #fff;
+  box-shadow:0 0 0 2px #fff;
   transition:left .2s,top .2s,width .2s,height .2s}
 #tour-spotlight-2{position:fixed;z-index:1001;pointer-events:none;border-radius:4px;display:none;
-  box-shadow:0 0 0 3px #ffb300;
+  box-shadow:0 0 0 2px #fff;
   transition:left .2s,top .2s,width .2s,height .2s}
 .tour-card{position:fixed;z-index:1002;background:#fff;border:1px solid #aaa;
   border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,0.28);width:290px;
@@ -426,6 +443,9 @@ table.vi-tbl tr:hover td{background:#e8f0fb}
 #tour-picker-dlg .fw-body{padding:4px 8px 10px}
 #tour-picker-dlg .ol-item{padding:6px 8px;border-radius:3px;font-size:12px;color:#000}
 #tour-picker-dlg .ol-item:hover{background:#000080;color:#fff}
+.tpk-group-hdr{padding:6px 8px;font-size:11px;font-weight:bold;letter-spacing:0.03em;
+  text-transform:uppercase;color:#000080;background:#eef2fb;border-radius:3px;margin-top:10px}
+.tpk-group-hdr:first-child{margin-top:0}
 .tpk-close{background:none;border:none;font-size:16px;line-height:1;color:#888;
   cursor:pointer;padding:0;font-family:Arial}
 .tpk-close:hover{color:#000}
@@ -459,3 +479,23 @@ table.vi-tbl tr:hover td{background:#e8f0fb}
 .rem-table-row .rem-col-due{width:90px;padding:0 6px}
 .rem-table-row .rem-col-last{width:90px;padding:0 6px}
 .rem-table-row .rem-col-pri{flex:1;padding:0 6px}
+
+/* ===== Renew Orders / Change Refills (Meds tab) ===== */
+.ro-hdr{display:flex;justify-content:space-between;font-size:11px;font-weight:bold;
+  padding:4px 6px;background:#e8e8e8;border-bottom:1px solid #999}
+.ro-box{background:#000080;color:#fff;padding:6px 10px;font-size:11px;line-height:1.6}
+#renew-orders-dlg .fw-body{background:#fdf6c8;padding:6px;min-height:200px}
+table.meds-tbl tr.sel td{background:#000080;color:#fff}
+table.meds-tbl tr.sel .med-sig,table.meds-tbl tr.sel .med-ind,table.meds-tbl tr.sel .med-name{color:#fff!important}
+.cr-field{display:flex;flex-direction:column;gap:2px;font-size:11px}
+.cr-field label{color:#333}
+.cr-field input,.cr-field select{width:80px;border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff}
+.cr-field select{width:120px}
+
+/* ===== Change... / Outpatient Medications order-entry dialog ===== */
+.co-listbox{border:1px solid #999;background:#fff;font-size:11px;min-height:230px}
+.co-opt{display:flex;justify-content:space-between;gap:8px;padding:2px 6px;cursor:pointer;white-space:nowrap}
+.co-opt:hover{background:#d0e4f8}
+.co-opt.sel{background:#000080;color:#fff}
+#change-order-dlg input[type=number]{width:60px;border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff}
+#change-order-dlg select,#change-order-dlg textarea{border:2px inset #808080;padding:2px 4px;font-size:11px;background:#fff;font-family:inherit}
