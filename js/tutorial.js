@@ -339,7 +339,14 @@ var NOTIFICATIONS_TOUR_STEPS = [
   },
   {
     before: function(){ notifSwitchTab('pending'); },
-    target: function(){ return document.getElementById('notif-tbl'); },
+    // The notifications table spans nearly the full dialog width, so the
+    // engine's normal "beside/below the target" placement has nowhere good
+    // to put the card without covering it. Pin the card to the far left
+    // edge of the screen instead -- clear of the (centered) dialog
+    // entirely -- while highlightTarget still spotlights the real row.
+    target: function(){ return document.getElementById('notif-tab-pending'); },
+    highlightTarget: function(){ return document.querySelector('#notif-tbl tr[data-idx="0"]') || document.getElementById('notif-tbl'); },
+    cardLeft: 20,
     title: 'Double-Click to Act',
     html: '<p><b>Double-clicking</b> a notification (or selecting it and clicking <b>Process</b>) does one of three things, depending on the type:</p>'
         + '<p>1. <b>Results-type alerts</b> (labs, imaging, completed consults) — jumps you straight into that patient\'s chart, to the specific result, and moves the alert to <b>Processed</b>.</p>'
@@ -348,11 +355,15 @@ var NOTIFICATIONS_TOUR_STEPS = [
   },
   {
     before: function(){ notifSwitchTab('pending'); },
-    target: function(){ return document.querySelector('.notif-btn-row'); },
-    cardOffset: {dx:0, dy:-200},
+    // Same reasoning as the step above -- .notif-btn-row spans the full
+    // dialog width, so pin the card to the far left edge of the screen and
+    // let highlightTarget spotlight the actual button row.
+    target: function(){ return document.getElementById('notif-tab-pending'); },
+    highlightTarget: function(){ return document.querySelector('.notif-btn-row'); },
+    cardLeft: 20,
     title: 'The Button Row',
     html: '<p><b>Process</b> is the one that\'s fully wired up in this simulation — it does whichever behavior above fits that notification. <b>Process Info</b> and <b>Process All</b> are laid out to match real CPRS but aren\'t functional here yet.</p>'
-        + '<p><b>Forward</b> lets you send a notification on to another provider — useful if it\'s really someone else\'s patient, or you want a colleague to be aware of it too. It\'s also not yet wired up in this simulation.</p>'
+        + '<p><b>Forward</b> lets you send a notification on to another provider — useful if it\'s really someone else\'s patient, or to loop in a colleague. Pick one or more names, optionally add a comment, and click OK.</p>'
   },
   {
     before: function(){ notifSwitchTab('processed'); },
@@ -1480,6 +1491,7 @@ function closeTeachingPopups(){
     closeWin('order-signed-dlg');
     closeWin('encounter-coded-dlg');
     closeWin('reminders-dlg');
+    closeWin('forward-alert-dlg');
     closeWin('tour-picker-dlg');
     closeWin('renew-orders-dlg');
     closeWin('change-refills-dlg');
@@ -1654,6 +1666,11 @@ function renderTourCard(step, anchorEl){
       top  = r.bottom + 12;
     }
     if(step.cardOffset){ left += step.cardOffset.dx||0; top += step.cardOffset.dy||0; }
+    // Absolute override -- bypasses the anchor-relative math above entirely,
+    // for steps whose target is too wide/tall for "beside/below it" to ever
+    // land somewhere sensible (e.g. a full-width table or button row).
+    if(step.cardLeft !== undefined) left = step.cardLeft;
+    if(step.cardTop  !== undefined) top  = step.cardTop;
     card.style.left = left + 'px';
     card.style.top  = top  + 'px';
     requestAnimationFrame(function(){

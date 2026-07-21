@@ -921,7 +921,7 @@
         <button class="btn" onclick="notifProcessInfo()">Process Info</button>
         <button class="btn" onclick="notifProcessAll()">Process All</button>
         <button class="btn" id="notif-process-btn" onclick="notifProcessSelected()" disabled>Process</button>
-        <button class="btn" onclick="notifForward()">Forward</button>
+        <button class="btn" id="notif-forward-btn" onclick="notifForward()" disabled>Forward</button>
         <button class="btn" disabled>Show Comments</button>
         <button class="btn" id="notif-remove-btn" onclick="notifRemoveSelected()" disabled>Remove</button>
         <button class="btn" id="notif-defer-btn" disabled>Defer</button>
@@ -933,6 +933,39 @@
     <button class="btn" style="min-width:60px" onclick="closePtDialog()">Cancel</button>
   </div>
   <div id="pt-resize-handle"></div>
+</div>
+<div class="float-win" id="forward-alert-dlg" data-display="flex" style="width:600px;height:500px;min-width:520px;min-height:360px;top:120px;left:200px;z-index:450;flex-direction:column">
+  <div class="fw-title" id="fwd-drag-handle">
+    <span>Forward Alert</span>
+    <span class="wb" onclick="closeWin('forward-alert-dlg')">&#10005;</span>
+  </div>
+  <div class="fw-body" style="display:flex;flex-direction:column;gap:6px;flex:1;min-height:0">
+    <div id="fwd-alert-summary" style="border:2px inset #808080;background:#fff;padding:4px 6px;font-size:11px;flex-shrink:0"></div>
+    <div style="flex-shrink:0">
+      <div class="pl-col-label">Comment</div>
+      <textarea id="fwd-comment" style="width:100%;height:50px;border:2px inset #808080;font-size:11px;font-family:Arial;resize:none"></textarea>
+    </div>
+    <div style="display:flex;gap:6px;flex:1;min-height:0">
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="pl-col-label">Select one or more names</div>
+        <div class="pl-listbox" id="fwd-names-lb" style="flex:1;min-height:0"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:center;gap:4px;flex-shrink:0">
+        <button class="btn" onclick="fwdAddSelected()">Add</button>
+        <button class="btn" onclick="fwdRemoveSelected()">Remove</button>
+        <button class="btn" onclick="fwdRemoveAll()">Remove All</button>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="pl-col-label">Currently selected recipients</div>
+        <div class="pl-listbox" id="fwd-recipients-lb" style="flex:1;min-height:0"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fw-footer">
+    <button class="btn" onclick="fwdConfirm()">OK</button>
+    <button class="btn" onclick="closeWin('forward-alert-dlg')">Cancel</button>
+  </div>
+  <div id="fwd-resize-handle" style="position:absolute;right:0;bottom:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 0 50%,#808080 50% 60%,transparent 60% 70%,#808080 70% 80%,transparent 80%)"></div>
 </div>
 <div id="tabbar" style="display:none">
   <div class="ctab active" id="tab-cover"    onclick="goTab('cover')">Cover Sheet</div>

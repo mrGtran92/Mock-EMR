@@ -321,6 +321,7 @@ function renderNotifTable(){
   _notifLastClickIdx=null;
   var pb=document.getElementById('notif-process-btn'); if(pb) pb.disabled=true;
   var rb=document.getElementById('notif-remove-btn'); if(rb) rb.disabled=true;
+  var fb=document.getElementById('notif-forward-btn'); if(fb) fb.disabled=true;
   var cols = tab==='pending'
     ? ['Info','Patient','Location','Urgency','Alert Date/Time','Message','Forwarded By/When']
     : ['Info','Patient','Location','Urgency','Alert Date/Time','Message','Forwarded By/When','Processed On','Processed By'];
@@ -330,9 +331,10 @@ function renderNotifTable(){
   } else {
     all.forEach(function(r,i){
       var n=r.n;
+      var fwdText = n.forwardedTo ? ('To: '+n.forwardedTo+' — '+n.forwardedOn) : '';
       html+='<tr data-idx="'+i+'" onclick="notifSelectRow('+i+',event)" ondblclick="notifDoubleClick('+i+')"'+(n.live?'':' class="notif-decorative"')+'>'
         +'<td></td><td>'+_notifPtLabel(r.pt)+'</td><td>'+(n.location||'')+'</td><td>'+n.urgency+'</td>'
-        +'<td>'+n.dt+'</td><td>'+n.message+'</td><td></td>';
+        +'<td>'+n.dt+'</td><td>'+n.message+'</td><td>'+fwdText+'</td>';
       if(tab==='processed') html+='<td>'+(n.processedOn||'')+'</td><td>'+(n.processedBy||'')+'</td>';
       html+='</tr>';
     });
@@ -369,6 +371,7 @@ function notifSelectRow(i, ev){
   });
   var pb=document.getElementById('notif-process-btn'); if(pb) pb.disabled = (_notifActiveTab!=='pending' || !_notifSelectedIdxs.length);
   var rb=document.getElementById('notif-remove-btn'); if(rb) rb.disabled = !_notifSelectedIdxs.length;
+  var fb=document.getElementById('notif-forward-btn'); if(fb) fb.disabled = (_notifActiveTab!=='pending' || !_notifSelectedIdxs.length);
 }
 function notifDoubleClick(i){
   notifSelectRow(i,null); // double-click always acts on just the row under the cursor
@@ -466,6 +469,118 @@ function _notifJumpTo(t){
 }
 function notifProcessInfo(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
 function notifProcessAll(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
-function notifForward(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
 function notifRemoveSelected(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
+
+// ---- Forward Alert dialog ----
+// Every name here is one of this app's own established fictional providers
+// (pulled from data.js prov/auth fields and the Encounter dialog's roster)
+// -- never real-world names -- alphabetized by last name like the real
+// CPRS facility directory this dialog is modeled on.
+var FORWARD_PROVIDERS = [
+  {name:'Alvarez,Rosa RN', role:'Registered Nurse'},
+  {name:'Anand,Priya MD', role:'Attending Physician'},
+  {name:'Bishop,Laura NP', role:'Non-VA Provider'},
+  {name:'Brewster,Sandra RN', role:'Registered Nurse'},
+  {name:'Chen,Andrew PharmD', role:'Clinical Pharmacist'},
+  {name:'Chen,Robert MD', role:'Resident Physician'},
+  {name:'Collins,Brian PT', role:'Physical Therapist'},
+  {name:'Diaz,Carlos RN', role:'Non-VA Provider'},
+  {name:'Feldman,Sarah MD', role:'Attending Physician'},
+  {name:'Ferreira,Ana MD', role:'Tw Non-VA Provider'},
+  {name:'Goldstein,Rachel MD', role:'Attending Physician'},
+  {name:'Grant,Michael DO', role:'Attending Physician'},
+  {name:'Hammond,Bradley MD', role:'Attending Physician'},
+  {name:'Harding,Michelle LCSW', role:'Licensed Clinical Social Worker'},
+  {name:'Henderson,Mark MD', role:'Attending Physician'},
+  {name:'Jefferson,Keisha RN', role:'Registered Nurse'},
+  {name:'Karim,Fatima MD', role:'Attending Physician'},
+  {name:'Kim,Sophia PharmD', role:'Clinical Pharmacist'},
+  {name:'Lee,Brian PharmD', role:'Clinical Pharmacist'},
+  {name:'Martinez,Elena LCSW', role:'Licensed Clinical Social Worker'},
+  {name:'McAllister,Patricia RN', role:'Registered Nurse'},
+  {name:'Nguyen,David MD', role:'Non-VA Provider'},
+  {name:'Nguyen,David PharmD', role:'Clinical Pharmacist'},
+  {name:'Nguyen,Linh MD', role:'Attending Physician'},
+  {name:'Okonkwo,Adaeze MD', role:'Attending Physician'},
+  {name:'Okonkwo,Blessing RD', role:'Registered Dietitian'},
+  {name:'Okonkwo,David MD', role:'Resident Physician'},
+  {name:'Osei,Kwame RRT', role:'Respiratory Therapist'},
+  {name:'Park,Jennifer PA-C', role:'Physician Assistant'},
+  {name:'Patterson,Joanne WOCN', role:'Wound/Ostomy Care Nurse'},
+  {name:'Pfeffer,Michael MD', role:'Attending Physician'},
+  {name:'Reyes,Linda RN', role:'Registered Nurse'},
+  {name:'Rivera,Carlos MD', role:'Attending Physician'},
+  {name:'Robinson,Denise LCSW', role:'Licensed Clinical Social Worker'},
+  {name:'Santos,Maria RN', role:'Registered Nurse'},
+  {name:'Sullivan,Michael MD', role:'Attending Physician'},
+  {name:'Thompson,Karen LCSW', role:'Licensed Clinical Social Worker'},
+  {name:'Torres,Samuel MD', role:'Resident Physician'},
+  {name:'Vasquez,Elena MD', role:'Tw Non-VA Provider'},
+  {name:'Watts,Aisha MD', role:'Attending Physician'},
+  {name:'Whitfield,Susan NP', role:'Non-VA Provider'},
+];
+var _fwdTarget = null; // {n, pt, ptKey} -- the notification currently being forwarded
+var _fwdRecipients = []; // names currently in the right-hand "selected" box
+
+function notifForward(){
+  if(_notifActiveTab!=='pending' || !_notifSelectedIdxs.length) return;
+  var idx=_notifSelectedIdxs.slice().sort(function(a,b){return a-b;})[0];
+  var r=_notifRows[idx];
+  if(!r) return;
+  _fwdTarget=r;
+  _fwdRecipients=[];
+  document.getElementById('fwd-alert-summary').textContent = _notifPtLabel(r.pt)+': '+r.n.message;
+  document.getElementById('fwd-comment').value='';
+  _fwdRenderNames();
+  _fwdRenderRecipients();
+  showFloatWin('forward-alert-dlg');
+  centerFloatWin('forward-alert-dlg');
+  makeResizable('forward-alert-dlg','fwd-resize-handle');
+}
+function _fwdRenderNames(){
+  var lb=document.getElementById('fwd-names-lb');
+  lb.innerHTML = FORWARD_PROVIDERS.map(function(p,i){
+    return '<div class="pl-list-item" data-idx="'+i+'" onclick="_fwdSelectName(this)">'+p.name+' - '+p.role+'</div>';
+  }).join('');
+}
+function _fwdSelectName(el){
+  el.parentNode.querySelectorAll('.pl-list-item').forEach(function(x){x.classList.remove('selected');});
+  el.classList.add('selected');
+}
+function _fwdRenderRecipients(){
+  var lb=document.getElementById('fwd-recipients-lb');
+  lb.innerHTML = _fwdRecipients.map(function(name,i){
+    return '<div class="pl-list-item" data-idx="'+i+'" onclick="_fwdSelectRecipient(this)">'+name+'</div>';
+  }).join('');
+}
+function _fwdSelectRecipient(el){
+  el.parentNode.querySelectorAll('.pl-list-item').forEach(function(x){x.classList.remove('selected');});
+  el.classList.add('selected');
+}
+function fwdAddSelected(){
+  var sel=document.querySelector('#fwd-names-lb .pl-list-item.selected');
+  if(!sel) return;
+  var p=FORWARD_PROVIDERS[parseInt(sel.dataset.idx,10)];
+  if(_fwdRecipients.indexOf(p.name)===-1) _fwdRecipients.push(p.name);
+  _fwdRenderRecipients();
+}
+function fwdRemoveSelected(){
+  var sel=document.querySelector('#fwd-recipients-lb .pl-list-item.selected');
+  if(!sel) return;
+  _fwdRecipients.splice(parseInt(sel.dataset.idx,10),1);
+  _fwdRenderRecipients();
+}
+function fwdRemoveAll(){
+  _fwdRecipients=[];
+  _fwdRenderRecipients();
+}
+function fwdConfirm(){
+  if(!_fwdTarget || !_fwdRecipients.length){ closeWin('forward-alert-dlg'); return; }
+  var n=_fwdTarget.n;
+  n.forwardedTo=_fwdRecipients.join('; ');
+  n.forwardedOn=_notifNowStr();
+  n.forwardedComment=document.getElementById('fwd-comment').value||'';
+  closeWin('forward-alert-dlg');
+  renderNotifTable();
+}
 
