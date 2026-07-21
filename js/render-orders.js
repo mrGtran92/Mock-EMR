@@ -249,6 +249,15 @@ function signNewOrder(){
   closeWin('new-order-dlg');
   document.getElementById('os-body').innerHTML='Order signed: <b>'+_newOrderLabel+'</b><br><br><i>(Simulation — this order was not added to the patient\'s chart.)</i>';
   showFloatWin('order-signed-dlg');
+  var _cp = currentPt && PTS[currentPt];
+  if(_cp && _cp.orders){
+    _cp.orders.forEach(function(o){
+      if(o.notifId && o.stat==='pending' && _newOrderLabel && o.ord.indexOf(_newOrderLabel)>-1){
+        o.stat='active';
+        if(typeof _resolveNotification==='function') _resolveNotification(o.notifId);
+      }
+    });
+  }
 }
 function selectOrderRow(tr){
   tr.closest('table').querySelectorAll('tr.sel').forEach(function(x){x.classList.remove('sel');});

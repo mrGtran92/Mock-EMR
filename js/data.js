@@ -259,6 +259,7 @@ kowalski:{
      body:"PROCEDURE: COLONOSCOPY\nDate: SEP 04, 2023@10:15   Requesting Provider: ANAND,PRIYA MD\nPerforming Provider: PATEL,RAJ MD (Gastroenterology)\n\nINDICATION: Colorectal cancer screening. Age 70. Prior polyp history.\n\nBOWEL PREPARATION: Good\nSCOPE ADVANCEMENT: Cecum reached. Appendiceal orifice and ileocecal valve visualized.\n\nFINDINGS:\nCecum/Ascending: 3mm hyperplastic polyp at hepatic flexure — removed by cold forceps.\nTransverse: No lesions.\nDescending/Sigmoid: 6mm tubular adenoma in sigmoid — removed by cold snare polypectomy.\nRectum: Internal hemorrhoids, grade I. No other lesions.\n\nIMPRESSION:\n1. Sigmoid tubular adenoma (6mm) — removed.\n2. Hepatic flexure hyperplastic polyp (3mm) — removed.\n3. Grade I internal hemorrhoids.\n\nPATHOLOGY SENT: Yes\n\nRECOMMENDATIONS:\n- Repeat colonoscopy in 3 years given tubular adenoma.\n- Dietary counseling regarding fiber intake.\n\n/ES/ PATEL,RAJ MD\nSigned: 09/04/2023 13:20"},
   ],
   orders:[
+    {svc:"Medication",ord:"ACETAMINOPHEN 500MG TAB\n  TAKE 1-2 TABLETS PO EVERY 6 HOURS AS NEEDED FOR PAIN",start:"07/20/25 00:00",prov:"ANAND,PRIYA MD",stat:"active",loc:"4-WEST"},
     {svc:"Life-Sustaining Treat",ord:">> Full Code -- Resuscitate with all available means.\n   Confirmed with patient and family 06/18/2026.",start:"06/18/26 14:30",prov:"RIVERA,CARLOS MD",stat:"active",loc:"1no"},
     {svc:"Nursing",ord:"DAILY WEIGHT\n  Indication: Heart failure monitoring",start:"06/18/26 14:40",prov:"RIVERA,CARLOS MD",stat:"active",loc:"1no"},
     {svc:"Nursing",ord:"STRICT INTAKE AND OUTPUT\n  Foley catheter in place",start:"06/18/26 14:40",prov:"RIVERA,CARLOS MD",stat:"active",loc:"1no"},
@@ -289,6 +290,12 @@ kowalski:{
     {name:"PNEUMOCOCCAL POLYSACCHARIDE PPV23",reaction:"No reaction",dt:"Sep 02, 2022"},
     {name:"TDAP",reaction:"No reaction",dt:"Jun 11, 2019"},
     {name:"ZOSTER RECOMBINANT",reaction:"No reaction",dt:"Jan 26, 2023"},
+  ],
+  notifications:[
+    {id:"kow-n1",urgency:"Moderate",dt:"06/19/2026@09:00",message:"Completed Consult NEPHROLOGY",location:"4-WEST",bucket:"A",live:true,target:{tab:"consults",match:"NEPHROLOGY"},status:"pending"},
+    {id:"kow-n2",urgency:"HIGH",dt:"06/25/2026@06:00",message:"Medications nearing expiration.",location:"4-WEST",bucket:"A2",live:true,target:{tab:"orders",match:"ACETAMINOPHEN"},status:"pending"},
+    {id:"kow-n5",urgency:"low",dt:"06/18/2026@11:42",message:"Admitted on 06/18/26 11:42 to 4-WEST RM 412",location:"4-WEST",bucket:"B",live:true,status:"pending"},
+    {id:"kow-n7",urgency:"Moderate",dt:"06/20/2026@14:00",message:"Imaging Results,Non Critical: ECHO TTE",location:"4-WEST",bucket:"A",live:false,status:"pending"},
   ],
 },
 chen:{
@@ -528,6 +535,12 @@ chen:{
     {name:"COVID-19 (PFIZER) MRNA",reaction:"No reaction",dt:"Dec 15, 2024"},
     {name:"PNEUMOCOCCAL CONJUGATE PCV20",reaction:"No reaction",dt:"May 14, 2021"},
   ],
+  notifications:[
+    {id:"chen-n1",urgency:"Moderate",dt:"06/20/2026@11:00",message:"Labs resulted - [ARTERIAL BLOOD GAS -- SERIAL]",location:"3-WEST",bucket:"A",live:true,target:{tab:"labs",section:"overview",match:"ARTERIAL BLOOD GAS -- SERIAL"},status:"pending"},
+    {id:"chen-n2",urgency:"low",dt:"06/22/2026@09:00",message:"Discharged on 06/22/26 09:00",location:"3-WEST",bucket:"B",live:true,status:"pending"},
+    {id:"chen-n5",urgency:"HIGH",dt:"06/19/2026@03:50",message:"Admitted on 06/19/26 03:50 to 3-WEST RM 408",location:"3-WEST",bucket:"B",live:true,status:"pending"},
+    {id:"chen-n6",urgency:"Moderate",dt:"06/20/2026@07:30",message:"Order requires electronic signature.",location:"3-WEST",bucket:"C",live:false,status:"pending"},
+  ],
 },
 okafor:{
   name:"OKAFOR,EMMANUEL C", dob:"Feb 27,1981", age:"45", sex:"MALE",
@@ -738,6 +751,11 @@ okafor:{
     {name:"COVID-19 (PFIZER) MRNA",reaction:"No reaction",dt:"Jan 05, 2024"},
     {name:"INFLUENZA SEASONAL",reaction:"No reaction",dt:"Nov 02, 2023"},
   ],
+  notifications:[
+    {id:"oka-n1",urgency:"Moderate",dt:"03/04/2025@10:30",message:"Imaging Results,Non Critical: THYROID ULTRASOUND",location:"5-SOUTH",bucket:"A",live:true,target:{tab:"reports",match:"THYROID ULTRASOUND"},status:"pending"},
+    {id:"oka-n4",urgency:"low",dt:"06/19/2026@17:10",message:"Admitted on 06/19/26 17:10 to 5-SOUTH RM 415",location:"5-SOUTH",bucket:"B",live:true,status:"pending"},
+    {id:"oka-n5",urgency:"HIGH",dt:"06/19/2026@06:00",message:"Critical labs - [BASIC METABOLIC PANEL]",location:"5-SOUTH",bucket:"A",live:false,status:"pending"},
+  ],
 },
 brennan:{
   name:"BRENNAN,DANIEL T", dob:"Mar 14,1974", age:"52", sex:"MALE",
@@ -843,6 +861,8 @@ brennan:{
      body:"LOCAL TITLE: CLINICAL PHARMACIST NOTE -- ANTIBIOTIC STEWARDSHIP\nDATE OF NOTE: JUN 19, 2026@11:00       STATUS: COMPLETED\nAUTHOR: LEE,BRIAN PHARMD\n\nREASON FOR CONSULT: Antibiotic stewardship review, PCN-allergic\npatient on piperacillin-tazobactam.\n\nALLERGY RISK ASSESSMENT:\nDocumented penicillin allergy is rash/urticaria only -- classified\nlow-risk phenotype per institutional cross-reactivity protocol.\nNo prior anaphylaxis, angioedema, or Stevens-Johnson history.\nPip-tazo use approved by pharmacy allergy review, consistent with\nID recommendations; patient tolerating without any reaction since\ninitiation 06/16.\n\nDOSING REVIEW:\nPip-tazo 3.375g IV q8h -- appropriate for current renal function\n(Cr 1.0, improving from 1.4 admit). Will need reassessment if\nrenal function changes further.\n\nSTEWARDSHIP PLAN:\nConcur with ID's planned 14-day total course (through 07/01/2026)\nand step-down to oral ciprofloxacin once tolerating full diet.\nWill flag chart for pharmacy follow-up at planned step-down date\nto confirm oral absorption is appropriate and no interactions with\nhome medication list.\n\n/es/ LEE,BRIAN PHARMD\nSigned: 06/19/2026 11:20"},
     {date:"Jun 20,26",title:"SOCIAL WORK CONSULT -- OSTOMY DISCHARGE PLANNING",loc:"3-South Inpt",auth:"ROBINSON,DENISE LCSW",
      body:"LOCAL TITLE: SOCIAL WORK CONSULT -- OSTOMY DISCHARGE PLANNING\nDATE OF NOTE: JUN 20, 2026@11:30       STATUS: COMPLETED\nAUTHOR: ROBINSON,DENISE LCSW\n\nREASON FOR CONSULT: Discharge planning following new colostomy\nand complicated post-surgical course.\n\nSOCIAL HISTORY:\nMr. Brennan lives with his spouse in a single-story home; spouse\nis willing and able to assist with ostomy care during initial\nrecovery. Retired electrician on a fixed pension, uses VA\npharmacy for all medications.\n\nASSESSMENT:\nPatient has engaged well with WOCN teaching and is expected to\nachieve independence with ostomy care prior to discharge. No\nsafety concerns identified for discharge home. Given his existing\n50% service-connected rating, ostomy supplies and medications\nwill be available through VA pharmacy/prosthetics without a\ncopay.\n\nPLAN:\n1. Home ostomy supply order to be placed via VA Prosthetics prior\n   to discharge, per WOCN recommendation.\n2. Home Health nursing referral for 1-2 post-discharge visits to\n   reinforce ostomy care.\n3. Surgical follow-up scheduled within 2 weeks; ID follow-up for\n   antibiotic step-down/completion.\n\n/es/ ROBINSON,DENISE LCSW\nSigned: 06/20/2026 11:50"},
+    {date:"Jun 20,26",title:"MEDICINE CROSS COVER NOTE",loc:"3-South Inpt",auth:"TRAN,GEORGE N",needsSign:true,notifId:"bren-n1",
+     body:"LOCAL TITLE: MEDICINE CROSS COVER NOTE\nDATE OF NOTE: JUN 20, 2026@09:00       STATUS: UNSIGNED\nAUTHOR: TRAN,GEORGE N\n\nOvernight cross-cover note, POD#3 s/p sigmoid colectomy/Hartmann's,\nKlebsiella bacteremia clearing on pip-tazo. No acute events\novernight. Vitals stable, afebrile. Continue current antibiotic\ncourse, advance diet as tolerated, continue ostomy teaching.\nPrimary team to resume care in AM.\n\n/es/ TRAN,GEORGE N"},
   ],
   consults:[
     {date:"Jun 19,26",stat:"c",title:"INFECTIOUS DISEASE CONSULT",num:"9705440",
@@ -987,6 +1007,11 @@ brennan:{
     {name:"INFLUENZA SEASONAL",reaction:"No reaction",dt:"Oct 12, 2024"},
     {name:"TDAP",reaction:"No reaction",dt:"Apr 08, 2021"},
     {name:"HEPATITIS B (RECOMBIVAX)",reaction:"No reaction",dt:"Jan 15, 2018"},
+  ],
+  notifications:[
+    {id:"bren-n1",urgency:"Moderate",dt:"06/20/2026@09:09",message:"UNSIGNED MEDICINE CROSS COVER NOTE available for signature",location:"3-SOUTH",bucket:"C",live:true,target:{tab:"notes",match:"MEDICINE CROSS COVER NOTE"},status:"pending"},
+    {id:"bren-n4",urgency:"low",dt:"06/16/2026@18:00",message:"Admitted on 06/16/26 18:00 to 3-SOUTH RM 410",location:"3-SOUTH",bucket:"B",live:true,status:"pending"},
+    {id:"bren-n6",urgency:"Moderate",dt:"06/18/2026@09:30",message:"Surgical Pathology results available.",location:"3-SOUTH",bucket:"A",live:false,status:"pending"},
   ],
 },
 hayes:{
@@ -1251,6 +1276,10 @@ hayes:{
     {name:"ZOSTER RECOMBINANT",reaction:"Injection site soreness",dt:"Mar 22, 2023"},
     {name:"TDAP",reaction:"No reaction",dt:"Jul 30, 2018"},
   ],
+  notifications:[
+    {id:"hay-n1",urgency:"Moderate",dt:"06/17/2026@14:00",message:"Completed Consult CARDIOLOGY",location:"5-WEST",bucket:"A",live:false,status:"pending"},
+    {id:"hay-n3",urgency:"low",dt:"06/17/2026@15:00",message:"Admitted on 06/17/26 15:00 to 5-WEST RM 406",location:"5-WEST",bucket:"B",live:true,status:"pending"},
+  ],
 },
 torres:{
   name:"TORRES,ELENA M", dob:"Aug 22,1967", age:"58", sex:"FEMALE",
@@ -1410,6 +1439,7 @@ torres:{
     {svc:"Lab",ord:"HEMOGLOBIN A1C  Once",start:"07/01/26 09:00",prov:"ANAND,PRIYA MD",stat:"active",loc:"691GA"},
     {svc:"Lab",ord:"BASIC METABOLIC PANEL  Once",start:"07/01/26 09:00",prov:"ANAND,PRIYA MD",stat:"active",loc:"691GA"},
     {svc:"Lab",ord:"LIPID PANEL  Once",start:"07/01/26 09:00",prov:"ANAND,PRIYA MD",stat:"active",loc:"691GA"},
+    {svc:"Medication",ord:"LISINOPRIL 10MG TAB",start:"07/01/26 09:15",prov:"ANAND,PRIYA MD",stat:"pending",loc:"691GA",notifId:"tor-n1"},
   ],
   appointments:[
     {dt:"10/05/2026 09:30",loc:"WLA Primary Care Clinic 1A",action:""},
@@ -1428,6 +1458,10 @@ torres:{
     {id:"flu", title:"Influenza Immunization", detail:"Not yet documented for the current season.", status:"due", due:"DUE NOW", lastOccurred:""},
     {id:"rtc", title:"Return to Clinic Order", detail:"No future return-to-clinic order on file after today's visit.", status:"due", due:"DUE NOW", lastOccurred:""},
     {id:"covid", title:"COVID-19 Immunization", detail:"Last dose Nov 02, 2024 -- booster due.", status:"due", due:"DUE NOW", lastOccurred:"11/02/2024"},
+  ],
+  notifications:[
+    {id:"tor-n1",urgency:"Moderate",dt:"07/01/2026@09:15",message:"Order requires electronic signature.",location:"",bucket:"C",live:true,target:{tab:"orders",match:"LISINOPRIL"},status:"pending"},
+    {id:"tor-n2",urgency:"low",dt:"07/01/2026@10:00",message:"Labs resulted - [HEMOGLOBIN A1C]",location:"",bucket:"A",live:false,status:"pending"},
   ],
 },
 };

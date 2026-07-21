@@ -910,24 +910,21 @@
     </div>
     <div class="pt-dlg-notif">
       <div class="notif-tabs">
-        <div class="notif-tab active">Pending</div>
-        <div class="notif-tab">Processed</div>
+        <div class="notif-tab active" id="notif-tab-pending" onclick="notifSwitchTab('pending')">Pending</div>
+        <div class="notif-tab" id="notif-tab-processed" onclick="notifSwitchTab('processed')">Processed</div>
       </div>
       <div style="padding:2px 4px;font-size:11px;font-weight:bold;background:#e8e8e8;border-bottom:1px solid #aaa;flex-shrink:0">Notifications</div>
       <div class="notif-tbl-wrap">
-        <table class="notif-tbl">
-          <tr><th>Info</th><th>Patient</th><th>Location</th><th>Urgency</th><th>Alert Date/Time</th><th>Message</th><th>Forwarded By/When</th></tr>
-          <tr class="notif-sel"><td></td><td></td><td></td><td>Moderate</td><td>06/29/2026@02:52</td><td>UNSIGNED TICKLER/POST IT NOTE Dated 05/26/26 ...</td><td></td></tr>
-        </table>
+        <table class="notif-tbl" id="notif-tbl"></table>
       </div>
       <div class="notif-btn-row">
-        <button class="btn">Process Info</button>
-        <button class="btn">Process All</button>
-        <button class="btn">Process</button>
-        <button class="btn">Forward</button>
+        <button class="btn" onclick="notifProcessInfo()">Process Info</button>
+        <button class="btn" onclick="notifProcessAll()">Process All</button>
+        <button class="btn" id="notif-process-btn" onclick="notifProcessSelected()" disabled>Process</button>
+        <button class="btn" onclick="notifForward()">Forward</button>
         <button class="btn" disabled>Show Comments</button>
-        <button class="btn">Remove</button>
-        <button class="btn">Defer</button>
+        <button class="btn" id="notif-remove-btn" onclick="notifRemoveSelected()" disabled>Remove</button>
+        <button class="btn" id="notif-defer-btn" disabled>Defer</button>
       </div>
     </div>
   </div>
@@ -948,6 +945,7 @@
   <div class="ctab"        id="tab-dcsum"    onclick="goTab('dcsum')">D/C Summ</div>
   <div class="ctab"        id="tab-labs"     onclick="goTab('labs')">Labs</div>
   <div class="ctab"        id="tab-reports"  onclick="goTab('reports')">Reports</div>
+  <span class="nqb-next" id="notif-queue-next" onclick="notifQueueNext()">&#9758; Next</span>
 </div>
 <div id="statusbar">
   <div class="sbp" style="flex:2" id="sb1">Ready</div>
@@ -983,7 +981,7 @@ if(typeof tourOnPageLoad==='function') tourOnPageLoad();
 <div id="tour-spotlight-2"></div>
 <div id="tour-card" class="tour-card"></div>
 
-<div class="float-win" id="tour-picker-dlg" style="width:300px;top:90px;left:140px">
+<div class="float-win" id="tour-picker-dlg" data-display="flex" style="width:300px;top:90px;left:140px">
   <div class="fw-title" id="tpk-drag-handle">
     <span>Select a Tutorial</span>
     <button class="tpk-close" onclick="closeWin('tour-picker-dlg')" title="Close">&times;</button>

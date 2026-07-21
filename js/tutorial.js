@@ -42,7 +42,8 @@ var _activeModuleId   = 'main';  // which TOUR_MODULES entry is running — 'mai
 // stay adjacent -- reorder here (not in the picker code) if that changes.
 var TOUR_MODULES = [
   {id:'main', group:'Getting Started', label:'Guided Orientation Tour', run:function(){ startTour(); }},
-  {id:'personal-list', group:'Header & Tools', label:'Building a Personal Patient List', run:function(){ startPersonalListModule(); }},
+  {id:'personal-list', group:'Getting Started', label:'Building a Personal Patient List', run:function(){ startPersonalListModule(); }},
+  {id:'notifications', group:'Getting Started', label:'Processing Notifications', run:function(){ startNotificationsModule(); }},
   {id:'header', group:'Header & Tools', label:'Patient Header Deep-Dive', run:function(){ startHeaderModule(); }},
   {id:'pdmp', group:'Header & Tools', label:'PDMP Query & Results', run:function(){ startPdmpModule(); }},
   {id:'remote-data', group:'Header & Tools', label:'Remote Data (Other VA Facilities)', run:function(){ startRemoteDataModule(); }},
@@ -308,6 +309,62 @@ var MAR_TOUR_STEPS = [
     before: function(){ closeTeachingPopups(); },
     title: 'Habit to Build',
     html: '<p>Before assuming a scheduled med was given on time — or that a PRN med wasn\'t needed overnight — pull up its MAR. This is especially worth checking for anticoagulants, insulin, opioids, and antibiotics with narrow dosing windows.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   NOTIFICATIONS TOUR STEPS
+   Standalone sub-tutorial covering the Notifications area at
+   the bottom of the Patient Selection dialog -- unlike every
+   other module, this one runs against the dialog, not a chart.
+   --------------------------------------------------------- */
+var NOTIFICATIONS_TOUR_STEPS = [
+  {
+    center: true,
+    title: 'Notifications: Check This Often',
+    html: '<p>The <b>Notifications</b> box at the bottom of the Patient Selection screen is where alerts about your patients show up — new lab results, imaging results, completed consults, a patient being admitted or discharged, even a death notification. Checking it regularly is one of the most important habits in real CPRS.</p>'
+  },
+  {
+    before: function(){ ensureDialogOpenForTour(); notifSwitchTab('pending'); },
+    target: function(){ return document.querySelector('.pt-dlg-notif'); },
+    title: 'The Notifications Panel',
+    html: '<p>This box always shows notifications across <b>all</b> of your patients at once, not just whichever one you have open — it\'s a worklist, not a per-patient log.</p>'
+  },
+  {
+    before: function(){ notifSwitchTab('pending'); },
+    target: function(){ return document.getElementById('notif-tab-pending'); },
+    title: 'Pending Tab (Default)',
+    html: '<p>This box always opens on the <b>Pending</b> tab — anything here hasn\'t been dealt with yet. Message types vary widely: <i>Labs resulted</i>, <i>Completed Consult</i>, <i>Imaging Results</i>, <i>Admitted on...</i>, <i>Discharged on...</i>, <i>Order requires electronic signature</i>, and more.</p>'
+  },
+  {
+    before: function(){ notifSwitchTab('pending'); },
+    target: function(){ return document.getElementById('notif-tbl'); },
+    title: 'Double-Click to Act',
+    html: '<p><b>Double-clicking</b> a notification (or selecting it and clicking <b>Process</b>) does one of three things, depending on the type:</p>'
+        + '<p>1. <b>Results-type alerts</b> (labs, imaging, completed consults) — jumps you straight into that patient\'s chart, to the specific result, and moves the alert to <b>Processed</b>.</p>'
+        + '<p>2. <b>Admitted/Discharged alerts</b> — just disappears from Pending. There\'s nothing to review, so it doesn\'t take you anywhere.</p>'
+        + '<p>3. <b>Unsigned/uncosigned notes and orders needing a signature</b> — takes you to the chart, but stays in Pending no matter how many times you view it. The only way to clear it is to actually sign the note or order.</p>'
+  },
+  {
+    before: function(){ notifSwitchTab('pending'); },
+    target: function(){ return document.querySelector('.notif-btn-row'); },
+    cardOffset: {dx:0, dy:-200},
+    title: 'The Button Row',
+    html: '<p><b>Process</b> is the one that\'s fully wired up in this simulation — it does whichever behavior above fits that notification. <b>Process Info</b> and <b>Process All</b> are laid out to match real CPRS but aren\'t functional here yet.</p>'
+        + '<p><b>Forward</b> lets you send a notification on to another provider — useful if it\'s really someone else\'s patient, or you want a colleague to be aware of it too. It\'s also not yet wired up in this simulation.</p>'
+  },
+  {
+    before: function(){ notifSwitchTab('processed'); },
+    target: function(){ return document.getElementById('notif-tab-processed'); },
+    title: 'The Processed Tab',
+    html: '<p>Once a notification is processed, it moves here — along with <b>when</b> it was processed and <b>by whom</b>. Note that the "never clears" (medications nearing expiration) and "stays until signed" alerts you just read about will <i>not</i> show up here even after you\'ve viewed them, since they aren\'t truly resolved yet.</p>'
+  },
+  {
+    center: true,
+    before: function(){ notifSwitchTab('pending'); },
+    title: 'Habit to Build',
+    html: '<p>Get in the habit of opening Patient Selection and scanning Pending regularly throughout your shift — not just at logon. A critical lab or an admission notification sitting unread is a real patient-safety gap in actual CPRS.</p>'
         + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
   }
 ];
@@ -1264,6 +1321,21 @@ function ensureOutpatientChartOpenForTour(){
   _tourContinue   = false;
   _chartTourShown = true;
   loadPatient('torres');
+}
+
+// Notifications is the one module that lives in the Patient Selection
+// dialog rather than inside a chart — the opposite guard from
+// ensureChartOpenForTour(): just make sure the dialog itself is open,
+// leaving whatever chart (if any) is open behind it alone.
+function ensureDialogOpenForTour(){
+  var dlg = document.getElementById('pt-dlg');
+  if(!dlg || !dlg.classList.contains('show')){
+    if(typeof openPtDialog==='function') openPtDialog();
+  }
+}
+function startNotificationsModule(){
+  ensureDialogOpenForTour();
+  activateTourSteps(NOTIFICATIONS_TOUR_STEPS, 'notifications');
 }
 
 function startPersonalListModule(){

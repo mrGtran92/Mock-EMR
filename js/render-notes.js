@@ -1,4 +1,10 @@
 var _notesViewSettings = {max:1000, contains:''};
+// Persists for the session once toggled on via View > Unsigned Notes --
+// reorganizes the tree into "All unsigned notes for <user>" / "All signed
+// notes" groups, matching real CPRS. Separate from the one-time "Alerted
+// Note" section below, which only appears immediately after arriving via a
+// Notifications double-click and disappears on the next render (tab switch).
+var _notesUnsignedViewActive = false;
 function renderNotes(pt){
   document.getElementById('left-pane').style.display='none';
   document.getElementById('right-pane').style.display='none';
@@ -6,19 +12,51 @@ function renderNotes(pt){
   var maxReturn = _notesViewSettings.max || 1000;
   var containsFilter = (_notesViewSettings.contains||'').toLowerCase();
   var viewNotes = pt.notes.slice(0, maxReturn);
+
+  var alertedNote = null;
+  if(typeof _notifAlertedNote!=='undefined' && _notifAlertedNote && _notifAlertedNote.ptKey===currentPt){
+    (pt.notes||[]).forEach(function(nt){ if(nt.notifId===_notifAlertedNote.noteId) alertedNote=nt; });
+    _notifAlertedNote=null; // one-time -- gone on the next render of this tab
+  }
+
   var outer=document.createElement('div'); outer.id='notes-outer';
   var left=document.createElement('div'); left.id='notes-left';
   var th=document.createElement('div'); th.className='tree-hdr';
   th.textContent='Last '+maxReturn+' Signed Notes (Total: '+(pt.notes.length*7+33)+')';
   left.appendChild(th);
   var tree=document.createElement('div'); tree.className='tree-body';
-  viewNotes.forEach(function(n){
+
+  function appendNoteRow(n){
     var isMatch = containsFilter && n.title.toLowerCase().indexOf(containsFilter)>-1;
     var d=document.createElement('div'); d.className='nt-item'+(isMatch?' nt-bold':'');
     d.innerHTML='<span style="font-size:9px;flex-shrink:0">&#128196;</span><span style="font-size:10px;overflow:hidden;text-overflow:ellipsis">'+n.date+' '+n.title+', '+n.loc+', '+n.auth+'</span>';
     d.onclick=(function(note){return function(){ tree.querySelectorAll('.nt-item').forEach(function(x){x.classList.remove('sel');}); d.classList.add('sel'); loadNote(note); };})(n);
+    if(n.needsSign) d.oncontextmenu=(function(note){return function(ev){ return showNoteCtxMenu(ev,pt,note); };})(n);
     tree.appendChild(d);
-  });
+    return d;
+  }
+
+  var alertedRow=null;
+  if(_notesUnsignedViewActive){
+    var grpHdr=document.createElement('div'); grpHdr.className='nt-grp';
+    grpHdr.textContent='All unsigned notes for '+NOTIF_CURRENT_USER;
+    tree.appendChild(grpHdr);
+    var unsigned=(pt.notes||[]).filter(function(nt){ return nt.needsSign; });
+    if(unsigned.length) unsigned.forEach(function(n){ appendNoteRow(n); });
+    else { var e=document.createElement('div'); e.style.cssText='padding:3px 6px;font-size:11px;color:#555;font-style:italic'; e.textContent='No unsigned notes.'; tree.appendChild(e); }
+    var grpHdr2=document.createElement('div'); grpHdr2.className='nt-grp';
+    grpHdr2.textContent='All signed notes';
+    tree.appendChild(grpHdr2);
+    viewNotes.filter(function(nt){ return !nt.needsSign; }).forEach(function(n){ appendNoteRow(n); });
+  } else {
+    if(alertedNote){
+      var aHdr=document.createElement('div'); aHdr.className='nt-grp';
+      aHdr.textContent='Alerted Note';
+      tree.appendChild(aHdr);
+      alertedRow=appendNoteRow(alertedNote);
+    }
+    viewNotes.forEach(function(n){ appendNoteRow(n); });
+  }
   left.appendChild(tree);
   var ba=document.createElement('div'); ba.className='btn-area';
   ba.innerHTML='<button class="btn" id="tpl-toggle-btn" style="width:100%;text-align:center" onclick="toggleTemplatesAccordion()">&#9656; / Templates</button>'+
@@ -81,10 +119,43 @@ function renderNotes(pt){
   function loadNote(n){
     listHdr.style.display='none'; listPane.style.display='none';
     detailBody.style.display='block';
-    detailBody.textContent=n.body;
+    detailBody.innerHTML='';
+    var body=document.createElement('div');
+    body.textContent=n.body;
+    detailBody.appendChild(body);
   }
 
-  renderList();
+  if(alertedNote && alertedRow){
+    alertedRow.classList.add('sel');
+    loadNote(alertedNote);
+  } else {
+    renderList();
+  }
+}
+// Right-click on an unsigned note's tree row -- "Sign Note..." is the only
+// real action here, matching the app's existing right-click convention
+// (Orders/Meds context menus) rather than a banner/button inside the note.
+function showNoteCtxMenu(ev,pt,note){
+  ev.preventDefault();
+  closeNoteCtxMenu();
+  var m=document.createElement('div'); m.className='ctx-menu'; m.id='note-ctx-menu';
+  var item=document.createElement('div'); item.className='ctx-item'; item.textContent='Sign Note...';
+  item.onclick=function(e){ e.stopPropagation(); closeNoteCtxMenu(); signNoteAndProcess(pt,note); };
+  m.appendChild(item);
+  document.body.appendChild(m);
+  var x=ev.pageX, y=ev.pageY;
+  var maxX=window.innerWidth-160, maxY=window.innerHeight-40;
+  m.style.left=Math.min(x,maxX)+'px'; m.style.top=Math.min(y,maxY)+'px';
+  setTimeout(function(){ document.addEventListener('click',closeNoteCtxMenu,{once:true}); },0);
+  return false;
+}
+function closeNoteCtxMenu(){ var m=document.getElementById('note-ctx-menu'); if(m) m.remove(); }
+function signNoteAndProcess(pt,note){
+  note.needsSign=false;
+  note.body = note.body.replace('STATUS: UNSIGNED','STATUS: COMPLETED')
+    .replace('/es/ '+note.auth, '/es/ '+note.auth+'\nSigned: '+_notifNowStr());
+  if(note.notifId && typeof _resolveNotification==='function') _resolveNotification(note.notifId);
+  renderNotes(pt);
 }
 function makePaneResizable(paneEl,handleEl){
   var mx,startW;
@@ -124,6 +195,11 @@ function toggleTemplatesAccordion(){
   btn.innerHTML = (open?'&#9656;':'&#9662;')+' / Templates';
 }
 
+function viewUnsignedNotes(){
+  if(!currentPt) return;
+  _notesUnsignedViewActive=true;
+  renderNotes(PTS[currentPt]);
+}
 function openCustomView(){
   if(!currentPt) return;
   document.getElementById('cv-max-return').value = _notesViewSettings.max;

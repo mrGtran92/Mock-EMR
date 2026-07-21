@@ -66,7 +66,7 @@ function buildViewMenu(){
       + '<div class="dd-item dd-gray">Signed Notes by Author</div>'
       + '<div class="dd-item dd-gray">Signed Notes by Date Range</div>'
       + '<div class="dd-item dd-gray">Uncosigned Notes</div>'
-      + '<div class="dd-item dd-gray">Unsigned Notes</div>'
+      + '<div class="dd-item" onclick="viewUnsignedNotes();closeAllMenus()">Unsigned Notes</div>'
       + '<div class="dd-item" onclick="openCustomView();closeAllMenus()">Custom View</div>'
       + '<div class="dd-item dd-gray">Search for Text (Within Current View)</div>'
       + '<div class="dd-sep"></div>'
@@ -102,6 +102,11 @@ function openPtDialog(){
   makeDraggable('pt-dlg');
   makeResizable('pt-dlg','pt-resize-handle');
   if(typeof applyDefaultPtListIfSet==='function') applyDefaultPtListIfSet();
+  _notifActiveTab='pending';
+  var pTab=document.getElementById('notif-tab-pending'), cTab=document.getElementById('notif-tab-processed');
+  if(pTab) pTab.classList.add('active');
+  if(cTab) cTab.classList.remove('active');
+  renderNotifTable();
 }
 function closePtDialog(){ document.getElementById('pt-dlg').classList.remove('show'); }
 function fillPtList(filter){
@@ -254,4 +259,213 @@ function renderTab(tab){
   else if(tab==='dcsum') renderDCsum(pt);
   else if(tab==='surgery') renderSurgery(pt);
 }
+
+// ---- Patient Selection dialog: Notifications (Pending/Processed) ----
+var NOTIF_CURRENT_USER = 'TRAN,GEORGE N';
+var NOTIF_PT_KEYS = ['kowalski','chen','okafor','brennan','hayes','torres'];
+var _notifActiveTab = 'pending';
+var _notifSelectedIdxs = [];
+var _notifLastClickIdx = null;
+var _notifRows = [];
+var _notifQueue = [];
+var _notifQueueIdx = -1;
+var _notifAlertedNote = null; // {ptKey, noteId} -- one-time "Alerted Note" tree section, consumed by renderNotes()
+
+function _notifNowStr(){
+  var d=new Date();
+  function p(x){ return (x<10?'0':'')+x; }
+  return '06/29/2026@'+p(d.getHours())+':'+p(d.getMinutes());
+}
+function _notifPtLabel(pt){
+  var parts=(pt.name||'').split(',');
+  var last=(parts[0]||'').trim();
+  var first=(parts[1]||'').trim().split(' ')[0];
+  function tc(s){ return s.length ? s.charAt(0)+s.slice(1).toLowerCase() : s; }
+  var last4=(pt.mrn||'').replace(/\D/g,'').slice(-4);
+  return tc(last)+', '+tc(first)+' ('+last.charAt(0)+last4+')';
+}
+function _collectNotifications(){
+  var out=[];
+  NOTIF_PT_KEYS.forEach(function(k){
+    var pt=PTS[k];
+    (pt.notifications||[]).forEach(function(n){ out.push({n:n, pt:pt, ptKey:k}); });
+  });
+  return out;
+}
+function _notifSortKey(dt){
+  var m=(dt||'').match(/^(\d+)\/(\d+)\/(\d+)@(\d+):(\d+)/);
+  if(!m) return 0;
+  return parseInt(m[3],10)*100000000+parseInt(m[1],10)*1000000+parseInt(m[2],10)*10000+parseInt(m[4],10)*100+parseInt(m[5],10);
+}
+function _resolveNotification(notifId){
+  NOTIF_PT_KEYS.forEach(function(k){
+    (PTS[k].notifications||[]).forEach(function(n){
+      if(n.id===notifId){ n.status='processed'; n.processedOn=_notifNowStr(); n.processedBy=NOTIF_CURRENT_USER; }
+    });
+  });
+  renderNotifTable();
+}
+function renderNotifTable(){
+  var tbl=document.getElementById('notif-tbl');
+  if(!tbl) return;
+  var tab=_notifActiveTab;
+  var all=_collectNotifications().filter(function(r){ return r.n.status===tab; });
+  // Live (interactive) notifications float to the top as their own group,
+  // newest-first within each group -- decorative rows sink to the bottom.
+  all.sort(function(a,b){
+    if(!!b.n.live !== !!a.n.live) return (b.n.live?1:0)-(a.n.live?1:0);
+    return _notifSortKey(b.n.dt)-_notifSortKey(a.n.dt);
+  });
+  _notifRows=all;
+  _notifSelectedIdxs=[];
+  _notifLastClickIdx=null;
+  var pb=document.getElementById('notif-process-btn'); if(pb) pb.disabled=true;
+  var rb=document.getElementById('notif-remove-btn'); if(rb) rb.disabled=true;
+  var cols = tab==='pending'
+    ? ['Info','Patient','Location','Urgency','Alert Date/Time','Message','Forwarded By/When']
+    : ['Info','Patient','Location','Urgency','Alert Date/Time','Message','Forwarded By/When','Processed On','Processed By'];
+  var html='<tr>'+cols.map(function(c){ return '<th>'+c+'</th>'; }).join('')+'</tr>';
+  if(!all.length){
+    html+='<tr><td colspan="'+cols.length+'" style="color:#555;font-style:italic;padding:6px">No notifications.</td></tr>';
+  } else {
+    all.forEach(function(r,i){
+      var n=r.n;
+      html+='<tr data-idx="'+i+'" onclick="notifSelectRow('+i+',event)" ondblclick="notifDoubleClick('+i+')"'+(n.live?'':' class="notif-decorative"')+'>'
+        +'<td></td><td>'+_notifPtLabel(r.pt)+'</td><td>'+(n.location||'')+'</td><td>'+n.urgency+'</td>'
+        +'<td>'+n.dt+'</td><td>'+n.message+'</td><td></td>';
+      if(tab==='processed') html+='<td>'+(n.processedOn||'')+'</td><td>'+(n.processedBy||'')+'</td>';
+      html+='</tr>';
+    });
+  }
+  tbl.innerHTML=html;
+}
+function notifSwitchTab(tab){
+  _notifActiveTab=tab;
+  var pTab=document.getElementById('notif-tab-pending'), cTab=document.getElementById('notif-tab-processed');
+  if(pTab) pTab.classList.toggle('active',tab==='pending');
+  if(cTab) cTab.classList.toggle('active',tab==='processed');
+  renderNotifTable();
+}
+// Standard multi-select: plain click selects just this row; Ctrl/Cmd+click
+// toggles this row in/out of the selection; Shift+click selects the range
+// from the last-clicked row to this one.
+function notifSelectRow(i, ev){
+  if(ev && (ev.ctrlKey || ev.metaKey)){
+    var pos=_notifSelectedIdxs.indexOf(i);
+    if(pos>-1) _notifSelectedIdxs.splice(pos,1); else _notifSelectedIdxs.push(i);
+    _notifLastClickIdx=i;
+  } else if(ev && ev.shiftKey && _notifLastClickIdx!==null){
+    var lo=Math.min(_notifLastClickIdx,i), hi=Math.max(_notifLastClickIdx,i);
+    _notifSelectedIdxs=[];
+    for(var k=lo;k<=hi;k++) _notifSelectedIdxs.push(k);
+  } else {
+    _notifSelectedIdxs=[i];
+    _notifLastClickIdx=i;
+  }
+  document.querySelectorAll('#notif-tbl tr').forEach(function(x){ x.classList.remove('notif-sel'); });
+  _notifSelectedIdxs.forEach(function(idx){
+    var row=document.querySelector('#notif-tbl tr[data-idx="'+idx+'"]');
+    if(row) row.classList.add('notif-sel');
+  });
+  var pb=document.getElementById('notif-process-btn'); if(pb) pb.disabled = (_notifActiveTab!=='pending' || !_notifSelectedIdxs.length);
+  var rb=document.getElementById('notif-remove-btn'); if(rb) rb.disabled = !_notifSelectedIdxs.length;
+}
+function notifDoubleClick(i){
+  notifSelectRow(i,null); // double-click always acts on just the row under the cursor
+  notifProcessSelected();
+}
+// Builds a queue (table order = newest-first, per the selection made) out
+// of whichever pending rows are currently selected, skipping decorative
+// (non-"live") rows, and starts working through it.
+function notifProcessSelected(){
+  if(_notifActiveTab!=='pending' || !_notifSelectedIdxs.length) return;
+  var sorted=_notifSelectedIdxs.slice().sort(function(a,b){ return a-b; });
+  var queue=sorted.map(function(i){ return _notifRows[i]; }).filter(function(r){ return r && r.n.live; });
+  if(!queue.length) return;
+  _notifQueue=queue;
+  _notifQueueIdx=-1;
+  _notifAdvanceQueue();
+}
+// Works through _notifQueue one entry at a time. Bucket B (Admitted/
+// Discharged) has nothing to review, so it's processed instantly and the
+// queue advances past it with no pause. Bucket A/A2/C entries navigate into
+// the chart and pause there, showing the bottom queue bar with a "Next" to
+// continue -- Next always just advances (per design, it isn't a completion
+// check for bucket C, since those only truly clear via the real sign action).
+function _notifAdvanceQueue(){
+  _notifQueueIdx++;
+  if(_notifQueueIdx>=_notifQueue.length){
+    _notifHideQueueBar();
+    _notifQueue=[]; _notifQueueIdx=-1;
+    var dlg=document.getElementById('pt-dlg');
+    if(dlg && dlg.classList.contains('show')){
+      // Dialog was never closed (e.g. an all-Bucket-B queue never navigated
+      // into a chart) -- just refresh the table in place, don't reposition
+      // a dialog the user may have already dragged elsewhere.
+      renderNotifTable();
+    } else {
+      openPtDialog();
+    }
+    return;
+  }
+  var r=_notifQueue[_notifQueueIdx];
+  var n=r.n, ptKey=r.ptKey;
+  if(n.bucket==='B'){
+    n.status='processed'; n.processedOn=_notifNowStr(); n.processedBy=NOTIF_CURRENT_USER;
+    _notifAdvanceQueue();
+    return;
+  }
+  if(n.bucket==='A'){
+    n.status='processed'; n.processedOn=_notifNowStr(); n.processedBy=NOTIF_CURRENT_USER;
+  }
+  // A2 (med expiration) and C (unsigned/uncosigned, order sig) are left
+  // pending -- they only clear via the real expiration date / sign action.
+  closePtDialog();
+  if(n.target && n.target.tab){
+    loadPatient(ptKey);
+    if(n.target.tab==='notes') _notifAlertedNote={ptKey:ptKey, noteId:n.id};
+    goTab(n.target.tab);
+    if(n.target.tab!=='notes') setTimeout(function(){ _notifJumpTo(n.target); },150);
+  }
+  _notifShowQueueBar();
+}
+function _notifShowQueueBar(){
+  var btn=document.getElementById('notif-queue-next');
+  if(btn) btn.classList.add('show');
+}
+function _notifHideQueueBar(){
+  var btn=document.getElementById('notif-queue-next');
+  if(btn) btn.classList.remove('show');
+}
+function notifQueueNext(){
+  _notifAdvanceQueue();
+}
+function _notifClickByText(containerSel, itemSel, matchText){
+  var container=document.querySelector(containerSel);
+  if(!container || !matchText) return false;
+  var items=container.querySelectorAll(itemSel);
+  for(var i=0;i<items.length;i++){
+    if(items[i].textContent.indexOf(matchText)>-1){ items[i].click(); return true; }
+  }
+  return false;
+}
+function _notifJumpTo(t){
+  if(t.tab==='consults'){
+    _notifClickByText('#consults-left .tree-body','.ct-item', t.match);
+  } else if(t.tab==='labs'){
+    if(typeof _labsSection==='function') _labsSection(t.section||'overview');
+    setTimeout(function(){ _notifClickByText('#labs-right','.labs-ov-row', t.match); },80);
+  } else if(t.tab==='reports'){
+    _notifClickByText('#reports-left .reports-tree','.ti','Imaging (local only)');
+    setTimeout(function(){ _notifClickByText('#reports-right','#img-list-tbl tr', t.match); },80);
+  } else if(t.tab==='meds'){
+    _notifClickByText('#meds-home-tbl','tr', t.match);
+  } else if(t.tab==='orders'){
+    _notifClickByText('table.orders-tbl','tr', t.match);
+  }
+}
+function notifProcessInfo(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
+function notifProcessAll(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
+function notifForward(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
+function notifRemoveSelected(){ /* decorative -- matches real CPRS layout, no functionality yet */ }
 
