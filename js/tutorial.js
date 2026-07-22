@@ -51,7 +51,10 @@ var TOUR_MODULES = [
   {id:'cover-sheet', group:'Cover Sheet', label:'Reminders, Immunizations & Appointments', run:function(){ startCoverSheetModule(); }},
   {id:'meds-order', group:'Meds Tab', label:'Changing an Active Medication', run:function(){ startMedsOrderModule(); }},
   {id:'meds-renew', group:'Meds Tab', label:'Expiration & Renewing a Medication', run:function(){ startMedsRenewModule(); }},
+  {id:'discharge-meds', group:'Meds Tab', label:'Ordering Outpatient Meds at Discharge', run:function(){ startDischargeMedsModule(); }},
   {id:'mar', group:'Orders Tab', label:'Reviewing the MAR (Medication Administration Record)', run:function(){ startMarModule(); }},
+  {id:'order-menus-nav', group:'Orders Tab', label:'Navigating the Order Menus', run:function(){ startOrderMenusNavModule(); }},
+  {id:'lab-order', group:'Orders Tab', label:'Ordering or Adding On a Lab Test', run:function(){ startLabOrderModule(); }},
   {id:'notes-tools', group:'Notes Tab', label:'Notes Tab Tools (Templates, Encounter, New Note)', run:function(){ startNotesToolsModule(); }},
   {id:'consults', group:'Consults Tab', label:'Understanding Consult Statuses', run:function(){ startConsultsModule(); }},
   {id:'labs-views', group:'Labs Tab', label:'Labs Views (Most Recent, Overview, Worksheet)', run:function(){ startLabsViewsModule(); }},
@@ -94,6 +97,16 @@ function _findTreeItem(containerSelector, label){
 // its visible label text, same rationale as _findTreeItem above.
 function _findOrderMenuItem(label){
   var items = document.querySelectorAll('#orders-left-list .ol-item');
+  for(var i=0;i<items.length;i++){ if(items[i].textContent.trim()===label) return items[i]; }
+  return null;
+}
+
+// Matches a leaf row inside an open order-menu-dlg popup (.iw-item) by its
+// visible label text -- these are built fresh into #om-menu-body on every
+// openOrderMenu() call with no stable ids, same rationale as
+// _findOrderMenuItem above for the left-nav list itself.
+function _findMenuBodyItem(label){
+  var items = document.querySelectorAll('#om-menu-body .iw-item');
   for(var i=0;i<items.length;i++){ if(items[i].textContent.trim()===label) return items[i]; }
   return null;
 }
@@ -309,6 +322,167 @@ var MAR_TOUR_STEPS = [
     before: function(){ closeTeachingPopups(); },
     title: 'Habit to Build',
     html: '<p>Before assuming a scheduled med was given on time — or that a PRN med wasn\'t needed overnight — pull up its MAR. This is especially worth checking for anticoagulants, insulin, opioids, and antibiotics with narrow dosing windows.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   ORDER MENUS NAV TOUR STEPS
+   Standalone sub-tutorial covering the Orders tab's left-nav
+   "View Orders" list -- a map of order menus organized by
+   inpatient vs. outpatient setting, not a walkthrough of any
+   one menu's full contents. Runs against Kowalski (inpatient)
+   since every menu (inpatient and outpatient) lives in the
+   same left-nav list regardless of which patient is open.
+   --------------------------------------------------------- */
+var ORDER_MENUS_NAV_TOUR_STEPS = [
+  {
+    center: true,
+    tab: 'orders',
+    before: function(){ closeTeachingPopups(); },
+    title: 'The Order Menus: A Map, Not a Catalog',
+    html: '<p>The left column of the Orders tab is a fast-access map to the order menus you\'ll actually reach for — organized by <b>setting</b> (inpatient vs. outpatient), not alphabetically or by specialty.</p>'
+        + '<p>The big category menus you\'ll see (Wards, Primary Care) are curated to <b>high-yield, frequently-ordered items</b> for that setting — they\'re deliberately <b>not exhaustive</b>. If something specific isn\'t listed, that\'s expected, not a gap in this simulation.</p>'
+  },
+  {
+    tab: 'orders',
+    before: function(){ closeTeachingPopups(); goTab('orders'); },
+    target: function(){ return document.getElementById('orders-left-list'); },
+    title: 'The "View Orders" Column',
+    html: '<p>Everything on the left is either a menu that opens a popup, or a stray item that isn\'t wired up in this simulation — those unwired entries render in <b>grey</b> so you can tell at a glance what\'s worth clicking. This tour only stops at the ones worth knowing.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('Consults/Procedures Order Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Consults/Procedures Order Menu',
+    html: '<p>This is where any consult or scheduled procedure gets ordered. Notice the numbered list splits by <b>site</b> — <b>WLA</b> vs. <b>SACC</b> — since those are two different physical facilities with their own consult queues. You\'ll see this same site-based split again in Radiology.</p>'
+        + '<p>Clicking <b>1  WLA Consults/Procedures/Radiology</b> drills into WLA\'s actual specialty list — this is one of the deepest menus in the app, since it\'s genuinely a long list in real CPRS too.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('Lab Test Quick Orders Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Lab Test Quick Orders Menu',
+    html: '<p>Labs organized by category — Common Panels, Chemistry, Hematology, Microbiology, Immunology, and more. Since almost every patient needs labs, this menu is reachable from the left column regardless of whether you\'re on an inpatient or outpatient case.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('Blood Bank Orders'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Blood Bank Orders',
+    html: '<p>This is where you order <b>Type & Screens</b>, <b>blood products</b> (RBC, platelets, FFP, cryoprecipitate), and other hematologic tests like a DAT or ROTEM.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('Inpatient Medication Order Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Inpatient Medication Order Menu',
+    html: '<p>Grouped by <b>symptom/drug class</b> rather than alphabetically — Constipation Meds, Anti-Emetic Meds, Insulin Orders, Non-Insulin Diabetes Medications broken out by drug class, and so on. This is the high-yield version, not the full formulary.</p>'
+        + '<p>For anything not covered by those categories, <b>ALL OTHER INPATIENT MEDS/SUPPLIES</b> at the bottom opens a searchable, alphabetized formulary list — the actual full catalog, as a fallback.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('Outpatient Meds/Supplies/IV Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Outpatient Meds/Supplies/IV Menu',
+    html: '<p>The outpatient counterpart to the Inpatient Medication menu — quick orders for take-home prescriptions and supplies, plus its own <b>Master List</b>.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('INPATIENT WARDS Order Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Inpatient Side: Wards Order Menu',
+    html: '<p><b>INPATIENT WARDS Order Menu</b> is the entry point for admitted patients — pick your service (Internal Medicine and Geriatrics, Cardiology, Surgery, ICU, etc.) to get that service\'s own curated order set: admission orders, vital sign parameters, nursing orders, common labs, procedure order sets, and disposition/discharge consults, all bundled by what a team on that service actually orders day to day.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('WLA Primary Care Order Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Outpatient Side: Primary Care Order Menu',
+    html: '<p>The outpatient mirror of the Wards menu — labs, outpatient medications, imaging, and consult referrals, curated around what a primary care visit actually generates. Same principle as Wards: high-yield, not exhaustive.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('WLA Outpatient Clinics Order Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'WLA Outpatient Clinics Order Menu',
+    html: '<p>Beyond Primary Care, this menu is helpful for accessing orders tailored to specific <b>subspecialty clinics</b> — Cardiology, Dermatology, Endocrinology, and dozens more, each with their own quick links.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Multiple Doors, Same Room',
+    html: '<p>One more thing worth knowing: many order types are reachable more than one way. <b>Radiology</b> shows up in its own dedicated menu, inside the Consults/Procedures numbered list, <i>and</i> inside the Wards menu\'s own Radiology section. <b>Labs</b> show up both in the dedicated Lab Quick Orders menu and inside the Wards menu\'s Common Inpatient Labs section.</p>'
+        + '<p>That\'s not a bug in this simulation — real CPRS is genuinely built this way. There\'s rarely exactly one correct path to an order; if you can\'t find something where you expected it, try the setting-specific menu (Wards/Primary Care) instead of the dedicated one, or vice versa.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Habit to Build',
+    html: '<p>Before hunting through a menu, ask two questions: <b>inpatient or outpatient?</b> and <b>is this a common enough order that the setting-specific menu (Wards/Primary Care) would have it, or do I need the dedicated menu (Labs, Meds, Radiology, Consults)?</b> That narrows it down fast, even the first time you use real CPRS.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
+   LAB ORDER / COLLECTION TYPE TOUR STEPS
+   Standalone sub-tutorial covering the "Order a Lab Test"
+   dialog reached via Inpatient Wards Order Menu -> Internal
+   Medicine and Geriatrics Inpatient Menu -> LABORATORY... --
+   focused on Collection Type, since that's the one field on
+   this dialog with real clinical meaning behind it.
+   --------------------------------------------------------- */
+var LAB_ORDER_TOUR_STEPS = [
+  {
+    center: true,
+    tab: 'orders',
+    before: function(){ closeTeachingPopups(); },
+    title: 'Placing a Lab Order',
+    html: '<p>This module walks through how to actually place a lab order — and, like other order menus, there are several different places you could start from. This tour picks one specific path: the <b>inpatient</b> context, via the Wards menu.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); var el=_findOrderMenuItem('INPATIENT WARDS Order Menu'); if(el) el.click(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    title: 'Start at Inpatient Wards Order Menu',
+    html: '<p>From the left column, open <b>INPATIENT WARDS Order Menu</b>, then click <b>Internal Medicine and Geriatrics Inpatient Menu</b> — the service-specific order set for a general medicine ward team.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); openIMGeriatricsMenu(); },
+    target: function(){ return document.getElementById('order-menu-dlg'); },
+    highlightTarget: function(){ return _findMenuBodyItem('LABORATORY...'); },
+    title: 'The LABORATORY Section',
+    html: '<p>Under <b>LABORATORY</b>, the <b>AM BMP</b>/<b>AM CBC w/ diff</b>/etc. rows just below are quick shortcuts for the most common daily labs. <b>LABORATORY...</b> is different — it opens the full lab-ordering dialog, for anything not covered by those shortcuts.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); openIMGeriatricsMenu(); openLabOrderDlg(); },
+    target: function(){ return document.getElementById('lab-order-dlg'); },
+    highlightTarget: function(){ return document.getElementById('lo-search'); },
+    title: 'Searching for a Test',
+    html: '<p>Type into <b>Available Lab Tests</b> and the list filters as you go. Selecting a test fills in its <b>Collect Sample</b> and <b>Specimen</b> automatically.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); openIMGeriatricsMenu(); openLabOrderDlg(); document.getElementById('lo-coll-type').size=4; },
+    target: function(){ return document.getElementById('lo-coll-type').closest('.cr-field'); },
+    title: 'The Four Collection Types',
+    html: '<p><b>Lab Collect</b> — the preferred choice for routine AM labs. A phlebotomist collects on their normal 0500–0700 rounds; if you order after that window closes, it just rolls to the <i>next</i> 0500–0700 window rather than being collected right away.</p>'
+        + '<p><b>Ward Collect</b> — used any time a phlebotomist isn\'t the one drawing it: an MD, ED/HD/ICU nurse, a med-surg nurse (for most draws), or during a rapid response/code. A med-surg nurse specifically <b>cannot</b> draw VBGs, blood cultures, or a type/screen from a PICC line — those need an MD.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); goTab('orders'); openIMGeriatricsMenu(); openLabOrderDlg(); document.getElementById('lo-coll-type').size=4; },
+    target: function(){ return document.getElementById('lo-coll-type').closest('.cr-field'); },
+    title: 'Send Patient to Lab / Immediate Collect',
+    html: '<p><b>Send Patient to Lab</b> — for outpatients walking to the lab themselves; this order type <b>never expires</b>, since there\'s no fixed collection window to miss.</p>'
+        + '<p><b>Immediate Collect</b> — Lab is obtained at a specified time (phlebotomist must return the sample to the lab immediately). Only order this if you need a lab drawn outside of the 0500 and 0700 window.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Adding On to an Already-Drawn Sample',
+    html: '<p>If a specimen is already at the lab and you need one more test from that <b>same tube</b>, you don\'t need a fresh draw — this is called <b>adding on</b> a lab, and it saves the patient another stick:</p>'
+        + '<ol><li>Find the <b>tube color</b> the new test needs (Tools → Lab Test Info in real CPRS).</li>'
+        + '<li>Open the Lab results tab and find an already-resulted test that used the <b>same</b> tube color.</li>'
+        + '<li>Write down that result\'s <b>Accession Number</b>.</li>'
+        + '<li>Place an order for the test you want added on.</li>'
+        + '<li>Call the lab and give them the accession number so they can add it on.</li></ol>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Habit to Build',
+    html: '<p>Default to <b>Lab Collect</b> for routine AM labs and <b>Send Patient to Lab</b> for outpatients — reach for <b>Ward Collect</b> or <b>Immediate Collect</b> only when the situation actually calls for it, since both add real work for nursing or phlebotomy outside their normal rounds.</p>'
         + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
   }
 ];
@@ -1176,6 +1350,69 @@ var MEDS_RENEW_TOUR_STEPS = [
 ];
 
 /* ---------------------------------------------------------
+   DISCHARGE MEDS TOUR STEPS
+   Standalone sub-tutorial covering ordering outpatient meds at
+   discharge -- transferring an Inpatient Medication to an
+   outpatient prescription via Action > Transfer to Outpatient,
+   plus reconciling existing outpatient meds the same way.
+   --------------------------------------------------------- */
+var DISCHARGE_MEDS_TOUR_STEPS = [
+  {
+    center: true,
+    tab: 'meds',
+    before: function(){ closeTeachingPopups(); },
+    title: 'Ordering Outpatient Meds at Discharge',
+    html: '<p>This module walks through turning an active <b>Inpatient Medication</b> into an outpatient prescription for discharge, and reconciling the patient\'s existing outpatient meds at the same time.</p>'
+  },
+  {
+    // Expand the Inpatient Medications section so Carvedilol (and enough
+    // surrounding rows for context) is actually visible, rather than
+    // whatever height a previous drag of the resizer bar left it at.
+    before: function(){ closeTeachingPopups(); _goMedsTab(); var sec=document.getElementById('meds-inpt-sec'); if(sec) sec.style.height='420px'; },
+    target: function(){ return _findMedsRow('meds-inpt-tbl','CARVEDILOL'); },
+    // The Inpatient Medications table spans nearly the full window width,
+    // so the engine's default "beside/below the target" card placement has
+    // nowhere to go without covering the very row being described -- pin
+    // the card to a fixed spot low and to the right, clear of the table's
+    // name column, same fix used for other wide-row targets elsewhere.
+    cardTop: 460, cardLeft: 640,
+    title: 'Select the Medication',
+    html: '<p>Under <b>Inpatient Medications</b>, click the row for the medication you want the patient to go home on — here, <b>Carvedilol</b>.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); _goMedsTab(); var row=_findMedsRow('meds-inpt-tbl','CARVEDILOL'); if(row) selectMedsRow(row,'inpt',Array.prototype.indexOf.call(document.querySelectorAll('#meds-inpt-tbl tbody tr'), row)); },
+    target: function(){ return document.getElementById('menu-action'); },
+    title: 'Open the Action Menu',
+    html: '<p>With the row selected, open <b>Action</b> in the top menu bar.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); _goMedsTab(); var row=_findMedsRow('meds-inpt-tbl','CARVEDILOL'); if(row) selectMedsRow(row,'inpt',Array.prototype.indexOf.call(document.querySelectorAll('#meds-inpt-tbl tbody tr'), row)); buildActionMenu(); toggleMenu('action'); },
+    target: function(){ return document.getElementById('dd-action'); },
+    title: 'Transfer to Outpatient...',
+    html: '<p>Click <b>Transfer to Outpatient...</b>.</p>'
+  },
+  {
+    before: function(){ closeTeachingPopups(); _goMedsTab(); var row=_findMedsRow('meds-inpt-tbl','CARVEDILOL'); var idx=row?Array.prototype.indexOf.call(document.querySelectorAll('#meds-inpt-tbl tbody tr'), row):-1; if(idx>-1) openTransferToOutpatient(idx); },
+    target: function(){ return document.getElementById('change-order-dlg'); },
+    title: 'The Outpatient Medications Dialog',
+    html: '<p>This is the same Outpatient Medications order-entry dialog used when ordering a new medication or clicking <b>Change...</b> on an outpatient med. Set the <b>Dosage</b>, <b>Route</b>, <b>Schedule</b>, and <b>Days Supply/Quantity/Refills/Pick Up</b>, then click <b>Accept Order</b>.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); _goMedsTab(); },
+    title: 'It\'s Now an Outpatient Medication',
+    html: '<p>Once signed, the medication moves to the <b>Outpatient Medications</b> section — it\'s what the patient actually leaves with. The original Inpatient Medications row is untouched, since that reflects what was given during the stay.</p>'
+  },
+  {
+    center: true,
+    before: function(){ closeTeachingPopups(); },
+    title: 'Reconciling Existing Outpatient Meds',
+    html: '<p>The same Action menu works on rows already in <b>Outpatient Medications</b> — use <b>Change...</b> if a dose changed during the stay, or <b>Renew...</b> if refills are running low, so discharge reflects what the patient should actually be taking, not just what they were on before admission.</p>'
+        + '<p>Click <b>Finish</b> to close. The <b>▾</b> picker next to <b>? Tour</b> brings you straight back here any time.</p>'
+  }
+];
+
+/* ---------------------------------------------------------
    CHART TOUR STEPS
    Walks through the chart once a patient is open.
    --------------------------------------------------------- */
@@ -1359,6 +1596,16 @@ function startMarModule(){
   activateTourSteps(MAR_TOUR_STEPS, 'mar');
 }
 
+function startOrderMenusNavModule(){
+  ensureChartOpenForTour();
+  activateTourSteps(ORDER_MENUS_NAV_TOUR_STEPS, 'order-menus-nav');
+}
+
+function startLabOrderModule(){
+  ensureChartOpenForTour();
+  activateTourSteps(LAB_ORDER_TOUR_STEPS, 'lab-order');
+}
+
 function startHeaderModule(){
   ensureChartOpenForTour();
   activateTourSteps(HEADER_TOUR_STEPS, 'header');
@@ -1424,6 +1671,22 @@ function startMedsRenewModule(){
   activateTourSteps(MEDS_RENEW_TOUR_STEPS, 'meds-renew');
 }
 
+// This module walks through a specific medication (Kowalski's Carvedilol),
+// so like the Consults module it force-switches to Kowalski regardless of
+// what's currently open, rather than only loading a default when no chart
+// is open yet -- same _*TourOrigPt save/restore pattern used there, so a
+// trainee who started this tour from a different patient's chart ends up
+// back where they started instead of stuck on Kowalski.
+var _dischargeMedsTourOrigPt = null;
+function startDischargeMedsModule(){
+  if(typeof closePtDialog==='function') closePtDialog();
+  _tourContinue   = false;
+  _chartTourShown = true;
+  if(currentPt && currentPt!=='kowalski') _dischargeMedsTourOrigPt = currentPt;
+  if(currentPt!=='kowalski') loadPatient('kowalski');
+  activateTourSteps(DISCHARGE_MEDS_TOUR_STEPS, 'discharge-meds');
+}
+
 // Every step in CONSULTS_TOUR_STEPS targets specific consults that only
 // exist on Kowalski's chart (the one patient with all 7 status codes
 // represented) -- so unlike ensureChartOpenForTour(), this always forces
@@ -1453,6 +1716,10 @@ function endTour(){
     loadPatient(_consultsTourOrigPt);
     _consultsTourOrigPt = null;
   }
+  if(_activeModuleId==='discharge-meds' && _dischargeMedsTourOrigPt){
+    loadPatient(_dischargeMedsTourOrigPt);
+    _dischargeMedsTourOrigPt = null;
+  }
   // Sub-tutorials return to the picker on Skip/Finish; the main tour just closes.
   if(_activeModuleId !== 'main') openTourPicker();
 }
@@ -1466,6 +1733,7 @@ var _flagTourOrigPt=null;
 // obscure a later step or linger after the tour ends.
 function closeTeachingPopups(){
   if(_flagTourOrigPt){ loadPatient(_flagTourOrigPt); _flagTourOrigPt=null; }
+  if(typeof closeAllMenus==='function') closeAllMenus();
   if(typeof closeWin==='function'){
     closeWin('options-dlg');
     closeWin('personal-lists-dlg');
@@ -1487,6 +1755,10 @@ function closeTeachingPopups(){
     closeWin('pdmp-results-dlg');
     closeWin('patient-flags-dlg');
     closeWin('cons-edit-resubmit-dlg');
+    closeWin('order-menu-dlg');
+    closeWin('inpt-meds-formulary-dlg');
+    closeWin('lab-order-dlg');
+    var _loCt=document.getElementById('lo-coll-type'); if(_loCt) _loCt.size=1;
     closeWin('new-order-dlg');
     closeWin('order-signed-dlg');
     closeWin('encounter-coded-dlg');

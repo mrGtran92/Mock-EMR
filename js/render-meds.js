@@ -8,6 +8,7 @@ function _medExpires(ordDate){
   return m ? (m[1]+(parseInt(m[2],10)+1)) : '';
 }
 function renderMeds(pt){
+  _medsSelSection=null; _medsSelIdx=null;
   document.getElementById('left-pane').style.display='none';
   document.getElementById('rp-hdr').style.display='none';
   var rpBody=document.getElementById('rp-body');
@@ -27,7 +28,7 @@ function renderMeds(pt){
     +'<th style="width:110px">Refills Remaining</th>'
     +'</tr></thead><tbody>';
   if(pt.meds_home.length){ pt.meds_home.forEach(function(m,i){
-    html+='<tr onclick="selectMedsRow(this)" oncontextmenu="return showMedsCtxMenu(event,\'outpt\','+i+')"><td></td><td><span class="med-name">'+m.n+'</span><span class="med-sig">'+m.sig+'</span></td><td>'+_medExpires(m.ordDate)+'</td><td>'+m.stat+'</td><td>'+m.lf+'</td><td>'+(m.ref||'')+'</td></tr>';
+    html+='<tr onclick="selectMedsRow(this,\'outpt\','+i+')" oncontextmenu="return showMedsCtxMenu(event,\'outpt\','+i+')"><td></td><td><span class="med-name">'+m.n+'</span><span class="med-sig">'+m.sig+'</span></td><td>'+_medExpires(m.ordDate)+'</td><td>'+m.stat+'</td><td>'+m.lf+'</td><td>'+(m.ref||'')+'</td></tr>';
   });} else html+='<tr><td></td><td colspan="5" style="color:#555;font-style:italic;padding:4px 6px">No Active Outpatient Medications Found</td></tr>';
   html+='</tbody></table>';
   html+='</div>';
@@ -59,7 +60,7 @@ function renderMeds(pt){
     var rowStyle=isDisc?' style="background:#f6f6f6"':'';
     var nameStyle=isDisc?' style="color:#888"':'';
     var tag=isDisc?' [DISCONTINUED]':'';
-    html+='<tr'+rowStyle+' onclick="selectMedsRow(this)" oncontextmenu="return showMedsCtxMenu(event,\'inpt\','+i+')"><td></td><td><span class="med-name"'+nameStyle+'>'+m.n+tag+'</span><span class="med-sig">'+m.sig+'</span><span class="med-ind">Indication: '+m.ind+'</span></td><td>'+(m.stop||'')+'</td><td>'+m.stat+'</td><td>'+(pt.ward||'')+'</td></tr>';
+    html+='<tr'+rowStyle+' onclick="selectMedsRow(this,\'inpt\','+i+')" oncontextmenu="return showMedsCtxMenu(event,\'inpt\','+i+')"><td></td><td><span class="med-name"'+nameStyle+'>'+m.n+tag+'</span><span class="med-sig">'+m.sig+'</span><span class="med-ind">Indication: '+m.ind+'</span></td><td>'+(m.stop||'')+'</td><td>'+m.stat+'</td><td>'+(pt.ward||'')+'</td></tr>';
   });
   html+='</tbody></table>';
   html+='</div>';
@@ -114,15 +115,22 @@ function makeMedsSectionResizable(barEl, growEl, shrinkEl){
    existing convention on the Orders tab's context menu (showOrderCtxMenu)
    where only permission-gated items like Park/Unpark are visually
    disabled. */
-function selectMedsRow(tr){
+// Tracks the currently-selected Meds row's section/index at module scope --
+// the right-click context menu already had section/idx in closure at the
+// time of the click, but the top menu bar's Action menu fires independently
+// of any row click, so it needs this to know what a left-click selection
+// was actually pointing at.
+var _medsSelSection=null, _medsSelIdx=null;
+function selectMedsRow(tr,section,idx){
   document.querySelectorAll('table.meds-tbl tr.sel').forEach(function(x){x.classList.remove('sel');});
   tr.classList.add('sel');
+  if(section!==undefined){ _medsSelSection=section; _medsSelIdx=idx; }
 }
 function showMedsCtxMenu(ev,section,idx){
   ev.preventDefault();
   closeMedsCtxMenu();
   var tr=ev.currentTarget || ev.target.closest('tr');
-  if(tr) selectMedsRow(tr);
+  if(tr) selectMedsRow(tr,section,idx);
   var items=[
     {label:'Details...'},
     {label:'Administration History...'},{sep:true},
@@ -293,12 +301,15 @@ function _guessScheduleFromSig(sig){
 }
 function _medRouteOptions(sig){
   var s=(sig||'').toUpperCase();
-  if(/INJECT|\bSC\b|SUBQ/.test(s)) return ['SC'];
-  if(/\bIV\b/.test(s)) return ['IV'];
-  if(/\bIM\b/.test(s)) return ['IM'];
-  if(/INHAL/.test(s)) return ['INHALATION'];
-  if(/TOPICAL|APPLY/.test(s)) return ['TOPICAL'];
-  return ['ORAL'];
+  if(/\bIVPB\b/.test(s)) return ['IV Piggyback'];
+  if(/\bIVP\b/.test(s)) return ['IVP'];
+  if(/\bIV\b/.test(s)) return ['Intravenous'];
+  if(/\bIM\b/.test(s)) return ['Intramuscular'];
+  if(/\bNEB\b/.test(s)) return ['Nebulized'];
+  if(/INHAL/.test(s)) return ['Inhalation'];
+  if(/INJECT|\bSC\b|SUBQ/.test(s)) return ['Subcutaneous'];
+  if(/TOPICAL|APPLY/.test(s)) return ['Topical'];
+  return ['Oral'];
 }
 // Tablets only actually exist in specific manufactured strengths -- a
 // "1000MG" dosage option doesn't mean a 1000MG tablet exists, it means two
@@ -402,6 +413,17 @@ function _medComboNote(name){
   return '';
 }
 
+// "Transfer to Outpatient" reuses this same section==='inpt' vs. else
+// branching that already exists for outpt vs. inpt Change... -- passing
+// 'transfer' falls into the "else" (meds_inpt source) while still reading
+// as an outpatient order everywhere renderChangeOrderDialog/
+// buildChangeOrderPreview check `s.section==='inpt'`, so the dialog
+// naturally shows the Outpatient Medications title/fields without any
+// changes to that shared rendering code. acceptChangeOrder() below is the
+// only place that needs to know about the 'transfer' section specifically.
+function openTransferToOutpatient(idx){
+  openChangeOrder('transfer',idx);
+}
 var _changeState=null;
 function openChangeOrder(section,idx){
   var pt=PTS[currentPt];
@@ -443,6 +465,8 @@ function _coScheduleListHtml(){
 }
 function renderChangeOrderDialog(){
   var s=_changeState; if(!s) return;
+  document.getElementById('co-title').textContent = s.section==='inpt' ? 'Inpatient Medications' : 'Outpatient Medications';
+  document.getElementById('co-outpt-fields').style.display = s.section==='inpt' ? 'none' : 'block';
   document.getElementById('co-name-input').value=s.med.n;
   var combo=_medComboNote(s.med.n);
   var comboEl=document.getElementById('co-combo-note');
@@ -506,7 +530,7 @@ function buildChangeOrderPreview(s){
   var isChew=/CHEWABLE/i.test(s.med.n);
   var formWord=isChew?'TABLET':(/CAP\b/i.test(s.med.n)?'CAPSULE':'TABLET');
   var verb=isChew?'CHEW':'TAKE';
-  var routeText=s.route==='ORAL' ? 'BY MOUTH' : s.route;
+  var routeText=s.route==='Oral' ? 'BY MOUTH' : (s.route||'').toUpperCase();
   var freq=_scheduleHuman(s.schedule);
   var baseName=s.med.n.replace(/\s*[\d.]+\s*(MG|MCG|G|ML|UNITS?)\b.*$/i,'').trim();
   var tabletCount=s.dose?s.dose.tabletCount:1;
@@ -514,13 +538,50 @@ function buildChangeOrderPreview(s){
   var formWordPlural=formWord+(tabletCount>1?'S':'');
   var line1=baseName+' TAB,'+s.route+' '+(s.dose?s.dose.headerLabel:'');
   var line2=verb+' '+countWord+' '+formWordPlural+' '+routeText+' '+freq+(s.prn?' AS NEEDED':'')+(s.patientInstrChecked && s.patientInstr ? ' '+s.patientInstr : '');
-  var lines=[line1,line2,'Quantity: '+(s.qty||0)+' Refills: '+(s.refills||0)];
+  var lines=[line1,line2];
+  if(s.section!=='inpt') lines.push('Quantity: '+(s.qty||0)+' Refills: '+(s.refills||0));
   if(s.indication) lines.push('Indication: '+s.indication);
   return lines.join('\n');
+}
+// Builds a real pt.meds_home entry (same shape as every hand-authored one
+// in data.js) from the Change dialog's current state -- used only by the
+// "Transfer to Outpatient" flow below, where the dialog is standing in for
+// writing a genuinely new outpatient prescription rather than just
+// simulating one.
+function _buildTransferMedsHomeEntry(s){
+  var baseName=s.med.n.replace(/\s*[\d.]+\s*(MG|MCG|G|ML|UNITS?)\b.*$/i,'').trim();
+  var formMatch=/\b(TAB|CAP|INHL|SOLN|SUSP|INJ)\b\s*$/i.exec(s.med.n);
+  var formSuffix=formMatch?formMatch[1].toUpperCase():'TAB';
+  var doseLabel=s.dose?s.dose.headerLabel:'';
+  var routeText=s.route==='Oral' ? 'BY MOUTH' : (s.route||'').toUpperCase();
+  var freq=_scheduleHuman(s.schedule);
+  var tabletCount=s.dose?s.dose.tabletCount:1;
+  var countWord=tabletCount>1 ? String(tabletCount) : 'ONE';
+  var verb=/CHEWABLE/i.test(s.med.n)?'CHEW':'TAKE';
+  var formWord=(/CHEWABLE/i.test(s.med.n)?'TABLET':(/CAP\b/i.test(s.med.n)?'CAPSULE':'TABLET'))+(tabletCount>1?'S':'');
+  var today=new Date();
+  var mm=(today.getMonth()+1); var dd=today.getDate();
+  var dateStr=(mm<10?'0':'')+mm+'/'+(dd<10?'0':'')+dd+'/'+today.getFullYear();
+  return {
+    n: (baseName+' '+doseLabel+' '+formSuffix).replace(/\s+/g,' ').trim(),
+    sig: verb+' '+countWord+' '+formWord+' '+routeText+' '+freq+(s.prn?' AS NEEDED':'')+(s.patientInstrChecked && s.patientInstr ? ' '+s.patientInstr : ''),
+    ordDate: dateStr, lf: dateStr, ref: String(s.refills||0), stat:'active',
+  };
 }
 function acceptChangeOrder(){
   var s=_changeState; if(!s) return;
   closeWin('change-order-dlg');
+  if(s.section==='transfer'){
+    var pt=PTS[currentPt];
+    var entry=_buildTransferMedsHomeEntry(s);
+    pt.meds_home.push(entry);
+    if(currentTab==='meds') renderMeds(pt);
+    document.getElementById('msn-title').textContent='Order Signed';
+    document.getElementById('msn-body').textContent=entry.n+' has been added to Outpatient Medications.';
+  } else {
+    document.getElementById('msn-title').textContent='Simulation Only';
+    document.getElementById('msn-body').textContent='This change was not added to the patient\'s chart.';
+  }
   showFloatWin('meds-sim-notice-dlg');
   centerFloatWin('meds-sim-notice-dlg');
   _changeState=null;

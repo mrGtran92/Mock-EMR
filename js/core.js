@@ -79,7 +79,55 @@ function buildViewMenu(){
     dd.innerHTML = _viewMenuDefaultHTML;
   }
 }
-document.addEventListener('click',function(e){ if(!e.target.closest('.mi')) closeAllMenus(); });
+// Context-sensitive Action menu, same pattern as buildViewMenu() above --
+// on the Meds tab it shows the real per-medication action list (matching a
+// real CPRS screenshot), acting on whichever row selectMedsRow() last
+// recorded; every other tab keeps the original static menu.
+var _actionMenuDefaultHTML = null;
+function buildActionMenu(){
+  var dd = document.getElementById('dd-action');
+  if(_actionMenuDefaultHTML===null) _actionMenuDefaultHTML = dd.innerHTML;
+  if(currentTab==='meds' && currentPt){
+    dd.innerHTML =
+        '<div class="dd-item dd-gray">New Medication...</div>'
+      + '<div class="dd-sep"></div>'
+      + '<div class="dd-item" onclick="actionMedsChange();closeAllMenus()">Change...</div>'
+      + '<div class="dd-item dd-gray">Discontinue Order...</div>'
+      + '<div class="dd-item" onclick="actionMedsRenew();closeAllMenus()">Renew...</div>'
+      + '<div class="dd-item dd-gray">Copy to New Order...</div>'
+      + '<div class="dd-item" onclick="actionTransferToOutpatient();closeAllMenus()">Transfer to Outpatient...</div>'
+      + '<div class="dd-item dd-gray">Refill...</div>'
+      + '<div class="dd-item dd-gray">Document Non-VA Meds</div>'
+      + '<div class="dd-sep"></div>'
+      + '<div class="dd-item dd-gray">One Step Clinic Admin</div>'
+      + '<div class="dd-sep"></div>'
+      + '<div class="dd-item dd-gray">Park</div>'
+      + '<div class="dd-item dd-gray">Unpark - Generates a request to Fill/Refill</div>';
+  } else {
+    dd.innerHTML = _actionMenuDefaultHTML;
+  }
+}
+// The three wired Action-menu items below are quiet no-ops when nothing on
+// the Meds tab is selected -- same "no visible disabled state, just does
+// nothing" convention already used for every other unwired context-menu
+// item in this app (Discontinue Order, Copy to New Order, etc.), rather
+// than adding new greyed-out styling just for these three.
+function actionMedsChange(){
+  if(_medsSelSection==null) return;
+  openChangeOrder(_medsSelSection,_medsSelIdx);
+}
+function actionMedsRenew(){
+  if(_medsSelSection==null) return;
+  openRenewOrders(_medsSelSection,_medsSelIdx);
+}
+function actionTransferToOutpatient(){
+  if(_medsSelSection!=='inpt') return;
+  openTransferToOutpatient(_medsSelIdx);
+}
+document.addEventListener('click',function(e){
+  if(typeof _tourActive!=='undefined' && _tourActive) return;
+  if(!e.target.closest('.mi')) closeAllMenus();
+});
 document.querySelectorAll('.dropdown').forEach(function(d){
   d.addEventListener('click',function(e){ e.stopPropagation(); });
 });
@@ -228,6 +276,7 @@ function saveNewVisitEncounter(){
 }
 
 function goTab(tab){
+  if(!_tourActive) closeAllFloatWins();
   currentTab=tab;
   document.querySelectorAll('.ctab').forEach(function(t){t.classList.remove('active');});
   var el=document.getElementById('tab-'+tab); if(el) el.classList.add('active');

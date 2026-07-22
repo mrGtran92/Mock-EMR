@@ -589,6 +589,13 @@ function centerFloatWin(id){
   el.style.left = Math.max(0, Math.round((pw - el.offsetWidth) / 2)) + 'px';
   el.style.top  = Math.max(0, Math.round((ph - el.offsetHeight) / 2)) + 'px';
 }
+// Set true for the duration of a drag (plus one extra tick after mouseup),
+// so "click outside to close" handlers can ignore the spurious click event
+// the browser fires wherever the mouse happens to release -- otherwise
+// dragging a dialog and letting go over some unrelated element (the yellow
+// banner, another panel, anywhere outside the dialog) reads as a genuine
+// outside click and closes the dialog mid-drag.
+var _floatWinDragging=false;
 function makeDraggable(winId){
   var win=document.getElementById(winId);
   var handle=win.querySelector('.fw-title, .dlg-title');
@@ -599,13 +606,17 @@ function makeDraggable(winId){
     if(e.target.classList.contains('wb')) return;
     e.preventDefault(); mx=e.clientX; my=e.clientY;
     document.onmousemove=function(e){
+      _floatWinDragging=true;
       var dx=e.clientX-mx, dy=e.clientY-my; mx=e.clientX; my=e.clientY;
       var newLeft=win.offsetLeft+dx, newTop=win.offsetTop+dy;
       newTop=Math.max(0,Math.min(newTop,window.innerHeight-handle.offsetHeight));
       newLeft=Math.max(-win.offsetWidth+60,Math.min(newLeft,window.innerWidth-60));
       win.style.left=newLeft+'px'; win.style.top=newTop+'px';
     };
-    document.onmouseup=function(){ document.onmousemove=null; document.onmouseup=null; };
+    document.onmouseup=function(){
+      document.onmousemove=null; document.onmouseup=null;
+      if(_floatWinDragging) setTimeout(function(){ _floatWinDragging=false; },0);
+    };
   };
 }
 function makeResizable(winId,handleId){

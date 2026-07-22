@@ -58,7 +58,7 @@
       <div class="dd-item dd-gray">Postings</div>
     </div>
   </span>
-  <span class="mi" id="menu-action" onclick="toggleMenu('action')"><u>A</u>ction
+  <span class="mi" id="menu-action" onclick="buildActionMenu();toggleMenu('action')"><u>A</u>ction
     <div class="dropdown" id="dd-action">
       <div class="dd-item dd-gray">New Note</div>
       <div class="dd-item dd-gray">New Consult</div>
@@ -314,6 +314,87 @@
       <div id="om-menu-body" class="iw-menu-cols"></div>
     </div>
   </div>
+  <div class="float-win" id="inpt-meds-formulary-dlg" style="width:600px;top:60px;left:120px">
+    <div class="fw-title" id="imf-drag-handle">
+      <span>Inpatient Medications</span>
+      <span class="wb" onclick="closeWin('inpt-meds-formulary-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="padding:6px;display:flex;flex-direction:column;gap:4px">
+      <input id="imf-search" type="text" placeholder="Type a medication name..." oninput="imfFilter()" style="padding:3px 6px;font-size:12px;border:2px inset #808080">
+      <div id="imf-list" style="flex:1;overflow-y:auto;border:1px solid #999;background:#fff;min-height:340px;max-height:340px"></div>
+      <textarea id="imf-comment" rows="2" placeholder="" style="width:100%;font-size:11px"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:6px">
+        <button class="btn" id="imf-ok-btn" disabled onclick="imfAccept()">OK</button>
+        <button class="btn" onclick="closeWin('inpt-meds-formulary-dlg')">Quit</button>
+      </div>
+    </div>
+  </div>
+  <div class="float-win" id="lab-order-dlg" style="width:940px;top:70px;left:180px">
+    <div class="fw-title" id="lo-drag-handle">
+      <span>Order a Lab Test</span>
+      <span class="wb" onclick="closeWin('lab-order-dlg')">&#10005;</span>
+    </div>
+    <div class="fw-body" style="font-size:11px">
+      <div style="display:flex;gap:16px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+          <div style="font-weight:bold;margin-bottom:2px">Available Lab Tests</div>
+          <input id="lo-search" type="text" oninput="loFilter()" style="padding:3px 6px;font-size:12px;border:2px inset #808080;margin-bottom:4px">
+          <div id="lo-list" style="flex:1;min-height:220px;max-height:220px;overflow-y:auto;border:1px solid #999;background:#fff"></div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div id="lo-test-name" style="font-weight:bold;margin-bottom:6px"></div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+            <label style="width:110px;text-align:right">Collect Sample</label>
+            <select id="lo-sample" style="flex:1"></select>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+            <label style="width:110px;text-align:right">Specimen</label>
+            <select id="lo-specimen" style="flex:1"></select>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+            <label style="width:110px;text-align:right">Urgency</label>
+            <select id="lo-urgency" style="flex:1">
+              <option>ROUTINE</option><option>STAT</option><option>URGENT</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:20px;align-items:flex-end;margin-top:10px;flex-wrap:wrap">
+        <div class="cr-field">
+          <label>Collection Type</label>
+          <select id="lo-coll-type">
+            <option>Lab Collect</option><option>Ward Collect</option>
+            <option selected>Send Patient to Lab</option><option>Immediate Collect</option>
+          </select>
+        </div>
+        <div class="cr-field">
+          <label>Collection Date/Time</label>
+          <div style="display:flex;gap:2px">
+            <input id="lo-coll-dt" type="text" value="TODAY" style="width:100px">
+            <button class="btn" disabled>...</button>
+          </div>
+        </div>
+        <div class="cr-field">
+          <label>How Often?</label>
+          <select id="lo-how-often" onchange="loHowOftenChanged()">
+            <option>ONE TIME</option><option>DAILY</option><option>BID</option><option>TID</option>
+            <option>QID</option><option>Q6H</option><option>Q8H</option><option>Q12H</option><option>ONGOING</option>
+          </select>
+        </div>
+        <div class="cr-field">
+          <label>How Long?</label>
+          <input id="lo-how-long" type="text" disabled style="width:90px">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <textarea id="lo-comment" rows="3" placeholder="" style="flex:1;font-size:11px"></textarea>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button class="btn" id="lo-accept-btn" disabled onclick="loAcceptOrder()">Accept Order</button>
+          <button class="btn" onclick="closeWin('lab-order-dlg')">Quit</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="float-win" id="new-order-dlg" style="width:480px;top:80px;left:260px">
     <div class="fw-title" id="no-drag-handle">
       <span>New Order</span>
@@ -341,10 +422,10 @@
   </div>
   <div class="float-win confirm-dlg" id="meds-sim-notice-dlg" style="width:320px;top:180px;left:360px">
     <div class="fw-title" id="msn-drag-handle">
-      <span>Simulation Only</span>
+      <span id="msn-title">Simulation Only</span>
       <span class="wb" onclick="closeWin('meds-sim-notice-dlg')">&#10005;</span>
     </div>
-    <div class="fw-body" style="font-size:11px">This change was not added to the patient's chart.</div>
+    <div class="fw-body" style="font-size:11px" id="msn-body">This change was not added to the patient's chart.</div>
     <div class="fw-footer">
       <button class="btn" onclick="closeWin('meds-sim-notice-dlg')">OK</button>
     </div>
@@ -393,7 +474,7 @@
   </div>
   <div class="float-win" id="change-order-dlg" style="width:920px;top:40px;left:100px">
     <div class="fw-title" id="co-drag-handle">
-      <span>Outpatient Medications</span>
+      <span id="co-title">Outpatient Medications</span>
       <span class="wb" onclick="closeWin('change-order-dlg')">&#10005;</span>
     </div>
     <div class="fw-body" style="font-size:11px">
@@ -432,20 +513,22 @@
           <textarea id="co-comments" rows="1" style="width:100%" oninput="coFieldChanged()"></textarea>
         </div>
       </div>
-      <div id="co-qtydisp-hint" style="color:#555;font-style:italic;margin:6px 0 4px">&gt;&gt; Quantity Dispensed: CMOP 90-day supply or add ### in pt instructions &lt;&lt;</div>
-      <div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">
-        <div id="co-qty-refill-group" style="display:flex;gap:20px">
-          <div class="cr-field"><label>Days Supply</label><input id="co-days" type="number" min="1" oninput="coDaysChanged()"></div>
-          <div class="cr-field"><label>Quantity</label><input id="co-qty" type="number" min="0" oninput="coQtyManual()"></div>
-          <div class="cr-field"><label>Refills</label><input id="co-refills" type="number" min="0" max="11" oninput="coFieldChanged()"></div>
+      <div id="co-outpt-fields">
+        <div id="co-qtydisp-hint" style="color:#555;font-style:italic;margin:6px 0 4px">&gt;&gt; Quantity Dispensed: CMOP 90-day supply or add ### in pt instructions &lt;&lt;</div>
+        <div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">
+          <div id="co-qty-refill-group" style="display:flex;gap:20px">
+            <div class="cr-field"><label>Days Supply</label><input id="co-days" type="number" min="1" oninput="coDaysChanged()"></div>
+            <div class="cr-field"><label>Quantity</label><input id="co-qty" type="number" min="0" oninput="coQtyManual()"></div>
+            <div class="cr-field"><label>Refills</label><input id="co-refills" type="number" min="0" max="11" oninput="coFieldChanged()"></div>
+          </div>
+          <div id="co-pickup-group">
+            <div>Pick Up</div>
+            <label><input type="radio" name="co-pickup" value="Park" onchange="coFieldChanged()"> Park</label>
+            <label><input type="radio" name="co-pickup" value="Mail" onchange="coFieldChanged()"> Mail</label>
+            <label><input type="radio" name="co-pickup" value="Window" onchange="coFieldChanged()"> Window</label>
+          </div>
+          <div class="cr-field"><label>Priority</label><select id="co-priority"><option>ROUTINE</option></select></div>
         </div>
-        <div id="co-pickup-group">
-          <div>Pick Up</div>
-          <label><input type="radio" name="co-pickup" value="Park" onchange="coFieldChanged()"> Park</label>
-          <label><input type="radio" name="co-pickup" value="Mail" onchange="coFieldChanged()"> Mail</label>
-          <label><input type="radio" name="co-pickup" value="Window" onchange="coFieldChanged()"> Window</label>
-        </div>
-        <div class="cr-field"><label>Priority</label><select id="co-priority"><option>ROUTINE</option></select></div>
       </div>
       <div style="margin-top:8px">
         <label><input type="checkbox" id="co-instr-check" onchange="coFieldChanged()"> Patient Instruction</label>

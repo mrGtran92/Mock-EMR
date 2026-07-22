@@ -136,8 +136,11 @@ table.notes-list-tbl tr.sel td{background:#000080;color:#fff}
 #notes-detail-body{flex:1;overflow-y:auto;padding:4px 8px;font-family:'Courier New',monospace;font-size:11px;white-space:pre-wrap;line-height:1.6}
 #orders-left-list{flex:1;overflow-y:auto;background:#fff;font-size:11px}
 .ol-item{padding:2px 6px;cursor:pointer;font-size:11px}
+.ol-item.om-inert{color:#888}
 .ol-item:hover,.ol-item.sel{background:#000080;color:#fff}
 .ol-sep{padding:2px 6px;font-size:10px;font-weight:bold;color:#000;background:#d4d0c8;border-bottom:1px solid #aaa;white-space:nowrap}
+.ol-btn-wrap{background:#c0c0c0;padding:4px 6px;border-bottom:1px solid #aaa}
+.ol-btn{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;padding:2px 6px;font-size:11px;font-weight:bold;text-align:center;cursor:default}
 .orders-hdr-bar{padding:2px 6px;font-size:11px;font-weight:bold;background:#fffff0;border-bottom:1px solid #aaa;flex-shrink:0}
 table.orders-tbl{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
 table.orders-tbl th{position:relative;background:#d4d0c8;padding:2px 4px;border:1px solid #aaa;font-size:10px;text-align:left;white-space:nowrap;overflow:hidden}
@@ -152,7 +155,41 @@ table.orders-tbl tr.sel td.svc-cell{color:#fff}
 .iw-grp-hdr:first-child{margin-top:0}
 .iw-sub-hdr{font-weight:bold;font-size:10px;margin-top:6px;padding-left:6px}
 .iw-item{padding:1px 0 1px 14px;font-size:11px;cursor:pointer;color:#000}
+.iw-blank{height:14px}
+.iw-hr{border-top:1px solid #999;margin:10px 0}
+.iw-note{font-size:11px;color:#000;padding:1px 0 1px 14px}
+.cm-num-cols{display:flex;gap:24px;padding:10px 16px;max-height:520px;overflow-y:auto;background:#ece9d8}
+.cm-num-col{flex:1;min-width:0}
+.cm-num-item{display:flex;gap:10px;padding:6px 0;font-size:12px;color:#000;cursor:pointer}
+.cm-num-item:hover{text-decoration:underline;color:#0000cc}
+.cm-num{width:16px;flex-shrink:0}
+.cm-num-blank{height:18px}
+.cm-num-plain{padding:6px 0 6px 26px;font-size:12px;color:#000}
+.bb-body{padding:14px 18px;background:#ece9d8;max-height:520px;overflow-y:auto;font-size:12px;color:#000}
+.bb-note{margin-bottom:6px}
+.bb-bullet{padding:2px 0 2px 16px}
+.bb-hdr{font-weight:bold;margin-top:14px;margin-bottom:2px}
+.bb-hdr:first-of-type{margin-top:14px}
+.bb-item{padding:2px 0 2px 24px;cursor:pointer}
+.bb-item:hover{text-decoration:underline;color:#0000cc}
+.bb-hr{border-top:1px solid #999;margin:12px 0}
+.bb-band{background:#d4d0c8;font-weight:bold;padding:4px 6px;margin:8px -18px}
+.bb-note{padding-left:24px}
+.imf-item{padding:2px 6px;font-size:11px;cursor:pointer;white-space:nowrap}
+.imf-item:hover{background:#d0e4f8}
+.imf-item.sel{background:#000080;color:#fff}
+.lo-item{padding:2px 6px;font-size:11px;cursor:pointer;white-space:nowrap}
+.lo-item:hover{background:#d0e4f8}
+.lo-item.sel{background:#000080;color:#fff}
 .iw-item:hover{text-decoration:underline;color:#0000cc}
+/* Applied alongside .iw-item/.cm-num-item/.bb-item on any leaf entry that
+   has no real fn wired up in this simulation, so trainees can tell at a
+   glance which menu items actually go somewhere vs. which are just
+   decorative filler matching the real menu's layout. Hover still turns
+   these blue/underlined like a functional item, since the point is just to
+   distinguish the resting state, not to hide that it's part of the menu. */
+.om-inert{color:#888}
+.om-inert:hover{color:#0000cc;text-decoration:underline}
 .ctx-menu{position:absolute;background:#f0f0f0;border:1px solid #707070;box-shadow:2px 2px 6px rgba(0,0,0,0.4);z-index:500;font-size:11px;padding:2px 0;min-width:230px}
 .ctx-item{padding:3px 10px;cursor:pointer;white-space:nowrap}
 .ctx-item:hover{background:#000080;color:#fff}
